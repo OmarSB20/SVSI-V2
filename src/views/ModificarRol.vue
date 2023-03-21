@@ -8,53 +8,73 @@
 
             </div>
             <div class="col">
-                <p style="color: white; font-size: 60px" class="mb-0">SVSI</p>
+                <p style="font-size: 60px" class="italika d-flex justify-content-start mb-0">SVSI</p>
             </div>
         </div>
         <div class="row align-items-center">
             <div class="col-1">
-                <!-- regresar -->
-                <p style="color: white;">flecha</p>
+                <img
+                    class="img-fluid"
+                    style="margin-top: 20px; width: 31.23px; height: 35.5px"
+                    src="../assets/triangulito.png"
+                />
             </div>
             <div class="col-8">
                 <div class="row">
-                    <!-- roles -->
-                    <p style="color: white; font-size: 40px">Roles</p>
+                    <p class="italika d-flex justify-content-start" style="font-size: 50px">
+                        Roles
+                    </p>
                 </div>
                 <div class="row">
-                    <!-- roles registadros-->
-                    <p style="color: white; font-size: 20px">Roles registrados</p>
+                    <h5 class="italika d-flex justify-content-start">
+                        Registrar Roles
+                    </h5>
                 </div>
             </div>
             <div class="col-3">
                 <div class="row">
-                    <!-- buscador -->
-                    <p>buscador</p>
+                    <input type="text" class="form-control" style="" />
                 </div>
                 <div class="row">
-                    <!-- agregar -->
-                    <p style="color: white; font-size: 20px">Agregar nuevo</p>
+                    <h5 class="italika d-flex justify-content-start">
+                        Agregar Roles
+                    </h5>
                 </div>
             </div>
         </div>
-        <!-- tabla -->
-        <table style="color: white;" class="table">
-            <tr>
-                <th>Company</th>
-                <th>Contact</th>
-                <th>Country</th>
-            </tr>
-            <tr>
-                <td>Alfreds Futterkiste</td>
-                <td>Maria Anders</td>
-                <td>Germany</td>
-            </tr>
-            <tr>
-                <td>Centro comercial Moctezuma</td>
-                <td>Francisco Chang</td>
-                <td>Mexico</td>
-            </tr>
-        </table>
+        <table
+            class="table table-hover table-striped text-center mt-4 mx-auto"
+            style="width: 900px"
+          >
+            <thead>
+              <tr style="background-color: #2b4677; color: white">
+                <th scope="col">Nombre de permiso</th>
+                <th scope="col" style="width: 100px">Acceso</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td
+                  style="
+                    border-style: inherit;
+                    border-right-color: #2b4677;
+                    border-right-width: 2px;
+                  "
+                >
+                  {{ item }}
+                </td>
+                <th scope="row">
+                  <div class="form-check d-flex justify-content-center">
+                    <input
+                      class="form-check-input"
+                      type="checkbox"
+                      style="width: 25px; height: 25px; border-color: #5e5e5e"
+                    />
+                  </div>
+                </th>
+              </tr>
+            </tbody>
+          </table>
     </div>
 </template>
 
@@ -65,10 +85,11 @@ body{
     background-image: linear-gradient(113.96deg, #000103 2.35%, #164193 100%);
     min-height: 100vh;
 }
-.italika{
-    font-family: "Fjalla One";
-    font-style: normal;
-    font-weight: 400;
-    letter-spacing: 0.04em;
+.italika {
+  font-family: "Fjalla One";
+  font-style: normal;
+  font-weight: 400;
+  letter-spacing: 0.04em;
+  color: #ffffff;
 }
 </style>
