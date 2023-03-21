@@ -2,23 +2,28 @@
     
 </script>
 <template>
-    <div class="container-fluid">
-        <div class="row">
-            <!-- Logo -->
+    <div class="container-fluid" >
+        <div class="row" style="background-color: black;" height="100px">
+            <div class="col-10">
+
+            </div>
+            <div class="col">
+                <p style="color: white; font-size: 60px" class="mb-0">SVSI</p>
+            </div>
         </div>
-        <div class="row" style="background-color: red;">
+        <div class="row align-items-center">
             <div class="col-1">
                 <!-- regresar -->
-                <p>flecha</p>
+                <p style="color: white;">flecha</p>
             </div>
             <div class="col-8">
                 <div class="row">
                     <!-- roles -->
-                    <p>holaaa</p>
+                    <p style="color: white; font-size: 40px">Roles</p>
                 </div>
                 <div class="row">
                     <!-- roles registadros-->
-                    <p>holaaa</p>
+                    <p style="color: white; font-size: 20px">Roles registrados</p>
                 </div>
             </div>
             <div class="col-3">
@@ -28,14 +33,28 @@
                 </div>
                 <div class="row">
                     <!-- agregar -->
-                    <p>agregar</p>
+                    <p style="color: white; font-size: 20px">Agregar nuevo</p>
                 </div>
             </div>
         </div>
-        <div class="row" style="background-color: blue;">
-            <!-- tabla -->
-            <p>haoahahal</p>
-        </div>
+        <!-- tabla -->
+        <table style="color: white;" class="table">
+            <tr>
+                <th>Company</th>
+                <th>Contact</th>
+                <th>Country</th>
+            </tr>
+            <tr>
+                <td>Alfreds Futterkiste</td>
+                <td>Maria Anders</td>
+                <td>Germany</td>
+            </tr>
+            <tr>
+                <td>Centro comercial Moctezuma</td>
+                <td>Francisco Chang</td>
+                <td>Mexico</td>
+            </tr>
+        </table>
     </div>
 </template>
 
