@@ -1,5 +1,16 @@
 <script setup>
-    
+
+function consultar(){
+axios.get('http://localhost:4000/api/clientes')
+  .then(response => {
+    // Aquí puedes hacer algo con la respuesta
+    console.log(response.data);
+  })
+  .catch(error => {
+    // Aquí manejas el error en caso de que la solicitud falle
+    console.log(error);
+  });}
+
 </script>
 <template>
     <div class="container-fluid" >
@@ -11,34 +22,40 @@
                 <p style="font-size: 60px" class="italika d-flex justify-content-start mb-0">SVSI</p>
             </div>
         </div>
-        <div class="row align-items-center">
+        <div class="row">
             <div class="col-1">
                 <img
-                    class="img-fluid"
+                    class="img-fluid mt-3"
                     style="margin-top: 20px; width: 31.23px; height: 35.5px"
                     src="../assets/triangulito.png"
                 />
             </div>
             <div class="col-8">
-                <div class="row">
-                    <p class="italika d-flex justify-content-start" style="font-size: 50px">
+                <div class="row align-items-end">
+                    <p class="italika" style="font-size: 50px">
                         Roles
                     </p>
                 </div>
-                <div class="row">
+                <div class="row align-items-end">
                     <h5 class="italika d-flex justify-content-start">
                         Registrar Roles
                     </h5>
                 </div>
             </div>
-            <div class="col-3">
-                <div class="row">
-                    <input type="text" class="form-control" style="" />
+            <div class="col-3 align-items-end">
+                <div class="row align-items-end">
+                    <input type="text" class="form-control rounded-pill mt-4" style="width: 250px; height: 50px; border-color: #5e5e5e">
                 </div>
                 <div class="row">
-                    <h5 class="italika d-flex justify-content-start">
+                  <div class="col-6">
+                    <h5 class="italika mt-3">
                         Agregar Roles
                     </h5>
+                  </div>
+                  <div class="col-1">
+                    <button class="btn btn-primary mt-2 d-flex align-items-center" type="submit"
+                    style="background-color: #66D054; width: 40px; height: 40px; border-color: #5e5e5e"><h4>+</h4></button>
+                  </div>
                 </div>
             </div>
         </div>
@@ -48,8 +65,8 @@
           >
             <thead>
               <tr style="background-color: #2b4677; color: white">
-                <th scope="col">Nombre de permiso</th>
-                <th scope="col" style="width: 100px">Acceso</th>
+                <th scope="col">Nombre</th>
+                <th scope="col" style="width: 100px"></th>
               </tr>
             </thead>
             <tbody>
@@ -64,12 +81,13 @@
                   {{ item }}
                 </td>
                 <th scope="row">
-                  <div class="form-check d-flex justify-content-center">
-                    <input
-                      class="form-check-input"
-                      type="checkbox"
-                      style="width: 25px; height: 25px; border-color: #5e5e5e"
-                    />
+                  <div class="align-items-center">
+                    <button class="btn btn-primary" type="submit"
+                    style="background-color: #59C01A; border-color: #59C01A; height: 25px;"></button>
+                    <button class="btn btn-primary ml-5" type="submit"
+                    style="background-color: #FFBE16; border-color: #FFBE16; height: 25px;"></button>
+                    <button class="btn btn-primary" type="submit"
+                    style="background-color: #C01A1A; border-color: #C01A1A; height: 25px;"></button>
                   </div>
                 </th>
               </tr>
