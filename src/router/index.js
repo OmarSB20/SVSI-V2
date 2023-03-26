@@ -1,6 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
-
+import ModificarRol from '../views/ModificarRol.vue'
 import CrearRol from '../views/CrearRol.vue'
 
 const router = createRouter({
@@ -24,8 +24,12 @@ const router = createRouter({
       path: '/crearRol',
       name: 'crearRol',
       component: CrearRol
+    },
+    {
+      path: '/modificarRol',
+      name: 'modificarRol',
+      component: ModificarRol
     }
-  
   ]
 })
 
