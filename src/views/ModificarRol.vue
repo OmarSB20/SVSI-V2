@@ -1,5 +1,23 @@
 <script setup>
+import { VueElement } from 'vue';
 
+
+new Vue({
+  
+})
+const consultarRoles = async () => {
+  rolesArray.value=[];
+  try{
+    roles.value = await obtenerRoles();
+    const body = roles.value.body;
+    for(var j in body){
+      rolesArray.value.push(body[j]);
+      console.log(body[j].idRoles + ": " + body[j].Nombre);
+    }
+  }catch(error){
+    console.log(error)
+  }
+}
 function consultar(){
 axios.get('http://localhost:4000/api/clientes')
   .then(response => {
@@ -10,6 +28,7 @@ axios.get('http://localhost:4000/api/clientes')
     // Aquí manejas el error en caso de que la solicitud falle
     console.log(error);
   });}
+
 
 </script>
 <template>
