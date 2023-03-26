@@ -1,34 +1,19 @@
 <script setup>
-import { VueElement } from 'vue';
+import { onMounted, VueElement } from 'vue';
 
-
-new Vue({
-  
-})
-const consultarRoles = async () => {
-  rolesArray.value=[];
-  try{
-    roles.value = await obtenerRoles();
-    const body = roles.value.body;
-    for(var j in body){
-      rolesArray.value.push(body[j]);
-      console.log(body[j].idRoles + ": " + body[j].Nombre);
-    }
-  }catch(error){
-    console.log(error)
+data(() => {
+  return{
+    roles: []
   }
-}
-function consultar(){
-axios.get('http://localhost:4000/api/clientes')
-  .then(response => {
-    // Aquí puedes hacer algo con la respuesta
-    console.log(response.data);
-  })
-  .catch(error => {
-    // Aquí manejas el error en caso de que la solicitud falle
-    console.log(error);
-  });}
+})
 
+onMounted(() => {
+  fetch('../jason/roles.json')
+    .then(response => response.json())
+    .then( data => {
+      this.roles = data.body
+    })
+})
 
 </script>
 <template>
@@ -89,15 +74,9 @@ axios.get('http://localhost:4000/api/clientes')
               </tr>
             </thead>
             <tbody>
-              <tr>
-                <td
-                  style="
-                    border-style: inherit;
-                    border-right-color: #2b4677;
-                    border-right-width: 2px;
-                  "
-                >
-                  {{ item }}
+              <tr v-for="rol in roles">
+                <td>
+                {{ rol.Nombre }}
                 </td>
                 <th scope="row">
                   <div class="align-items-center">
