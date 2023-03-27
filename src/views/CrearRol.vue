@@ -1,37 +1,70 @@
 <script setup>
 import {ref} from "vue";
-import axios from 'axios';
+import { permisosStore } from "../stores/permisos";
+import { rolesStore } from "../stores/roles"; 
+import { onMounted } from "vue";
+
+const {obtenerPermisos} = permisosStore();
+const {agregarRol} = rolesStore();
 const prueba = ["Cotizaciones", "Prospectos", "Clientes", "Usuarios","Cotizaciones", "Prospectos", "Clientes", "Usuarios",];
-const permisos = ref([1,2,3,4]);
-const permiso = ref(3);
+const permisos = ref([]);
+const permisosArray = ref([]);
+const permisosAgregados = ref([]);
+const check = ref([]);
+const rolNuevo = ref("");
 
-function agregarPermiso(permiso){
-  permisos.value.push(permiso.value);
+onMounted(() => {
+  consultarPermisos();
+})
+
+const consultarPermisos = async () => {
+  permisosArray.value=[];
+  try {
+    permisos.value = await obtenerPermisos();
+    const body = permisos.value.data.body;
+    for(var j in body){
+      permisosArray.value.push(body[j]);
+      check.value.push(false);
+      console.log(body[j].Descripcion + ":"+body[j].idPermisos);
+    }
+    
+  } catch (error) {
+    console.log(error)
+  } 
 }
 
-function eliminarPermiso(permiso){
-  permisos.value = permisos.value.filter((item) => item !==permiso)
-}
-
-function consultar(){
-axios.get('http://localhost:4000/api/clientes')
-  .then(response => {
-    // Aquí puedes hacer algo con la respuesta
-    console.log(response.data);
-  })
-  .catch(error => {
-    // Aquí manejas el error en caso de que la solicitud falle
+const crearRol = async (nombreRol) => {
+  try {
+    const agregado = await agregarRol(nombreRol);
+    return agregado;
+  } catch (error) {
     console.log(error);
-  });}
+  } 
+}
+
+function moverPermiso(id){
+  console.log(check.value)
+  console.log(id)
+  console.log(check.value[id])
+  console.log(permisosArray.value[id].Descripcion)
+  if(!check.value[id]){
+    permisosAgregados.value = permisosAgregados.value.filter((item) => item !==permisosArray.value[id].Descripcion);
+    console.log("permido agregado")
+  }else{
+    console.log(permisosAgregados.value)
+    permisosAgregados.value.push(permisosArray.value[id].Descripcion);
+    console.log("permiso eliminado")
+  }
+   
+}
 
 </script>
+
 <template>
-  <form @submit.prevent="eliminarPermiso(permiso)">
+  <form @submit.prevent="crearRol(rolNuevo)">
     <div class="container-fluid">
       <div class="row mb-3 pt-5">
         <div class="col-1 d-flex justify-content-end">
-          {{ permisos }}
-          {{ permiso }}
           <img
             class="img-fluid"
             style="margin-top: 20px; width: 31.23px; height: 35.5px"
@@ -49,7 +82,7 @@ axios.get('http://localhost:4000/api/clientes')
           <h5 class="italika d-flex justify-content-end">Nombre del Rol:</h5>
         </div>
         <div class="col-6">
-          <input type="text" class="form-control" style="" />
+          <input type="text" class="form-control" style="" v-model="rolNuevo"/>
         </div>
         <div class="col">
           <button class="btn btn-primary" type="submit">Guardar</button>
@@ -78,23 +111,23 @@ axios.get('http://localhost:4000/api/clientes')
               </tr>
             </thead>
             <tbody>
-              <tr v-for="item in prueba">
+              <tr v-for="item in permisosArray" :key="item.idPermisos">
                 <td
-                  style="
-                    border-style: inherit;
-                    border-right-color: #2b4677;
-                    border-right-width: 2px;
-                  "
+                  style="border-style: inherit;
+                    border-right-color: #2b4677; 
+                    border-right-width: 2px;"
                 >
-                  {{ item }}
+                  {{ item.Descripcion }}{{ item.idPermisos }}
                 </td>
                 <th scope="row">
                   <div class="form-check d-flex justify-content-center">
                     <input
                       class="form-check-input"
                       type="checkbox"
+                      v-model="check[item.idPermisos -1]"
                       style="width: 25px; height: 25px; border-color: #5e5e5e"
-                    />
+                      @click="moverPermiso(item.idPermisos -1)"
+                      />
                   </div>
                 </th>
               </tr>

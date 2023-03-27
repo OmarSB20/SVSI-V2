@@ -1,19 +1,69 @@
 <script setup>
-import { onMounted, VueElement } from 'vue';
+import {ref} from "vue";
+import { permisosRolesStore } from "../stores/permisosRoles";
+import { rolesStore } from "../stores/roles"; 
+import { onMounted} from 'vue';
 
-data(() => {
-  return{
-    roles: []
-  }
-})
+const {obtenerPermisosDelRol} = permisosRolesStore();
+const {obtenerRoles} = rolesStore();
+const {eliminarRol} = rolesStore();
+const {obtenerRolesN} = rolesStore();
+
+const roles = ref([]);
+const rolesArray = ref([]);
 
 onMounted(() => {
-  fetch('../jason/roles.json')
-    .then(response => response.json())
-    .then( data => {
-      this.roles = data.body
-    })
+  consultarRoles();
 })
+
+const consultarRoles = async () => {
+  rolesArray.value=[];
+  try{
+    roles.value = await obtenerRoles();
+    const body = roles.value.data.body;
+    for(var j in body){
+      rolesArray.value.push(body[j]);
+      console.log(body[j].Nombre);
+    }
+  }catch(error){
+    console.log(error)
+  }
+}
+
+const consultarRolesN = async (Nombre) => {
+  rolesArray.value=[];
+  try{
+    roles.value = await obtenerRolesN();
+    const body = roles.value.data.body;
+    for(var j in body){
+      rolesArray.value.push(body[j]);
+      console.log(body[j].Nombre);
+    }
+  }catch(error){
+    console.log(error)
+  }
+}
+
+consultarPermisosDeRol = async (idRol) => {
+  permisosDeRolArray = [];
+  try{
+    permisosDeRol.value = await obtenerPermisosDelRol(idRol);
+    const body = permisosDeRol.value.data.body;
+    for(j in body) {
+      permisosDeRolArray.push(body[j]);
+    }
+  }catch(error){
+    console.log(error)
+  }
+}
+
+eliminarRoles = async (IdRol) => {
+  try{
+    await eliminarRol(IdRol);
+  }catch(error){
+    console.log(error)
+  }
+}
 
 </script>
 <template>
@@ -48,7 +98,8 @@ onMounted(() => {
             </div>
             <div class="col-3 align-items-end">
                 <div class="row align-items-end">
-                    <input type="text" class="form-control rounded-pill mt-4" style="width: 250px; height: 50px; border-color: #5e5e5e">
+                    <input type="text" class="form-control rounded-pill mt-4" style="width: 250px; height: 50px; border-color: #5e5e5e"
+                    placeholder="buscar" v-model="Nombre" @click="consultarRolesN(Nombre)">
                 </div>
                 <div class="row">
                   <div class="col-6">
@@ -74,18 +125,20 @@ onMounted(() => {
               </tr>
             </thead>
             <tbody>
-              <tr v-for="rol in roles">
+              <tr v-for="rol in rolesArray">
                 <td>
-                {{ rol.Nombre }}
+                {{ rol.Nombre }}{{ item.idRoles }}
                 </td>
                 <th scope="row">
                   <div class="align-items-center">
                     <button class="btn btn-primary" type="submit"
-                    style="background-color: #59C01A; border-color: #59C01A; height: 25px;"></button>
+                    style="background-color: #59C01A; border-color: #59C01A; height: 25px;"
+                    @click="consultarPermisosDeRol(item.idRoles)"></button>
                     <button class="btn btn-primary ml-5" type="submit"
                     style="background-color: #FFBE16; border-color: #FFBE16; height: 25px;"></button>
                     <button class="btn btn-primary" type="submit"
-                    style="background-color: #C01A1A; border-color: #C01A1A; height: 25px;"></button>
+                    style="background-color: #C01A1A; border-color: #C01A1A; height: 25px;"
+                    @click="eliminarRoles(item.idRoles)"></button>
                   </div>
                 </th>
               </tr>
