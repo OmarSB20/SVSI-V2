@@ -2,29 +2,32 @@
 import {ref} from "vue";
 import { permisosStore } from "../stores/permisos";
 import { rolesStore } from "../stores/roles"; 
+import { permisosRolesStore } from "../stores/permisosRoles"
 import { onMounted } from "vue";
 
 const {obtenerPermisos} = permisosStore();
 const {agregarRol} = rolesStore();
+const { agregarPermisosDelRol } = permisosRolesStore();
 const prueba = ["Cotizaciones", "Prospectos", "Clientes", "Usuarios","Cotizaciones", "Prospectos", "Clientes", "Usuarios",];
 const permisos = ref([]);
 const permisosArray = ref([]);
 const permisosAgregados = ref([]);
-const check = ref([]);
+const checksDir = ref({});
 const rolNuevo = ref("");
+
 
 onMounted(() => {
   consultarPermisos();
 })
 
 const consultarPermisos = async () => {
-  permisosArray.value=[];
   try {
     permisos.value = await obtenerPermisos();
     const body = permisos.value.data.body;
     for(var j in body){
       permisosArray.value.push(body[j]);
-      check.value.push(false);
+  
+      checksDir.value[body[j].idPermisos]= false;
       console.log(body[j].Descripcion + ":"+body[j].idPermisos);
     }
     
@@ -42,21 +45,40 @@ const crearRol = async (nombreRol) => {
   } 
 }
 
+const asignarRoles = async (idRol, idPermiso) => {
+
+  try {
+    const status = await agregarPermisosDelRol();
+    status ?  true :  false;
+  } catch (error) {
+    console.log(error)
+  }
+
+}
+
 function moverPermiso(id){
-  console.log(check.value)
-  console.log(id)
-  console.log(check.value[id])
-  console.log(permisosArray.value[id].Descripcion)
-  if(!check.value[id]){
-    permisosAgregados.value = permisosAgregados.value.filter((item) => item !==permisosArray.value[id].Descripcion);
+
+  console.log("id:"+id)
+  console.log("key"+checksDir.value[id].key+"|" +checksDir.value[id])
+  console.log("permisosArray "+permisosArray.value)
+  console.log("permisosArrayid "+permisosArray.value[id])
+  console.log(checksDir.value)
+  if(checksDir.value[id]){
+    console.log(permisosAgregados.value)
+    permisosAgregados.value = permisosAgregados.value.filter((item) => item !==permisosArray.value[id].idPermisos);
     console.log("permido agregado")
+    console.log(permisosAgregados.value)
+    
   }else{
     console.log(permisosAgregados.value)
-    permisosAgregados.value.push(permisosArray.value[id].Descripcion);
+    permisosAgregados.value.push(checksDir[id]);
     console.log("permiso eliminado")
+    console.log(permisosAgregados.value)
   }
    
 }
+
+
 
 </script>
 
@@ -124,9 +146,9 @@ function moverPermiso(id){
                     <input
                       class="form-check-input"
                       type="checkbox"
-                      v-model="check[item.idPermisos -1]"
+                      v-model="checksDir[item.idPermisos]"
                       style="width: 25px; height: 25px; border-color: #5e5e5e"
-                      @click="moverPermiso(item.idPermisos -1)"
+                      @click="moverPermiso(item.idPermisos)"
                       />
                   </div>
                 </th>

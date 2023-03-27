@@ -32,6 +32,21 @@ export const rolesStore = defineStore("roles",{
             
         }
     },
+    async actualizarRol(idRoles, nombreRol){
+        try {
+            const res = await axios.post('http://localhost:4000/api/roles',{"idRoles":idRoles,
+            "Nombre":nombreRol
+           })
+
+           console.log(res)
+            return ;
+            
+        } catch (error) {
+            console.log(error)
+            return ;
+            
+        }
+    }
 
   } 
 })
