@@ -33,7 +33,7 @@ const consultarRoles = async () => {
 const consultarRolesN = async (Nombre) => {
   rolesArray.value=[];
   try{
-    roles.value = await obtenerRolesN();
+    roles.value = await obtenerRolesN(Nombre);
     const body = roles.value.data.body;
     for(var j in body){
       rolesArray.value.push(body[j]);
