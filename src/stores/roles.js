@@ -57,7 +57,7 @@ export const rolesStore = defineStore("roles",{
             return ;
             
         }
-    }
+    },
 
     async eliminarRol(idRol){
         try {

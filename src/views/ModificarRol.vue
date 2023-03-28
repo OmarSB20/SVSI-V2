@@ -44,7 +44,7 @@ const consultarRolesN = async (Nombre) => {
   }
 }
 
-consultarPermisosDeRol = async (idRol) => {
+const consultarPermisosDeRol = async (idRol) => {
   permisosDeRolArray = [];
   try{
     permisosDeRol.value = await obtenerPermisosDelRol(idRol);
@@ -57,7 +57,7 @@ consultarPermisosDeRol = async (idRol) => {
   }
 }
 
-eliminarRoles = async (IdRol) => {
+const eliminarRoles = async (IdRol) => {
   try{
     await eliminarRol(IdRol);
   }catch(error){
@@ -127,7 +127,7 @@ eliminarRoles = async (IdRol) => {
             <tbody>
               <tr v-for="rol in rolesArray">
                 <td>
-                {{ rol.Nombre }}{{ item.idRoles }}
+                {{ rol.Nombre }}
                 </td>
                 <th scope="row">
                   <div class="align-items-center">
