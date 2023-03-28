@@ -3,9 +3,19 @@ import axios from "axios";
 
 export const rolesStore = defineStore("roles",{
   state: ()=>({
-    roles: []
+    roles: [],
+    idRolActual:8
   }), 
   actions:{
+
+    setRol(idRol){
+        idRolActual = idRol;
+    },
+
+    getRol(){
+        return this.idRolActual;
+    },
+
     async obtenerRoles(){
         try {
             const res = await axios.get('http://localhost:4000/api/roles')

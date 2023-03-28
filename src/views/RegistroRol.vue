@@ -11,9 +11,12 @@ import { onMounted } from "vue"; //para poder usar el onMounted, que ejecuta tod
 //declaramos como constantes los metodos exactos que vamos a usar de las stores y lo igualamos a la store de donde vienen
 //           metodo    =     store de la que viene
 const { obtenerPermisos } = permisosStore();
-const { agregarRol } = rolesStore();
+const { actualizarRol } = rolesStore(); //se modifico de guardar a actualizar
 const { obtenerRoles } = rolesStore();
 const { agregarPermisosDelRol } = permisosRolesStore();
+const { eliminarPermisosDelRol } = permisosRolesStore();
+const { obtenerPermisosDelRol } = permisosRolesStore();
+const { getRol} = rolesStore();
 
 //variables reactivas
 const permisos = ref([]); //guardara el objeto obtenido de obtener permisos
@@ -24,28 +27,27 @@ const rolNuevo = ref(""); //se asociara al valor del textbox del rol, cambiar su
 const rolesArray = ref([]); //guardara cada uno de los roles (idRoles y Nombre)
 const repetido = ref(false); //es true sí el rol que se quiere crear ya existe
 const checksVacios = ref(false); //es true si no se ha seleccionado ningun checkbox
+const idRolActualizar = ref();
+const permisosDelRol = ref([]);
 //variable asociada al modal
 var modal;
 
 //al cargar la pagina se consultan los permisos y roles que hay en la BD y se define el objeto relacionado al modal
-onMounted(() => {
-  consultarPermisos();
-  consultarRoles();
-
+ onMounted(() => {
+   consultarPermisos();
+   consultarRoles();
+  
+  //rolNuevo.value = permisosArray.value[idRolActualizar.value - 1].Nombre;
   modal = new bootstrap.Modal(document.getElementById('modal'), {
   keyboard: false
 })
 });
 
+
+
 //función que vacía el textbox, el arreglo de permisos arreglados y deselecciona los checkbox
 //se activará cuando se de click en "seguir creando roles" en el modal
-function resetCampos(){
-  rolNuevo.value = "";
-  permisosAgregados.value = [];
-  for(var j in checksDir.value){
-    checksDir.value[j] = false;
-  }
-}
+
 
 
 //consulta los roles usando el metodo de la store, los almacena en rolesArray
@@ -53,6 +55,10 @@ const consultarRoles = async () => {
   try {
     rolesArray.value = await obtenerRoles(); //recibimos el objeto que retorna la peticion, este contiene toda la info
     rolesArray.value = rolesArray.value.data.body; //reescrbimos la variable ahora solo con el body del objeto, en el body están los datos de los roles 
+
+    idRolActualizar.value= getRol();
+
+  rolNuevo.value = rolesArray.value[idRolActualizar.value - 1].Nombre
   } catch (error) {
     console.log(error);
   }
@@ -62,12 +68,26 @@ const consultarRoles = async () => {
 //consulta los permisos - misma logica que consuktar roles
 const consultarPermisos = async () => {
   try {
+    idRolActualizar.value= getRol();
     permisos.value = await obtenerPermisos();
+    permisosDelRol.value = await obtenerPermisosDelRol(idRolActualizar.value);
+    permisosDelRol.value = permisosDelRol.value.data.body;
+    
+
     const body = permisos.value.data.body;
     for (var j in body) { //por cada elemento (permiso) en el body, vamos a meter el elemento al arreglo de permisos y guardar un false en el checksDir
       permisosArray.value.push(body[j]);
       checksDir.value[body[j].idPermisos] = false;
     }
+   
+   permisosDelRol.value.forEach(element => {
+      console.log(element.idPermisos);
+      permisosAgregados.value.push(element.idPermisos);
+    checksVacios.value=false;
+      checksDir.value[element.idPermisos] = true;
+   });
+         
+   
   } catch (error) {
     console.log(error);
   }
@@ -77,13 +97,21 @@ const consultarPermisos = async () => {
 //revisa si el rol a crear ya existe, el reusltado se guarda en "repetido"
 const revisarRolExistente = async () => {
   try {
+
     for (var j in rolesArray.value) {
-      if (
+      
+if (rolesArray.value[j].Nombre.toLowerCase() == rolesArray.value[idRolActualizar.value - 1].Nombre.trim().toLowerCase()) {
+  repetido.value = false;
+} else {
+  if (
         rolesArray.value[j].Nombre.toLowerCase() == rolNuevo.value.trim().toLowerCase()
       ) {
         repetido.value = true;
         return true;
       }
+}
+
+     
     }
     repetido.value = false;
     return false;
@@ -94,26 +122,20 @@ const revisarRolExistente = async () => {
 };
 
 //metodo que crea el nuevo rol
-const crearRol = async (nombreRol) => {
+const actualizar = async (nombreRol) => {
   try {
     if(permisosAgregados.value.length == 0){ //si no hay permisos seleccionados, lo indicamos cambiando el valor de checksVacios y salimos de la funcion sin crear nada
       checksVacios.value = true;
       return;
     }
-    var idRolCreado = 0; //aquí se va a guardar el idRoles del rol que se acaba de insertar
-    await agregarRol(nombreRol.trim()); //creamos el rol
-    await consultarRoles(); //consultamos los roles, ya que ahora hay uno nuevo con id desonocido por nosotros
+    
+    await eliminarPermisosDelRol(idRolActualizar.value);
 
-    for (var j in rolesArray.value) {//buscamos el rol en el arreglo que coincide con el que acabamos de crear
-      if (
-        rolesArray.value[j].Nombre.toLowerCase() == rolNuevo.value.trim().toLowerCase()
-      ) {
-        idRolCreado = rolesArray.value[j].idRoles; //guardamos su id
-        break; //salimos del for
-      }
-    }
+    await actualizarRol(idRolActualizar.value, rolNuevo.value.trim());
+   
+   
     for (var j in permisosAgregados.value) { //por cada permiso seleccionado vamos a insertarlo a la tabla permisosRoles, aquí usamos el idRolCreado que conseguimos
-      await agregarPermisosDelRol(idRolCreado, permisosAgregados.value[j]);
+      await agregarPermisosDelRol(idRolActualizar.value, permisosAgregados.value[j]);
     }
     modal.show(); //al ser todo exitoso, mostramos el modal notificando el exito
 
@@ -131,10 +153,18 @@ function moverPermiso(id) {
     checksVacios.value=false;
   }
 }
+
+function sendToView() {
+     // Comprobas todo lo que sea necesario
+     // y finalmente redireccionas
+     // ...
+      this.$router.push("http://localhost:5173/ModificarRol");
+    }
+
 </script>
 
 <template>
-  <form @submit.prevent="crearRol(rolNuevo)">
+  <form @submit.prevent="actualizar(rolNuevo)">
     <div class="container-fluid">
       <div class="row mb-3 pt-5">
         <div class="col-1 d-flex justify-content-end">
@@ -148,7 +178,7 @@ function moverPermiso(id) {
         </div>
         <div class="col ms-4">
           <p class="italika d-flex justify-content-start" style="font-size: 50px">
-            Crear Rol
+            Actualizar Rol
           </p>
         </div>
       </div>
@@ -160,7 +190,7 @@ function moverPermiso(id) {
           <input
             type="text"
             class="form-control"
-            @input="revisarRolExistente()"
+        @input="revisarRolExistente()"
             v-model="rolNuevo"
           />
           <div
@@ -181,8 +211,8 @@ function moverPermiso(id) {
           </div>
         </div>
         <div class="col">
-          <button class="btn btn-primary" type="submit" :disabled="repetido">
-            Guardar
+          <button class="btn btn-success" type="submit" :disabled="repetido">
+            Actualizar
           </button>
         </div>
       </div>
@@ -215,7 +245,7 @@ function moverPermiso(id) {
                   style="
                     border-style: inherit;
                     border-right-color: #2b4677;
-                    border-right-width: 2px;                 "
+                    border-right-width: 2px;               "
                 >
                   {{ item.Descripcion }}{{ item.idPermisos }}
                 </td>
@@ -247,11 +277,12 @@ function moverPermiso(id) {
         <h5 class="modal-title" id="exampleModalLabel">¡Rol creado!</h5>
       </div>
       <div class="modal-body">
-        El rol {{ rolNuevo }} fue creado exitosamente.
+        El rol {{ rolNuevo }} fue actualizado exitosamente.
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-primary"  @click="resetCampos()" data-bs-dismiss="modal">Seguir creando roles</button>
-        <button type="button" class="btn btn-success">Ver roles</button>
+        <a href="http://localhost:5173/ModificarRol">
+          <button type="button" class="btn btn-success" >Volver a Roles</button>
+        </a>
       </div>
     </div>
   </div>
