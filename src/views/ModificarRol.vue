@@ -21,6 +21,7 @@ const consultarRoles = async () => {
   try{
     roles.value = await obtenerRoles();
     const body = roles.value.data.body;
+    console.log(roles.value)
     for(var j in body){
       rolesArray.value.push(body[j]);
       console.log(body[j].Nombre);
@@ -65,6 +66,12 @@ const eliminarRoles = async (IdRol) => {
   }
 }
 
+const checkKey = (event) => {
+      if (event.key === "Enter") {
+        consultarRolesN(Nombre)
+      }
+    }
+
 </script>
 <template>
     <div class="container-fluid" >
@@ -99,7 +106,7 @@ const eliminarRoles = async (IdRol) => {
             <div class="col-3 align-items-end">
                 <div class="row align-items-end">
                     <input type="text" class="form-control rounded-pill mt-4" style="width: 250px; height: 50px; border-color: #5e5e5e"
-                    placeholder="buscar" v-model="Nombre" @click="consultarRolesN(Nombre)">
+                    placeholder="buscar" v-model="Nombre" @keydown="checkKey">
                 </div>
                 <div class="row">
                   <div class="col-6">
