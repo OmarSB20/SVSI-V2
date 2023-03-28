@@ -44,7 +44,7 @@ const consultarRolesN = async (Nombre) => {
   }
 }
 
-consultarPermisosDeRol = async (idRol) => {
+const consultarPermisosDeRol = async (idRol) => {
   permisosDeRolArray = [];
   try{
     permisosDeRol.value = await obtenerPermisosDelRol(idRol);
@@ -57,7 +57,7 @@ consultarPermisosDeRol = async (idRol) => {
   }
 }
 
-eliminarRoles = async (IdRol) => {
+const eliminarRoles = async (IdRol) => {
   try{
     await eliminarRol(IdRol);
   }catch(error){
@@ -127,18 +127,18 @@ eliminarRoles = async (IdRol) => {
             <tbody>
               <tr v-for="rol in rolesArray">
                 <td>
-                {{ rol.Nombre }}{{ item.idRoles }}
+                {{ rol.Nombre }}
                 </td>
                 <th scope="row">
                   <div class="align-items-center">
                     <button class="btn btn-primary" type="submit"
                     style="background-color: #59C01A; border-color: #59C01A; height: 25px;"
-                    @click="consultarPermisosDeRol(item.idRoles)"></button>
+                    @click="consultarPermisosDeRol(item.idRol)"></button>
                     <button class="btn btn-primary ml-5" type="submit"
                     style="background-color: #FFBE16; border-color: #FFBE16; height: 25px;"></button>
                     <button class="btn btn-primary" type="submit"
                     style="background-color: #C01A1A; border-color: #C01A1A; height: 25px;"
-                    @click="eliminarRoles(item.idRoles)"></button>
+                    @click="eliminarRoles(item.idRol)"></button>
                   </div>
                 </th>
               </tr>
