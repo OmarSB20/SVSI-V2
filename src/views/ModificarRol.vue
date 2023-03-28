@@ -127,7 +127,7 @@ const eliminarRoles = async (IdRol) => {
             <tbody>
               <tr v-for="rol in rolesArray">
                 <td>
-                {{ rol.Nombre }}{{ item.idRoles }}
+                {{ rol.Nombre }}
                 </td>
                 <th scope="row">
                   <div class="align-items-center">
