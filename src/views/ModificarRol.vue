@@ -106,7 +106,7 @@ const checkKey = (event) => {
             <div class="col-3 align-items-end">
                 <div class="row align-items-end">
                     <input type="text" class="form-control rounded-pill mt-4" style="width: 250px; height: 50px; border-color: #5e5e5e"
-                    placeholder="buscar" v-model="Nombre" @keydown="checkKey">
+                    placeholder="buscar" v-model="Nombre" >
                 </div>
                 <div class="row">
                   <div class="col-6">
