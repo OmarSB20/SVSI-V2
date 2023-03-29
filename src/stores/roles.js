@@ -27,9 +27,9 @@ export const rolesStore = defineStore("roles",{
         }
     },
 
-    async obtenerRolesN(Nombre){
+    async obtenerRolesN(id){
         try {
-            const res = await axios.get('http://localhost:4000/api/roles/'+Nombre)
+            const res = await axios.get('http://localhost:4000/api/roles/'+id)
             return res;
             
         } catch (error) {

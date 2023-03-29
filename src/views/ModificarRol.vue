@@ -8,7 +8,10 @@ const {obtenerPermisosDelRol} = permisosRolesStore();
 const {obtenerRoles} = rolesStore();
 const {eliminarRol} = rolesStore();
 const {obtenerRolesN} = rolesStore();
+const {setRol} = rolesStore();
 
+const rolDir = ref({});
+const buscador = ref ({});
 const roles = ref([]);
 const rolesArray = ref([]);
 
@@ -17,14 +20,17 @@ onMounted(() => {
 })
 
 const consultarRoles = async () => {
+  buscador.value=[];
   rolesArray.value=[];
+  rolDir.value=[];
   try{
     roles.value = await obtenerRoles();
     const body = roles.value.data.body;
     console.log(roles.value)
     for(var j in body){
       rolesArray.value.push(body[j]);
-      console.log(body[j].Nombre);
+      buscador.value.push(body[j].Nombre);
+      rolDir.value.push(body[j].idRoles)
     }
   }catch(error){
     console.log(error)
@@ -32,9 +38,10 @@ const consultarRoles = async () => {
 }
 
 const consultarRolesN = async (Nombre) => {
-  rolesArray.value=[];
+  i=buscador.indexOf(Nombre);
+  id=rolDir[i];
   try{
-    roles.value = await obtenerRolesN(Nombre);
+    roles.value = await obtenerRolesN(id);
     const body = roles.value.data.body;
     for(var j in body){
       rolesArray.value.push(body[j]);
@@ -52,25 +59,29 @@ const consultarPermisosDeRol = async (idRol) => {
     const body = permisosDeRol.value.data.body;
     for(j in body) {
       permisosDeRolArray.push(body[j]);
+      console.log(body[j].Nombre);
     }
   }catch(error){
     console.log(error)
   }
 }
 
-const eliminarRoles = async (IdRol) => {
+const eliminarRoles = async (idRol) => {
   try{
-    await eliminarRol(IdRol);
+    await eliminarRol(idRol);
   }catch(error){
     console.log(error)
   }
 }
 
-const checkKey = (event) => {
-      if (event.key === "Enter") {
-        consultarRolesN(Nombre)
-      }
-    }
+const modificarRol = async (idRol) => {
+  try{
+    await setRol(idRol);
+    this.$router.push("http://localhost:5173/crearRol");
+  }catch(error){
+
+  }
+}
 
 </script>
 <template>
@@ -85,11 +96,13 @@ const checkKey = (event) => {
         </div>
         <div class="row">
             <div class="col-1">
+              <a href = "http://localhost:5173">
                 <img
                     class="img-fluid mt-3"
                     style="margin-top: 20px; width: 31.23px; height: 35.5px"
                     src="../assets/triangulito.png"
                 />
+              </a>
             </div>
             <div class="col-8">
                 <div class="row align-items-end">
@@ -106,7 +119,7 @@ const checkKey = (event) => {
             <div class="col-3 align-items-end">
                 <div class="row align-items-end">
                     <input type="text" class="form-control rounded-pill mt-4" style="width: 250px; height: 50px; border-color: #5e5e5e"
-                    placeholder="buscar" v-model="Nombre" @keydown="checkKey">
+                    placeholder="Buscar" v-model="nombre" v-on:keyup.enter="consultarRolesN(nombre)">
                 </div>
                 <div class="row">
                   <div class="col-6">
@@ -115,8 +128,10 @@ const checkKey = (event) => {
                     </h5>
                   </div>
                   <div class="col-1">
-                    <button class="btn btn-primary mt-2 d-flex align-items-center" type="submit"
-                    style="background-color: #66D054; width: 40px; height: 40px; border-color: #5e5e5e"><h4>+</h4></button>
+                    <router-link to="../crearRol">
+                      <button class="btn btn-primary mt-2 d-flex align-items-center" type="submit"
+                      style="background-color: #66D054; width: 40px; height: 40px; border-color: #5e5e5e"><h4>+</h4></button>
+                    </router-link>
                   </div>
                 </div>
             </div>
@@ -133,19 +148,20 @@ const checkKey = (event) => {
             </thead>
             <tbody>
               <tr v-for="rol in rolesArray">
-                <td>
-                {{ rol.Nombre }}
+                <td >
+                {{ rol.Nombre }} 
                 </td>
-                <th scope="row">
+                <th scope="row" >
                   <div class="align-items-center">
-                    <button class="btn btn-primary" type="submit"
+                    <input class="btn btn-primary" type="submit"
                     style="background-color: #59C01A; border-color: #59C01A; height: 25px;"
-                    @click="consultarPermisosDeRol(item.idRol)"></button>
-                    <button class="btn btn-primary ml-5" type="submit"
-                    style="background-color: #FFBE16; border-color: #FFBE16; height: 25px;"></button>
-                    <button class="btn btn-primary" type="submit"
+                    v-model="rolDir[item.idRoles]" @click="consultarPermisosDeRol(item.idRoles)"/>
+                    <input class="btn btn-primary ml-5" type="submit"
+                    style="background-color: #FFBE16; border-color: #FFBE16; height: 25px;"
+                    v-model="rolDir[item.idRoles]" @click="modificarRol(item.idRoles)"/>
+                    <input class="btn btn-primary" type="submit"
                     style="background-color: #C01A1A; border-color: #C01A1A; height: 25px;"
-                    @click="eliminarRoles(item.idRol)"></button>
+                    v-model="rolDir[item.idRoles]" @click="eliminarRoles(item.idRoles)"/>
                   </div>
                 </th>
               </tr>
