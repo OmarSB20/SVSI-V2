@@ -4,7 +4,7 @@ import axios from "axios";
 export const rolesStore = defineStore("roles",{
   state: ()=>({
     roles: [],
-    idRolActual:8
+    idRolActual:44
   }), 
   actions:{
 
@@ -15,6 +15,7 @@ export const rolesStore = defineStore("roles",{
     },
 
     getRol(){
+        console.log(this.idRolActual)
         return this.idRolActual;
     },
 
@@ -73,7 +74,9 @@ export const rolesStore = defineStore("roles",{
 
     async eliminarRol(idRol){
         try {
-            const res = await axios.put('http://localhost:4000/api/roles/'+idRol);
+            const res = await axios.put('http://localhost:4000/api/roles/',{
+                "idRoles":idRol
+        });
 
            console.log(res)
             return ;
