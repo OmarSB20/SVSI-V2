@@ -9,7 +9,9 @@ export const rolesStore = defineStore("roles",{
   actions:{
 
     setRol(idRol){
-        idRolActual = idRol;
+       
+        this.idRolActual = idRol;
+        console.log(this.idRolActual)
     },
 
     getRol(){

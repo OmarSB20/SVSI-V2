@@ -14,9 +14,15 @@ const rolDir = ref({});
 const buscador = ref ({});
 const roles = ref([]);
 const rolesArray = ref([]);
+const rolesDesplegados = ref([]);
+const permisosDeRolArray = ref([]);
+var modal;
 
 onMounted(() => {
   consultarRoles();
+  modal = new bootstrap.Modal(document.getElementById('modal'), {
+  keyboard: false
+})
 })
 
 const consultarRoles = async () => {
@@ -32,35 +38,24 @@ const consultarRoles = async () => {
       buscador.value.push(body[j].Nombre);
       rolDir.value.push(body[j].idRoles)
     }
+    rolesDesplegados.value = rolesArray.value;
   }catch(error){
     console.log(error)
   }
 }
 
-const consultarRolesN = async (Nombre) => {
-  i=buscador.indexOf(Nombre);
-  id=rolDir[i];
-  try{
-    roles.value = await obtenerRolesN(id);
-    const body = roles.value.data.body;
-    for(var j in body){
-      rolesArray.value.push(body[j]);
-      console.log(body[j].Nombre);
-    }
-  }catch(error){
-    console.log(error)
-  }
-}
 
 const consultarPermisosDeRol = async (idRol) => {
-  permisosDeRolArray = [];
+  
+   permisosDeRolArray.value = [];
   try{
-    permisosDeRol.value = await obtenerPermisosDelRol(idRol);
-    const body = permisosDeRol.value.data.body;
-    for(j in body) {
-      permisosDeRolArray.push(body[j]);
-      console.log(body[j].Nombre);
+     const permisosDeRol = await obtenerPermisosDelRol(idRol);
+    const body = permisosDeRol.data.body;
+    for(var j in body) {
+      permisosDeRolArray.value.push(body[j]);
+      
     }
+    modal.show()
   }catch(error){
     console.log(error)
   }
@@ -79,7 +74,20 @@ const modificarRol = async (idRol) => {
     await setRol(idRol);
     this.$router.push("http://localhost:5173/crearRol");
   }catch(error){
+console.log(error)
+  }
+}
 
+function  actualizarTabla (nombre){
+  if(nombre.trim() ==""){
+    rolesDesplegados.value = rolesArray.value;
+  }else{
+    rolesDesplegados.value=[];
+    rolesArray.value.forEach(element => {
+      if (element.Nombre.includes(nombre)) {
+        rolesDesplegados.value.push(element)
+      }
+    });
   }
 }
 
@@ -119,7 +127,7 @@ const modificarRol = async (idRol) => {
             <div class="col-3 align-items-end">
                 <div class="row align-items-end">
                     <input type="text" class="form-control rounded-pill mt-4" style="width: 250px; height: 50px; border-color: #5e5e5e"
-                    placeholder="Buscar" v-model="nombre" v-on:keyup.enter="consultarRolesN(nombre)">
+                    placeholder="Buscar" v-model="nombre" @input="actualizarTabla(nombre)">
                 </div>
                 <div class="row">
                   <div class="col-6">
@@ -147,7 +155,7 @@ const modificarRol = async (idRol) => {
               </tr>
             </thead>
             <tbody>
-              <tr v-for="rol in rolesArray">
+              <tr v-for="rol in rolesDesplegados">
                 <td >
                 {{ rol.Nombre }} 
                 </td>
@@ -155,19 +163,39 @@ const modificarRol = async (idRol) => {
                   <div class="align-items-center">
                     <input class="btn btn-primary" type="submit"
                     style="background-color: #59C01A; border-color: #59C01A; height: 25px;"
-                    v-model="rolDir[item.idRoles]" @click="consultarPermisosDeRol(item.idRoles)"/>
+                     @click="consultarPermisosDeRol(rol.idRoles)"/>
                     <input class="btn btn-primary ml-5" type="submit"
                     style="background-color: #FFBE16; border-color: #FFBE16; height: 25px;"
-                    v-model="rolDir[item.idRoles]" @click="modificarRol(item.idRoles)"/>
+                     @click="modificarRol(rol.idRoles)"/>
                     <input class="btn btn-primary" type="submit"
                     style="background-color: #C01A1A; border-color: #C01A1A; height: 25px;"
-                    v-model="rolDir[item.idRoles]" @click="eliminarRoles(item.idRoles)"/>
+                     @click="eliminarRoles(rol.idRoles)"/>
                   </div>
                 </th>
               </tr>
             </tbody>
           </table>
     </div>
+
+    <!-- Modal -->
+<div class="modal fade" id="modal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Permisos del Rol</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div v-for="item in permisosDeRolArray">
+          <span>{{ item.Descripcion }}</span>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Cerrar</button>
+      </div>
+    </div>
+  </div>
+</div>
 </template>
 
 <style>
