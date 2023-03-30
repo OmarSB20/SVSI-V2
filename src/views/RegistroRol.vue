@@ -1,86 +1,40 @@
 <script setup>
 import {ref} from "vue";
 import axios from 'axios';
-const prueba = ["Cotizaciones", "Prospectos", "Clientes", "Usuarios", "Servicios",];
-//const permisos = ref([1,2,3,4]);
-const permiso = ref(3);
-const roles= {
-	"error": false,
-	"status": 200,
-	"body": [
-		{
-			"idRoles": 1,
-			"Nombre": "Gerente"
-		},
-		{
-			"idRoles": 3,
-			"Nombre": "Rol2jdjs"
-		},
-		{
-			"idRoles": 4,
-			"Nombre": "Rold2jdjs"
-		},
-		{
-			"idRoles": 5,
-			"Nombre": "Rold2jdjfds"
-		},
-		{
-			"idRoles": 6,
-			"Nombre": "AAroncin"
-		},
-		{
-			"idRoles": 7,
-			"Nombre": "Rol45"
-		}
-	]
-}
+import { permisosRolesStore } from "../stores/permisosRoles";
+import { rolesStore } from "../stores/roles"; 
+import { onMounted} from 'vue';
 
-const permisos= {
-	"error": false,
-	"status": 200,
-	"body": [
-		{
-			"idPermisos": 1,
-			"Descripcion": "Cotizaciones"
-		},
-		{
-			"idPermisos": 2,
-			"Descripcion": "Prospectos"
-		},
-		{
-			"idPermisos": 3,
-			"Descripcion": "Servicios"
-		},
-		{
-			"idPermisos": 4,
-			"Descripcion": "Reportes"
-		},
-		{
-			"idPermisos": 5,
-			"Descripcion": "PermisoNuevo"
-		}
-	]
-}
+const prueba = ["Cotizaciones", "Prospectos", "Clientes", "Usuarios", "Servicios"];
+const {obtenerPermisos} = permisosStore();
 
+const {actualizarRol} = rolesStore();
 
-// function agregarPermiso(permiso){
-//   permisos.value.push(permiso.value);
+//eliminar y agregarlos todos
+//metodo=tienda, donde se usa se manda llamar al metodo tal cual
+//onmounted poner todo lo que quiere que se cargue al iniciar la pagina
+
+// //const permisos = ref([1,2,3,4]);
+// const permiso = ref(3);
+
+// // function agregarPermiso(permiso){
+// //   permisos.value.puh(permiso.value);
+// // }
+
+// function eliminarPermiso(permiso){
+//   permisos.value = permisos.value.filter((item) => item !==permiso)
 // }
 
-function eliminarPermiso(permiso){
-  permisos.value = permisos.value.filter((item) => item !==permiso)
-}
-
-function actualizar(){
-axios.get('http://localhost:5173/api/clientes')
-  .then(response => {
-    // Aquí puedes hacer algo con la respuesta
-    console.log(response.data);
-  })
-  .catch(error => {
-    // Aquí manejas el error en caso de que la solicitud falle
-    console.log(error);
-  });}
+// function actualizar(){
+// axios.get('http://localhost:5173/api/clientes')
+//   .then(response => {
+//     // Aquí puedes hacer algo con la respuesta
+//     console.log(response.data);
+//   })
+//   .catch(error => {
+//     // Aquí manejas el error en caso de que la solicitud falle
+//     console.log(error);
+//   });}
 
 </script>
 <template>

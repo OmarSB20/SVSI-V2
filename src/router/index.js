@@ -1,6 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
-
+import ModificarRol from '../views/ModificarRol.vue'
 import CrearRol from '../views/CrearRol.vue'
 import RegistroRol from '../views/RegistroRol.vue'
   
@@ -33,8 +33,12 @@ const router = createRouter({
       name: 'registroRol',
       component: RegistroRol
 
+    },
+    {
+      path: '/modificarRol',
+      name: 'modificarRol',
+      component: ModificarRol
     }
-
   ]
 })
 
