@@ -10,7 +10,6 @@ const { obtenerPermisosDelRol } = permisosRolesStore();
 const { eliminarPermisosDelRol } = permisosRolesStore();
 const { obtenerRoles } = rolesStore();
 const { eliminarRol } = rolesStore();
-const { obtenerRolesN } = rolesStore();
 const { setRol } = rolesStore();
 
 const rolDir = ref({});
