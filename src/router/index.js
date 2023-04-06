@@ -1,10 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import HomeView from '../views/HomeView.vue'
-import ModificarRol from '../views/ModificarRol.vue'
-import CrearRol from '../views/CrearRol.vue'
-import RegistroRol from '../views/RegistroRol.vue' 
+
 import CrearUsuario from '../views/CrearUsuario.vue'
-import ActualizarUsuario from '../views/ActualizarUsuario.vue' 
+
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -22,34 +19,13 @@ const router = createRouter({
       // which is lazy-loaded when the route is visited.
       component: () => import('../views/AboutView.vue')
     },
-
-    {
-      path: '/crearRol',
-      name: 'crearRol',
-      component: CrearRol
-    },
-    {
-      path: '/registroRol',
-      name: 'registroRol',
-      component: RegistroRol
-
-    },
-    {
-      path: '/modificarRol',
-      name: 'modificarRol',
-      component: ModificarRol
-    },
     {
       path: '/crearUsuario',
       name: 'crearUsuario',
       component: CrearUsuario
 
     },    
-    {
-      path: '/actualizarUsuario',
-      name: 'actualizarUsuario',
-      component: ActualizarUsuario
-    },
+   
  ]
 })
 
