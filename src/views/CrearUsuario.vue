@@ -4,7 +4,7 @@ import { onMounted } from "vue"; //para poder usar el onMounted, que ejecuta tod
 import { usuariosStore } from "../stores/usuarios";
 import { rolesStore } from "../stores/roles";
 
-import CompHeader from '../components/Header.vue'
+import CompHeader from "../components/Header.vue";
 
 //declaramos como constantes los metodos exactos que vamos a usar de las stores y lo igualamos a la store de donde vienen
 //           metodo    =     store de la que viene
@@ -54,9 +54,18 @@ function resetCampos() {
   nickname.value = "";
   contrasena.value = "";
   confContrasena.value = "";
+  rolSeleccionado.value = "";
   consultarRoles();
   consultarUsuarios();
-deshabilitado.value=true;
+  deshabilitado.value = true;
+  tried = false;
+  alertaLlenado.value = false;
+  validado.value = true;
+
+  let elements = document.querySelectorAll(".inptElement");
+  Array.prototype.slice.call(elements).forEach(function (input) {
+  input.style.borderWidth = "0px";
+  });
 }
 
 //consulta los roles usando el metodo de la store, los almacena en rolesArray
@@ -234,7 +243,7 @@ function sbmtUsuario() {
   validarTlfn();
   if (validado.value) {
     crearUsuario();
-  }else{
+  } else {
     alertaLlenado.value = true;
   }
 }
@@ -247,7 +256,7 @@ function verUsuarios() {
 <template>
   <form @submit.prevent="sbmtUsuario()" class="needs-validation" novalidate>
     <div class="container-fluid">
-      <CompHeader/>
+      <CompHeader />
       <!-----------------------    Row de titulo  --------------------------->
       <div class="row mb-3 pt-5">
         <div class="col-1 d-flex justify-content-end">
@@ -275,7 +284,7 @@ function verUsuarios() {
             </div>
             <input
               type="text"
-              class="form-control input-f"
+              class="form-control input-f inptElement"
               v-model.trim="nombre"
               @input="colorCampos()"
               required
@@ -292,7 +301,7 @@ function verUsuarios() {
                 </div>
                 <input
                   type="text"
-                  class="form-control input-f"
+                  class="form-control input-f inptElement"
                   @input="colorCampos()"
                   required
                   v-model.trim="paterno"
@@ -307,7 +316,7 @@ function verUsuarios() {
                 </div>
                 <input
                   type="text"
-                  class="form-control input-f"
+                  class="form-control input-f inptElement"
                   @input="colorCampos()"
                   v-model.trim="materno"
                   required
@@ -324,7 +333,7 @@ function verUsuarios() {
             <input
               id="emailInpt"
               type="email"
-              class="form-control"
+              class="form-control inptElement"
               @input="validarEmail()"
               v-model.trim="email"
               required
@@ -340,7 +349,7 @@ function verUsuarios() {
                 <input
                   id="tlfn"
                   type="text"
-                  class="form-control"
+                  class="form-control inptElement"
                   @input="validarTlfn()"
                   v-model.trim="telefono"
                   maxlength="10"
@@ -355,7 +364,7 @@ function verUsuarios() {
                   <h5 class="italika">Rol</h5>
                 </div>
                 <select
-                  class="form-select input-f"
+                  class="form-select input-f inptElement"
                   aria-label="Default select example"
                   v-model="rolSeleccionado"
                   @change="colorCampos()"
@@ -375,7 +384,7 @@ function verUsuarios() {
             </div>
             <input
               type="text"
-              class="form-control input-f"
+              class="form-control input-f inptElement"
               @input="revisarUsuarioExistente()"
               v-model.trim="nickname"
               required
@@ -398,7 +407,7 @@ function verUsuarios() {
             <input
               id="pswd"
               :type="tipoPass"
-              class="form-control"
+              class="form-control inptElement"
               @input="validarPsw()"
               v-model="contrasena"
               required
@@ -413,7 +422,7 @@ function verUsuarios() {
             <input
               id="pswdC"
               :type="tipoConfPass"
-              class="form-control"
+              class="form-control inptElement"
               @input="compararPsw()"
               v-model="confContrasena"
               required
