@@ -1,98 +1,4 @@
 <script setup>
-import { ref } from "vue";
-import { permisosRolesStore } from "../stores/permisosRoles";
-import { rolesStore } from "../stores/roles";
-import { onMounted } from "vue";
-import router  from '../router/index'
-const { obtenerPermisosDelRol } = permisosRolesStore();
-const { eliminarPermisosDelRol } = permisosRolesStore();
-const { obtenerRoles } = rolesStore();
-const { eliminarRol } = rolesStore();
-const { setRol } = rolesStore();
-const rolDir = ref({});
-const buscador = ref({});
-const roles = ref([]);
-const rolesArray = ref([]);
-const rolesDesplegados = ref([]);
-const permisosDeRolArray = ref([]);
-const idRolEliminar = ref();
-var modal;
-var modalConfirmacion;
-onMounted(() => {
-  consultarRoles();
-  modal = new bootstrap.Modal(document.getElementById("modal"), {
-    keyboard: false,
-  });
-  modalConfirmacion = new bootstrap.Modal(document.getElementById("modalCon"), {
-    keyboard: false,
-  });
-});
-const consultarRoles = async () => {
-  buscador.value = [];
-  rolesArray.value = [];
-  rolDir.value = [];
-  try {
-    roles.value = await obtenerRoles();
-    const body = roles.value.data.body;
-    console.log(roles.value);
-    for (var j in body) {
-      rolesArray.value.push(body[j]);
-      buscador.value.push(body[j].Nombre);
-      rolDir.value.push(body[j].idRoles);
-    }
-    rolesDesplegados.value = rolesArray.value;
-  } catch (error) {
-    console.log(error);
-  }
-};
-const consultarPermisosDeRol = async (idRol) => {
-  permisosDeRolArray.value = [];
-  try {
-    const permisosDeRol = await obtenerPermisosDelRol(idRol);
-    const body = permisosDeRol.data.body;
-    for (var j in body) {
-      permisosDeRolArray.value.push(body[j]);
-    }
-    modal.show();
-  } catch (error) {
-    console.log(error);
-  }
-};
-const eliminarRoles = async (idRol) => {
-  try {
-    await eliminarPermisosDelRol(idRol);
-    await eliminarRol(idRol);
-    await consultarRoles();
-  } catch (error) {
-    console.log(error);
-  }
-};
-const modificarRol = async (idRol) => {
-  try {
-    setRol(idRol);
-    router.push({ name: 'registroRol', params: { idRolAct: idRol }});
-    //window.location.href = "http://localhost:5173/registroRol";
-    //this.$router.push("http://localhost:5173/crearRol");
-  } catch (error) {
-    console.log(error);
-  }
-};
-function actualizarTabla(nombre) {
-  if (nombre.trim() == "") {
-    rolesDesplegados.value = rolesArray.value;
-  } else {
-    rolesDesplegados.value = [];
-    rolesArray.value.forEach((element) => {
-      if (element.Nombre.toLowerCase().includes(nombre.toLowerCase())) {
-        rolesDesplegados.value.push(element);
-      }
-    });
-  }
-}
-function confirmar(idRol) {
-  idRolEliminar.value = idRol;
-  modalConfirmacion.show();
-}
 </script>
 <template>
   <div class="container-fluid">
@@ -122,10 +28,10 @@ function confirmar(idRol) {
       </div>
       <div class="col-8 mb-3 pt-5">
         <div class="row align-items-end">
-          <p class="italika" style="font-size: 50px">Roles</p>
+          <p class="italika" style="font-size: 50px">Usuarios</p>
         </div>
         <div class="row align-items-end">
-          <h5 class="italika d-flex justify-content-start">Registrar Roles</h5>
+          <h5 class="italika d-flex justify-content-start">Usuarios registrados</h5>
         </div>
       </div>
       <div class="col-3 align-items-end ">
@@ -135,16 +41,14 @@ function confirmar(idRol) {
             class="form-control rounded-pill mt-4"
             style="width: 250px; height: 50px; border-color: #5e5e5e"
             placeholder="Buscar"
-            v-model="nombre"
-            @input="actualizarTabla(nombre)"
           />
         </div>
         <div class="row">
           <div class="col-6">
-            <h5 class="italika mt-3">Agregar Roles</h5>
+            <h5 class="italika mt-3">Agregar Usuarios</h5>
           </div>
           <div class="col-1">
-            <router-link to="../crearRol">
+            <!--<router-link to="../crearRol">-->
               <button
                 class="btn btn-primary mt-2 d-flex align-items-center"
                 type="submit"
@@ -157,26 +61,39 @@ function confirmar(idRol) {
               >
                 <h4>+</h4>
               </button>
-            </router-link>
+            <!--</router-link>-->
           </div>
         </div>
       </div>
     </div>
     <div class="table-responsive">
     <table
-      class="table table-hover table-striped text-center mt-4 mx-auto table-responsive"
+      class="table table-hover table-striped text-center mt-4 mx-auto"
       style="width: 900px"
     >
       <thead>
         <tr style="background-color: #2b4677; color: white">
+          <th scope="col">Nombre Usuario</th>
+          <th scope="col" style="width: 200px"></th>
           <th scope="col">Nombre</th>
           <th scope="col" style="width: 200px"></th>
+          <th scope="col">Apellido paterno</th>
+          <th scope="col" style="width: 200px"></th>
+          <th scope="col">Apellido materno</th>
+          <th scope="col" style="width: 200px"></th>
+          <th scope="col">Correo</th>
+          <th scope="col" style="width: 200px"></th>
+          <th scope="col">Telefono</th>
+          <th scope="col" style="width: 200px"></th>
+          <th scope="col" style="position: sticky; right: 0">Opciones</th>
+          <th scope="col" style="width: 200px"></th>
+        <!-- Establecemos "position:sticky" en la columna de "Opciones" -->
         </tr>
       </thead>
       <tbody>
         <tr v-for="rol in rolesDesplegados">
           <td>
-            {{ rol.Nombre }}
+         <!--   {{ rol.Nombre }}-->
           </td>
           <th scope="row">
             <div class="align-items-center">
@@ -221,7 +138,7 @@ function confirmar(idRol) {
         </tr>
       </tbody>
     </table>
-  </div>
+    </div>
   </div>
 
   <!-- Modal  modalCon-->

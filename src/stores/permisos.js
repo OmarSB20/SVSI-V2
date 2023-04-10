@@ -9,6 +9,7 @@ export const permisosStore = defineStore("permisos",{
     async obtenerPermisos(){
         try {
             const res = await axios.get('http://localhost:4000/api/permisos')
+            console.log(res)
             return res;
             
         } catch (error) {
