@@ -23,6 +23,7 @@ const checksDir = ref({}); //cada una de sus posiciones se asociará al estado d
 const rolNuevo = ref(""); //se asociara al valor del textbox del rol, cambiar su valor, cambia lo que hay en el textbox y visceversa
 const rolesArray = ref([]); //guardara cada uno de los roles (idRoles y Nombre)
 const repetido = ref(false); //es true sí el rol que se quiere crear ya existe
+const deshabilitado = ref(false);
 const checksVacios = ref(false); //es true si no se ha seleccionado ningun checkbox
 //variable asociada al modal
 var modal;
@@ -31,7 +32,9 @@ var modal;
 onMounted(() => {
   consultarPermisos();
   consultarRoles();
-
+  if (rolNuevo.value.trim()=="") {
+    deshabilitado.value = true;
+  }
   modal = new bootstrap.Modal(document.getElementById('modal'), {
   keyboard: false
 })
@@ -76,16 +79,22 @@ const consultarPermisos = async () => {
 
 //revisa si el rol a crear ya existe, el reusltado se guarda en "repetido"
 const revisarRolExistente = async () => {
+  if (rolNuevo.value.trim()=="") {
+    deshabilitado.value = true;
+    return;
+  }
   try {
     for (var j in rolesArray.value) {
       if (
         rolesArray.value[j].Nombre.toLowerCase() == rolNuevo.value.trim().toLowerCase()
       ) {
         repetido.value = true;
+        deshabilitado.value = true;
         return true;
       }
     }
     repetido.value = false;
+    deshabilitado.value = false;
     return false;
   } catch (error) {
     console.log(error);
@@ -131,11 +140,30 @@ function moverPermiso(id) {
     checksVacios.value=false;
   }
 }
+
+function verRoles(){
+  window.location.href = "http://localhost:5173/modificarRol";
+}
+
 </script>
 
 <template>
   <form @submit.prevent="crearRol(rolNuevo)">
     <div class="container-fluid">
+      <div class="row" style="background-color: black" height="100px">
+      <div class="col-10">
+        <img
+          class="img-fluid mt-1"
+          style="width: 335px; height: 80px"
+          src="../assets/LogoItalikaRamos.png"
+        />
+      </div>
+      <div class="col">
+        <p style="font-size: 60px" class="italika d-flex justify-content-start mb-0">
+          SVSI
+        </p>
+      </div>
+    </div>
       <div class="row mb-3 pt-5">
         <div class="col-1 d-flex justify-content-end">
           <a href = "http://localhost:5173">
@@ -181,7 +209,7 @@ function moverPermiso(id) {
           </div>
         </div>
         <div class="col">
-          <button class="btn btn-primary" type="submit" :disabled="repetido">
+          <button class="btn btn-primary" type="submit" :disabled="deshabilitado">
             Guardar
           </button>
         </div>
@@ -217,7 +245,7 @@ function moverPermiso(id) {
                     border-right-color: #2b4677;
                     border-right-width: 2px;                 "
                 >
-                  {{ item.Descripcion }}{{ item.idPermisos }}
+                  {{ item.Descripcion }}
                 </td>
                 <th scope="row">
                   <div class="form-check d-flex justify-content-center">
@@ -239,19 +267,20 @@ function moverPermiso(id) {
     </div>
   </form>
 
-<!-- Modal que se muestra al crear un rol -->
-<div class="modal fade" id="modal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+<!-- Modal -->
+<div class="modal fade" id="modal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title" id="exampleModalLabel">¡Rol creado!</h5>
+        <h5 class="modal-title" id="staticBackdropLabel">¡Rol creado!</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
         El rol {{ rolNuevo }} fue creado exitosamente.
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-primary"  @click="resetCampos()" data-bs-dismiss="modal">Seguir creando roles</button>
-        <button type="button" class="btn btn-success">Ver roles</button>
+        <button type="button" class="btn btn-success" @click="verRoles()">Ver roles</button>
       </div>
     </div>
   </div>

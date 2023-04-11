@@ -4,15 +4,18 @@ import axios from "axios";
 export const rolesStore = defineStore("roles",{
   state: ()=>({
     roles: [],
-    idRolActual:4
+    idRolActual:44
   }), 
   actions:{
 
     setRol(idRol){
-        idRolActual = idRol;
+       
+        this.idRolActual = idRol;
+        console.log(this.idRolActual)
     },
 
     getRol(){
+        console.log(this.idRolActual)
         return this.idRolActual;
     },
 
@@ -27,9 +30,9 @@ export const rolesStore = defineStore("roles",{
         }
     },
 
-    async obtenerRolesN(Nombre){
+    async obtenerRolesN(id){
         try {
-            const res = await axios.get('http://localhost:4000/api/roles/'+Nombre)
+            const res = await axios.get('http://localhost:4000/api/roles/'+id)
             return res;
             
         } catch (error) {
@@ -71,7 +74,9 @@ export const rolesStore = defineStore("roles",{
 
     async eliminarRol(idRol){
         try {
-            const res = await axios.put('http://localhost:4000/api/roles/'+idRol);
+            const res = await axios.put('http://localhost:4000/api/roles/',{
+                "idRoles":idRol
+        });
 
            console.log(res)
             return ;
