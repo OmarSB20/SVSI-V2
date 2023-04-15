@@ -4,7 +4,9 @@ import ModificarRol from '../views/ModificarRol.vue'
 import CrearRol from '../views/CrearRol.vue'
 import RegistroRol from '../views/RegistroRol.vue'  
 import CrearUsuario from '../views/CrearUsuario.vue'
-import Login from '../views/Login.vue'
+import login from '../views/Login.vue'
+import usuarioRegistrado from '../views/usuariosRegistrados.vue'
+
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -43,11 +45,18 @@ const router = createRouter({
       path: '/crearUsuario',
       name: 'crearUsuario',
       component: CrearUsuario
-    },
+    }
+
+    ,
     {
       path: '/login',
       name: 'login',
-      component: Login
+      component: login
+    },
+    {
+      path: '/usuarioRegistrado',
+      name: 'usuarioRegistrado',
+      component: usuarioRegistrado
     }
   ]
 })

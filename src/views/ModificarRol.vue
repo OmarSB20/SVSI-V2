@@ -67,10 +67,10 @@ const consultarPermisosDeRol = async (idRol) => {
   }
 };
 
-const eliminarRoles = async (idRol) => {
+const eliminarRoles = async (idEmpleados) => {
   try {
-    await eliminarPermisosDelRol(idRol);
-    await eliminarRol(idRol);
+    await eliminarPermisosDelRol(idEmpleados);
+    await eliminarRol(idEmpleados);
     await consultarRoles();
   } catch (error) {
     console.log(error);
@@ -176,7 +176,7 @@ function confirmar(idRol) {
         <tr v-for="rol in rolesDesplegados">
           <td>
             {{ rol.Nombre }}
-          </td>
+          </td> 
           <th scope="row">
             <div class="align-items-center">
               <button

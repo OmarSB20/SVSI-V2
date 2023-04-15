@@ -1,15 +1,20 @@
 import { defineStore } from "pinia";
 import axios from "axios";
 
+
 export const usuariosStore = defineStore("usuarios",{
   state: ()=>({
-    token:""
+    token:"",
+    idUsuarioActual: ""
+
   }), 
+
   actions:{
 
     setToken(token){
         this.token = token;
     },
+
 
     getToken(){
         return this.token;
@@ -26,6 +31,22 @@ export const usuariosStore = defineStore("usuarios",{
         }
     },
 
+
+    //metodos para resibir usuario y guardar el que se esta modificando
+
+    setIdUsuario(idUsuario){
+        this.idUsuarioActual = idUsuario
+    },
+
+
+    getIdUsuario(){
+        return this.idUsuarioActual
+    },
+
+
+
+
+    
     //hay que mandarle el json ya creado
     async agregarUsuario(usuario){
         try {
@@ -54,6 +75,7 @@ export const usuariosStore = defineStore("usuarios",{
         }
     },
 
+    
     
   } 
 })
