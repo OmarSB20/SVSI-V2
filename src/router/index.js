@@ -6,7 +6,7 @@ import RegistroRol from '../views/RegistroRol.vue'
 import CrearUsuario from '../views/CrearUsuario.vue'
 import login from '../views/Login.vue'
 import usuarioRegistrado from '../views/usuariosRegistrados.vue'
-
+import ActualizarUsuario from '../views/ActualizarUsuario.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -57,7 +57,12 @@ const router = createRouter({
       path: '/usuarioRegistrado',
       name: 'usuarioRegistrado',
       component: usuarioRegistrado
-    }
+    },
+    {
+      path: '/ActualizarUsuario',
+      name: 'ActualizarUsuario',
+      component: ActualizarUsuario
+    },
   ]
 })
 

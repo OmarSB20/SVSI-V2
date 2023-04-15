@@ -106,7 +106,7 @@ function myFunction() {
 function modificaruser(idEmpleados) {
   setIdUsuario(idEmpleados); //guardar el ide en el store
   //mandar a otra interfaz
-  router.push({ name: "login" });
+  router.push({ name: "ActualizarUsuario", params: { idUsrAct: idEmpleados } });
 }
 
 function confirmar(idEmpleados) {
