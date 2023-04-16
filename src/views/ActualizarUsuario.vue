@@ -43,10 +43,10 @@ const validado = ref(true);
 const alertaLlenado = ref(false);
 
 //al cargar la pagina se consultan los permisos y roles que hay en la BD y se define el objeto relacionado al modal
-onMounted(() => {
-  consultarRoles();
-  consultarUsuarios();
-  obtenerDatosUsr();
+onMounted(async() => {
+  await consultarRoles();
+  await consultarUsuarios();
+  await obtenerDatosUsr();
   
   modal = new bootstrap.Modal(document.getElementById("modal"), {
     keyboard: false,
@@ -67,24 +67,28 @@ const consultarRoles = async () => {
 const obtenerDatosUsr = async () => {
     try {
         idUsrActualizar.value = getIdUsuario();
+        /* VALOR TEMPORAL PARA PRUEBAS - BORRAR AL TERMINAR*/ idUsrActualizar.value=48; /**------------------------------------- */
         usuario.value = await obtenerUnUser(idUsrActualizar.value);
-        usuario.value = usuario.value.data.body;
+        usuario.value = usuario.value.data.body[0];
         roles.value = await obtenerRoles();
         roles.value = roles.value.data.body;
         roles.value.forEach((element) => {
-            if(element.idRol == usuario.Roles_idRoles){
-                nombreRol.value = element.Nombre;
+            if(element.idRoles == usuario.value.Roles_idRoles){
+              nombreRol.value = element.Nombre;
+                
             }
         });
-        nombre.value = usuario.Nombre;
-        paterno.value = usuario.Apellido_Paterno;
-        materno.value = usuario.Apellido_Materno;
-        email.value = usuario.Correo;
-        telefono.value = usuario.Telefono;
-        nickname.value = usuario.Usuario;
-        contrasena.value = usuario.Contrasena;
-        confContrasena.value = usuario.Contrasena;
-        rolSeleccionado.value = nombreRol;
+        console.log(nombreRol.value)
+        console.log(usuario.value.Nombre)
+        nombre.value = usuario.value.Nombre;
+        paterno.value = usuario.value.Apellido_Paterno;
+        materno.value = usuario.value.Apellido_Materno;
+        email.value = usuario.value.Correo;
+        telefono.value = usuario.value.Telefono;
+        nickname.value = usuario.value.Usuario;
+        contrasena.value = usuario.value.Contrasena;
+        confContrasena.value = usuario.value.Contrasena;
+        rolSeleccionado.value = nombreRol.value;
         console.log(nombre.value);
         console.log(nickname.value);
         console.log(rolSeleccionado.value);
@@ -149,6 +153,7 @@ function colorCampos() {
 }
 
 function obtenerIdRol(rol) {
+  console.log(rol)
   let idRol = -1;
   roles.value.forEach((element) => {
     if (element.Nombre == rol) {
@@ -162,9 +167,11 @@ function obtenerIdRol(rol) {
 //metodo que crea el nuevo rol
 const actUsuario = async () => {
   try {
+    console.log(rolSeleccionado.value)
     const idRol = obtenerIdRol(rolSeleccionado.value);
+    console.log(idRol)
     const usuarioNuevo = {
-      idEmpleados: idUsrActualizar,
+      idEmpleados: idUsrActualizar.value,
       Roles_idRoles: idRol,
       EstatusActividad_idEstatusActividad: 1,
       Nombre: nombre.value,
@@ -382,6 +389,7 @@ function verUsuarios() {
                   class="form-select input-f inptElement"
                   aria-label="Default select example"
                   v-model="rolSeleccionado"
+                  :value="rolSeleccionado"
                   @change="colorCampos()"
                   required
                 >

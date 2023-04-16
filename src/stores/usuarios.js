@@ -44,6 +44,7 @@ export const usuariosStore = defineStore("usuarios",{
 //Trae los datos solo del usuario especificado, hay que mandarle el idEmpleados
     async obtenerUnUser(idEmpleados){
         try {
+            console.log('http://localhost:4000/api/usuarios/'+idEmpleados)
             const res = await axios.get('http://localhost:4000/api/usuarios/'+idEmpleados)
             return res;
         } catch (error) {
