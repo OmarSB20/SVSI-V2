@@ -12,7 +12,12 @@ const { agregarUsuario } = usuariosStore();
 const { obtenerRoles } = rolesStore();
 const { obtenerUsuarios } = usuariosStore();
 const { getIdUsuario } = usuariosStore();
+const { obtenerNicknames } = usuariosStore();
+const { obtenerUnUser } = usuariosStore()
+const { actualizarUsuario } = usuariosStore()
+
 //variables reactivas
+const nombreRol = ref("");
 const nombre = ref("");
 const paterno = ref("");
 const materno = ref("");
@@ -28,6 +33,9 @@ const repetido = ref(false);
 const tipoConfPass = ref("password");
 const tipoPass = ref("password");
 const rolSeleccionado = ref("Seleccionar rol");
+const idUsrActualizar = ref();
+const usuario = ref([]);
+const permisosDelRol = ref([]);//Probable necesidad 
 //variable asociada al modal
 var modal;
 var tried = false;
@@ -38,36 +46,12 @@ const alertaLlenado = ref(false);
 onMounted(() => {
   consultarRoles();
   consultarUsuarios();
-  deshabilitado.value = true;
+  obtenerDatosUsr();
+  
   modal = new bootstrap.Modal(document.getElementById("modal"), {
     keyboard: false,
   });
 });
-
-//función que vacía el textbox, el arreglo de permisos arreglados y deselecciona los checkbox
-//se activará cuando se de click en "seguir creando roles" en el modal
-function resetCampos() {
-  nombre.value = "";
-  paterno.value = "";
-  materno.value = "";
-  email.value = "";
-  telefono.value = "";
-  nickname.value = "";
-  contrasena.value = "";
-  confContrasena.value = "";
-  rolSeleccionado.value = "";
-  consultarRoles();
-  consultarUsuarios();
-  deshabilitado.value = true;
-  tried = false;
-  alertaLlenado.value = false;
-  validado.value = true;
-
-  let elements = document.querySelectorAll(".inptElement");
-  Array.prototype.slice.call(elements).forEach(function (input) {
-  input.style.borderWidth = "0px";
-  });
-}
 
 //consulta los roles usando el metodo de la store, los almacena en rolesArray
 const consultarRoles = async () => {
@@ -79,6 +63,36 @@ const consultarRoles = async () => {
     console.log(error);
   }
 };
+
+const obtenerDatosUsr = async () => {
+    try {
+        idUsrActualizar.value = getIdUsuario();
+        usuario.value = await obtenerUnUser(idUsrActualizar.value);
+        usuario.value = usuario.value.data.body;
+        roles.value = await obtenerRoles();
+        roles.value = roles.value.data.body;
+        roles.value.forEach((element) => {
+            if(element.idRol == usuario.Roles_idRoles){
+                nombreRol.value = element.Nombre;
+            }
+        });
+        nombre.value = usuario.Nombre;
+        paterno.value = usuario.Apellido_Paterno;
+        materno.value = usuario.Apellido_Materno;
+        email.value = usuario.Correo;
+        telefono.value = usuario.Telefono;
+        nickname.value = usuario.Usuario;
+        contrasena.value = usuario.Contrasena;
+        confContrasena.value = usuario.Contrasena;
+        rolSeleccionado.value = nombreRol;
+        console.log(nombre.value);
+        console.log(nickname.value);
+        console.log(rolSeleccionado.value);
+        return true;
+    } catch (error) {
+        console.log(error);
+    }
+}
 
 const consultarUsuarios = async () => {
   try {
@@ -146,11 +160,11 @@ function obtenerIdRol(rol) {
 }
 
 //metodo que crea el nuevo rol
-const crearUsuario = async () => {
+const actUsuario = async () => {
   try {
     const idRol = obtenerIdRol(rolSeleccionado.value);
     const usuarioNuevo = {
-      idEmpleados: 0,
+      idEmpleados: idUsrActualizar,
       Roles_idRoles: idRol,
       EstatusActividad_idEstatusActividad: 1,
       Nombre: nombre.value,
@@ -161,7 +175,7 @@ const crearUsuario = async () => {
       Usuario: nickname.value,
       Correo: email.value,
     };
-    await agregarUsuario(usuarioNuevo); //creamos el rol
+    await actualizarUsuario(usuarioNuevo); //Actualizamos el usuario
 
     modal.show(); //al ser todo exitoso, mostramos el modal notificando el exito
   } catch (error) {
@@ -243,7 +257,7 @@ function sbmtUsuario() {
   compararPsw();
   validarTlfn();
   if (validado.value) {
-    crearUsuario();
+    actUsuario();
   } else {
     alertaLlenado.value = true;
   }
@@ -400,7 +414,6 @@ function verUsuarios() {
             "{{ nickname }}" ya existe
           </div>
           <!-----------------------    Row 6 Formulario  --------------------------->
-
           <div class="row mb-2 pb-2 d-flex align-items-center">
             <div class="col mt-2">
               <h5 class="italika">Constraseña</h5>

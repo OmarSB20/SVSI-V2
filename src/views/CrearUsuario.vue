@@ -249,7 +249,7 @@ function sbmtUsuario() {
 }
 
 function verUsuarios() {
-  window.location.href = "http://localhost:5173/modificarRol";
+  window.location.href = "http://localhost:5173/usuarioRegistrado";
 }
 </script>
 
@@ -486,10 +486,10 @@ function verUsuarios() {
             @click="resetCampos()"
             data-bs-dismiss="modal"
           >
-            Seguir creando roles
+            Seguir creando usuarios
           </button>
           <button type="button" class="btn btn-success" @click="verUsuarios()">
-            Ver roles
+            Ver usuarios
           </button>
         </div>
       </div>
