@@ -4,6 +4,7 @@ import { permisosStore } from "../stores/permisos"; //para poder usar store de p
 import { rolesStore } from "../stores/roles"; //para poder usar store de roles
 import { permisosRolesStore } from "../stores/permisosRoles"; //para poder usar store de permisosRoles
 import { onMounted } from "vue"; //para poder usar el onMounted, que ejecuta todo lo que tenga adentro cada que cargue la pagina
+import CompHeader from '../components/Header.vue'
 //declaramos como constantes los metodos exactos que vamos a usar de las stores y lo igualamos a la store de donde vienen
 //           metodo    =     store de la que viene
 const { obtenerPermisos } = permisosStore();
@@ -148,20 +149,7 @@ function sendToView() {
 <template>
   <form @submit.prevent="actualizar(rolNuevo)">
     <div class="container-fluid">
-      <div class="row" style="background-color: black" height="100px">
-      <div class="col-10">
-        <img
-          class="img-fluid mt-1"
-          style="width: 335px; height: 80px"
-          src="../assets/LogoItalikaRamos.png"
-        />
-      </div>
-      <div class="col">
-        <p style="font-size: 60px" class="italika d-flex justify-content-start mb-0">
-          SVSI
-        </p>
-      </div>
-    </div>
+      <CompHeader/>
       <div class="row mb-3 pt-5">
         <div class="col-1 d-flex justify-content-end">
           <a href="http://localhost:5173/modificarRol">
