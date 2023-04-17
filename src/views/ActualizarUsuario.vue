@@ -45,8 +45,8 @@ const alertaLlenado = ref(false);
 //al cargar la pagina se consultan los permisos y roles que hay en la BD y se define el objeto relacionado al modal
 onMounted(async() => {
   await consultarRoles();
-  await consultarUsuarios();
   await obtenerDatosUsr();
+  await consultarUsuarios();
   
   modal = new bootstrap.Modal(document.getElementById("modal"), {
     keyboard: false,
@@ -67,7 +67,6 @@ const consultarRoles = async () => {
 const obtenerDatosUsr = async () => {
     try {
         idUsrActualizar.value = getIdUsuario();
-        /* VALOR TEMPORAL PARA PRUEBAS - BORRAR AL TERMINAR*/ idUsrActualizar.value=48; /**------------------------------------- */
         usuario.value = await obtenerUnUser(idUsrActualizar.value);
         usuario.value = usuario.value.data.body[0];
         roles.value = await obtenerRoles();
@@ -86,8 +85,6 @@ const obtenerDatosUsr = async () => {
         email.value = usuario.value.Correo;
         telefono.value = usuario.value.Telefono;
         nickname.value = usuario.value.Usuario;
-        contrasena.value = usuario.value.Contrasena;
-        confContrasena.value = usuario.value.Contrasena;
         rolSeleccionado.value = nombreRol.value;
         console.log(nombre.value);
         console.log(nickname.value);
@@ -101,11 +98,10 @@ const obtenerDatosUsr = async () => {
 const consultarUsuarios = async () => {
   try {
     arrayNicknames.value = [];
-    let usuarios = await obtenerUsuarios();
+    let usuarios = await obtenerNicknames();
     usuarios = usuarios.data.body;
     usuarios.forEach((element) => {
-      console.log(element.Usuario);
-      arrayNicknames.value.push(element.Usuario);
+      arrayNicknames.value.push(element);
     });
   } catch (error) {
     console.log(error);
@@ -190,6 +186,31 @@ const actUsuario = async () => {
   }
 };
 
+//metodo que crea el nuevo rol sin contraseña
+const actUsuarioSC = async () => {
+  try {
+    console.log(rolSeleccionado.value)
+    const idRol = obtenerIdRol(rolSeleccionado.value);
+    console.log(idRol)
+    const usuarioNuevo = {
+      idEmpleados: idUsrActualizar.value,
+      Roles_idRoles: idRol,
+      EstatusActividad_idEstatusActividad: 1,
+      Nombre: nombre.value,
+      Apellido_Paterno: paterno.value,
+      Apellido_Materno: materno.value,
+      Telefono: telefono.value,
+      Usuario: nickname.value,
+      Correo: email.value,
+    };
+    await actualizarUsuario(usuarioNuevo); //Actualizamos el usuario
+
+    modal.show(); //al ser todo exitoso, mostramos el modal notificando el exito
+  } catch (error) {
+    console.log(error);
+  }
+};
+
 function validarEmail() {
   console.log("validandomeail");
   email.value = email.value.trim();
@@ -256,23 +277,52 @@ function compararPsw() {
 }
 
 function sbmtUsuario() {
-  tried = true;
-  validado.value = true;
-  colorCampos();
-  validarEmail();
-  validarPsw();
-  compararPsw();
-  validarTlfn();
-  if (validado.value) {
-    actUsuario();
-  } else {
-    alertaLlenado.value = true;
+  const checkbox = document.getElementById('modifyP')
+
+  if(checkbox.checked){
+    tried = true;
+    validado.value = true;
+    colorCampos();
+    validarEmail();
+    validarPsw();
+    compararPsw();
+    validarTlfn();
+    if (validado.value) {
+        actUsuario();
+    } else {
+        alertaLlenado.value = true;
+    }
+  } else{
+    tried = true;
+    validado.value = true;
+    colorCampos();
+    validarEmail();
+    validarTlfn();
+    if (validado.value) {
+        actUsuarioSC();
+    } else {
+        alertaLlenado.value = true;
+    }
   }
 }
 
 function verUsuarios() {
   window.location.href = "http://localhost:5173/modificarRol";
 }
+
+function modificarC(){
+    const checkbox = document.getElementById('modifyP')
+
+    if(checkbox.checked){
+        document.getElementById('contraseña').style.display = 'block';
+        document.getElementById('contraseña2').style.display = 'block';
+    } else{
+        document.getElementById('contraseña').style.display = 'none';
+        document.getElementById('contraseña2').style.display = 'none';
+    }
+    
+}
+
 </script>
 
 <template>
@@ -422,33 +472,39 @@ function verUsuarios() {
             "{{ nickname }}" ya existe
           </div>
           <!-----------------------    Row 6 Formulario  --------------------------->
-          <div class="row mb-2 pb-2 d-flex align-items-center">
-            <div class="col mt-2">
-              <h5 class="italika">Constraseña</h5>
+
+          <div class="row mb-2 pb-2">
+            <div class="col d-flex justify-content-center">
+                <input type="checkbox" @input="modificarC()" id="modifyP"
+                style="width: 30px; height: 30px; border-color: #5e5e5e" class="form-check-input mt-2">
+                <h5 class="italika">Modificar contraseña</h5>
             </div>
-            <input
+          </div>
+          <div class="row mb-2 pb-2 d-flex align-items-center" >
+            <div class="col mt-2" id="contraseña">
+              <h5 class="italika">Constraseña</h5>
+              <input
               id="pswd"
               :type="tipoPass"
               class="form-control inptElement"
               @input="validarPsw()"
               v-model="contrasena"
-              required
-            />
+              />
+            </div>
           </div>
           <!-----------------------    Row 7 Formulario  --------------------------->
 
           <div class="row mb-2 pb-2 d-flex align-items-center">
-            <div class="col mt-2">
+            <div class="col mt-2" id="contraseña2">
               <h5 class="italika">Confirmar constraseña</h5>
-            </div>
-            <input
+              <input
               id="pswdC"
               :type="tipoConfPass"
               class="form-control inptElement"
               @input="compararPsw()"
               v-model="confContrasena"
-              required
-            />
+              />
+            </div>
           </div>
           <!-----------------------    Row 8 Formulario  --------------------------->
           <div class="row">
@@ -469,7 +525,7 @@ function verUsuarios() {
                 type="submit"
                 :disabled="deshabilitado"
               >
-                Modificar
+                Actualizar
               </button>
             </div>
           </div>
@@ -527,7 +583,23 @@ body {
   min-height: 100vh;
 }
 
+#contraseña{
+    display: none;
+}
+
+#contraseña2{
+    display: none;
+}
+
 .italika {
+  font-family: "Fjalla One";
+  font-style: normal;
+  font-weight: 400;
+  letter-spacing: 0.04em;
+  color: #ffffff;
+}
+
+.italikaC {
   font-family: "Fjalla One";
   font-style: normal;
   font-weight: 400;
