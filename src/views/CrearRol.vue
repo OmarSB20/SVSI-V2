@@ -135,8 +135,8 @@ const crearRol = async (nombreRol) => {
 
     myModal.addEventListener("shown.bs.modal", function () {
       btnSeguirCreando.value.focus();
-      btnSeguirCreando.value.style.borderColor = "green";
-      btnSeguirCreando.value.style.borderWidth="10px"
+      btnSeguirCreando.value.style.borderColor = "#90aee5";
+      btnSeguirCreando.value.style.borderWidth="4px"
     });
   } catch (error) {
     console.log(error);
