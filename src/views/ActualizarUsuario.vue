@@ -28,12 +28,12 @@ const roles = ref([]);
 const arrayNicknames = ref([]);
 const contrasena = ref("");
 const confContrasena = ref("");
-const deshabilitado = ref(true);
+const deshabilitado = ref(false);
 const repetido = ref(false);
 const tipoConfPass = ref("password");
 const tipoPass = ref("password");
 const rolSeleccionado = ref("Seleccionar rol");
-const idUsrActualizar = ref();
+const idUsrActualizar = ref("");
 const usuario = ref([]);
 const permisosDelRol = ref([]);//Probable necesidad 
 //variable asociada al modal
@@ -66,7 +66,9 @@ const consultarRoles = async () => {
 
 const obtenerDatosUsr = async () => {
     try {
-        idUsrActualizar.value = getIdUsuario();
+        idUsrActualizar.value = await getIdUsuario();
+        console.log(idUsrActualizar.value);
+        console.log(await obtenerUnUser(idUsrActualizar.value))
         usuario.value = await obtenerUnUser(idUsrActualizar.value);
         usuario.value = usuario.value.data.body[0];
         roles.value = await obtenerRoles();
@@ -163,7 +165,6 @@ function obtenerIdRol(rol) {
 //metodo que crea el nuevo rol
 const actUsuario = async () => {
   try {
-    console.log(rolSeleccionado.value)
     const idRol = obtenerIdRol(rolSeleccionado.value);
     console.log(idRol)
     const usuarioNuevo = {
@@ -189,7 +190,6 @@ const actUsuario = async () => {
 //metodo que crea el nuevo rol sin contraseña
 const actUsuarioSC = async () => {
   try {
-    console.log(rolSeleccionado.value)
     const idRol = obtenerIdRol(rolSeleccionado.value);
     console.log(idRol)
     const usuarioNuevo = {
