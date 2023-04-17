@@ -5,12 +5,12 @@ import { rolesStore } from "../stores/roles";
 import { onMounted } from "vue";
 import router  from '../router/index'
 
+import CompHeader from '../components/Header.vue'
 
 const { obtenerPermisosDelRol } = permisosRolesStore();
 const { eliminarPermisosDelRol } = permisosRolesStore();
 const { obtenerRoles } = rolesStore();
 const { eliminarRol } = rolesStore();
-const { obtenerRolesN } = rolesStore();
 const { setRol } = rolesStore();
 
 const rolDir = ref({});
@@ -67,10 +67,10 @@ const consultarPermisosDeRol = async (idRol) => {
   }
 };
 
-const eliminarRoles = async (idRol) => {
+const eliminarRoles = async (idEmpleados) => {
   try {
-    await eliminarPermisosDelRol(idRol);
-    await eliminarRol(idRol);
+    await eliminarPermisosDelRol(idEmpleados);
+    await eliminarRol(idEmpleados);
     await consultarRoles();
   } catch (error) {
     console.log(error);
@@ -109,20 +109,7 @@ function confirmar(idRol) {
 </script>
 <template>
   <div class="container-fluid">
-    <div class="row" style="background-color: black" height="100px">
-      <div class="col-10">
-        <img
-          class="img-fluid mt-1"
-          style="width: 335px; height: 80px"
-          src="../assets/LogoItalikaRamos.png"
-        />
-      </div>
-      <div class="col">
-        <p style="font-size: 60px" class="italika d-flex justify-content-start mb-0">
-          SVSI
-        </p>
-      </div>
-    </div>
+    <CompHeader/>
     <div class="row ">
       <div class="col-1 mb-3 pt-5">
         <a href="http://localhost:5173">
@@ -189,7 +176,7 @@ function confirmar(idRol) {
         <tr v-for="rol in rolesDesplegados">
           <td>
             {{ rol.Nombre }}
-          </td>
+          </td> 
           <th scope="row">
             <div class="align-items-center">
               <button
