@@ -58,13 +58,3 @@ import router  from '../router/index'
     </div>
   </div>
 </template>
-<style>
-.italika {
-  font-family: "Fjalla One";
-  font-style: normal;
-  font-weight: 400;
-  letter-spacing: 0.04em;
-  color: #ffffff;
-  font-size: 45px;
-}
-</style>
