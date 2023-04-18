@@ -35,9 +35,9 @@ const tipoPass = ref("password");
 const rolSeleccionado = ref("Seleccionar rol");
 const idUsrActualizar = ref("");
 const usuario = ref([]);
-const permisosDelRol = ref([]); //Probable necesidad
 //variable asociada al modal
 var modal;
+var modalError;
 var tried = false;
 const validado = ref(true);
 const alertaLlenado = ref(false);
@@ -97,7 +97,7 @@ const obtenerDatosUsr = async () => {
   } catch (error) {
     console.log(error);
 
-    modalError.show()
+    modalError.show();
     //Mostrar modal bloqueado
   }
 };
@@ -315,7 +315,8 @@ function sbmtUsuario() {
 }
 
 function verUsuarios() {
-    router.push({ name: 'usuarioRegistrado'});
+    //router.push({ name: 'usuarioRegistrado'});
+    this.$router.push("http://localhost:5173/usuarioRegistrado");
 }
 
 function modificarC() {
@@ -567,7 +568,7 @@ function modificarC() {
             aria-label="Close"
           ></button>
         </div>
-        <div class="modal-body">El usuario {{ nickname }} fue creado exitosamente.</div>
+        <div class="modal-body">El usuario {{ nickname }} fue modificado exitosamente.</div>
         <div class="modal-footer">
           <button type="button" class="btn btn-success" @click="verUsuarios()">
             Volver a usuarios
@@ -586,7 +587,7 @@ function modificarC() {
     aria-labelledby="staticBackdropLabel"
     aria-hidden="true"
   >
-  <div class="modal-dialog">
+    <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="staticBackdropLabel">Error al cargar los datos</h5>
@@ -594,7 +595,7 @@ function modificarC() {
             <div class="modal-body">Vuelva a carga el usuario</div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-success" @click="verUsuarios()">
-                Volver a usuarios
+                    Volver a usuarios
                 </button>
             </div>
         </div>
