@@ -179,7 +179,7 @@ function irMenu() {
               <div>
                 <input
                 type="text"
-                class="form-control input-f inptElement Drk"
+                class="form-control input-f inptElement inptDrk"
                 v-model.trim="nickname"
                 @input="camposVacios()"
                 autofocus
@@ -195,7 +195,7 @@ function irMenu() {
               <div class="input-group mb-3">
                 <input
                   :type="tipoInput"
-                  class="form-control input-f inptElement mb-4 Drk"
+                  class="form-control input-f inptElement inptDrk mb-4"
                   v-model.trim="contrasena"
                   @input="camposVacios()"
                 />
@@ -266,32 +266,33 @@ body {
   color: #ffffff;
 }
 
-.Drk {
+.inptDrk {
   height: 50px;
   font-size: 20px;
-  background-color: #22242f;
+  background-color: #2D2F37;
   color: white;
-  border-color: #22242f;
+  border-color: #2D2F37;
 }
 
-.Drk:focus {
-  background-color: #22242f;
+.inptDrk:focus {
+  background-color: #2D2F37;
   border-color: #213ee2;
   color: white;
 }
 
+
 .eyeBtn {
   height: 50px;
   font-size: 20px;
-  background-color: #22242f;
-  border-color: #22242f;
+  background-color: #2D2F37;
+  border-color: #2D2F37;
 }
 
 .eyeBtn:hover {
   height: 50px;
   font-size: 20px;
-  background-color: #22242f;
-  border-color: #22242f;
+  background-color: #2D2F37;
+  border-color: #2D2F37;
 }
 
 .table-striped tbody tr:nth-of-type(even) {
