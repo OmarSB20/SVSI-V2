@@ -13,8 +13,8 @@ const { obtenerRoles } = rolesStore();
 const { obtenerUsuarios } = usuariosStore();
 const { getIdUsuario } = usuariosStore();
 const { obtenerNicknames } = usuariosStore();
-const { obtenerUnUser } = usuariosStore()
-const { actualizarUsuario } = usuariosStore()
+const { obtenerUnUser } = usuariosStore();
+const { actualizarUsuario } = usuariosStore();
 
 //variables reactivas
 const nombreRol = ref("");
@@ -35,7 +35,7 @@ const tipoPass = ref("password");
 const rolSeleccionado = ref("Seleccionar rol");
 const idUsrActualizar = ref("");
 const usuario = ref([]);
-const permisosDelRol = ref([]);//Probable necesidad 
+const permisosDelRol = ref([]); //Probable necesidad
 //variable asociada al modal
 var modal;
 var tried = false;
@@ -43,12 +43,16 @@ const validado = ref(true);
 const alertaLlenado = ref(false);
 
 //al cargar la pagina se consultan los permisos y roles que hay en la BD y se define el objeto relacionado al modal
-onMounted(async() => {
+onMounted(async () => {
+  console.log(getIdUsuario())
   await consultarRoles();
   await obtenerDatosUsr();
   await consultarUsuarios();
-  
+
   modal = new bootstrap.Modal(document.getElementById("modal"), {
+    keyboard: false,
+  });
+  modalError = new bootstrap.Modal(document.getElementById("modalError"), {
     keyboard: false,
   });
 });
@@ -65,37 +69,38 @@ const consultarRoles = async () => {
 };
 
 const obtenerDatosUsr = async () => {
-    try {
-        idUsrActualizar.value = await getIdUsuario();
-        console.log(idUsrActualizar.value);
-        console.log(await obtenerUnUser(idUsrActualizar.value))
-        usuario.value = await obtenerUnUser(idUsrActualizar.value);
-        usuario.value = usuario.value.data.body[0];
-        roles.value = await obtenerRoles();
-        roles.value = roles.value.data.body;
-        roles.value.forEach((element) => {
-            if(element.idRoles == usuario.value.Roles_idRoles){
-              nombreRol.value = element.Nombre;
-                
-            }
-        });
-        console.log(nombreRol.value)
-        console.log(usuario.value.Nombre)
-        nombre.value = usuario.value.Nombre;
-        paterno.value = usuario.value.Apellido_Paterno;
-        materno.value = usuario.value.Apellido_Materno;
-        email.value = usuario.value.Correo;
-        telefono.value = usuario.value.Telefono;
-        nickname.value = usuario.value.Usuario;
-        rolSeleccionado.value = nombreRol.value;
-        console.log(nombre.value);
-        console.log(nickname.value);
-        console.log(rolSeleccionado.value);
-        return true;
-    } catch (error) {
-        console.log(error);
-    }
-}
+  try {
+    idUsrActualizar.value =  getIdUsuario();
+    console.log(idUsrActualizar.value);
+    usuario.value = await obtenerUnUser(idUsrActualizar.value);
+    usuario.value = usuario.value.data.body[0];
+    roles.value = await obtenerRoles();
+    roles.value = roles.value.data.body;
+    roles.value.forEach((element) => {
+      if (element.idRoles == usuario.value.Roles_idRoles) {
+        nombreRol.value = element.Nombre;
+      }
+    });
+    console.log(nombreRol.value);
+    console.log(usuario.value.Nombre);
+    nombre.value = usuario.value.Nombre;
+    paterno.value = usuario.value.Apellido_Paterno;
+    materno.value = usuario.value.Apellido_Materno;
+    email.value = usuario.value.Correo;
+    telefono.value = usuario.value.Telefono;
+    nickname.value = usuario.value.Usuario;
+    rolSeleccionado.value = nombreRol.value;
+    console.log(nombre.value);
+    console.log(nickname.value);
+    console.log(rolSeleccionado.value);
+    return true;
+  } catch (error) {
+    console.log(error);
+
+    modalError.show()
+    //Mostrar modal bloqueado
+  }
+};
 
 const consultarUsuarios = async () => {
   try {
@@ -151,7 +156,7 @@ function colorCampos() {
 }
 
 function obtenerIdRol(rol) {
-  console.log(rol)
+  console.log(rol);
   let idRol = -1;
   roles.value.forEach((element) => {
     if (element.Nombre == rol) {
@@ -165,8 +170,9 @@ function obtenerIdRol(rol) {
 //metodo que crea el nuevo rol
 const actUsuario = async () => {
   try {
+    console.log(rolSeleccionado.value);
     const idRol = obtenerIdRol(rolSeleccionado.value);
-    console.log(idRol)
+    console.log(idRol);
     const usuarioNuevo = {
       idEmpleados: idUsrActualizar.value,
       Roles_idRoles: idRol,
@@ -190,8 +196,10 @@ const actUsuario = async () => {
 //metodo que crea el nuevo rol sin contraseña
 const actUsuarioSC = async () => {
   try {
+    console.log(rolSeleccionado.value);
     const idRol = obtenerIdRol(rolSeleccionado.value);
-    console.log(idRol)
+    console.log(idRol);
+    console.log(idUsrActualizar.value);
     const usuarioNuevo = {
       idEmpleados: idUsrActualizar.value,
       Roles_idRoles: idRol,
@@ -277,9 +285,9 @@ function compararPsw() {
 }
 
 function sbmtUsuario() {
-  const checkbox = document.getElementById('modifyP')
+  const checkbox = document.getElementById("modifyP");
 
-  if(checkbox.checked){
+  if (checkbox.checked) {
     tried = true;
     validado.value = true;
     colorCampos();
@@ -288,41 +296,39 @@ function sbmtUsuario() {
     compararPsw();
     validarTlfn();
     if (validado.value) {
-        actUsuario();
+      actUsuario();
     } else {
-        alertaLlenado.value = true;
+      alertaLlenado.value = true;
     }
-  } else{
+  } else {
     tried = true;
     validado.value = true;
     colorCampos();
     validarEmail();
     validarTlfn();
     if (validado.value) {
-        actUsuarioSC();
+      actUsuarioSC();
     } else {
-        alertaLlenado.value = true;
+      alertaLlenado.value = true;
     }
   }
 }
 
 function verUsuarios() {
-  window.location.href = "http://localhost:5173/modificarRol";
+    router.push({ name: 'usuarioRegistrado'});
 }
 
-function modificarC(){
-    const checkbox = document.getElementById('modifyP')
+function modificarC() {
+  const checkbox = document.getElementById("modifyP");
 
-    if(checkbox.checked){
-        document.getElementById('contraseña').style.display = 'block';
-        document.getElementById('contraseña2').style.display = 'block';
-    } else{
-        document.getElementById('contraseña').style.display = 'none';
-        document.getElementById('contraseña2').style.display = 'none';
-    }
-    
+  if (checkbox.checked) {
+    document.getElementById("contraseña").style.display = "block";
+    document.getElementById("contraseña2").style.display = "block";
+  } else {
+    document.getElementById("contraseña").style.display = "none";
+    document.getElementById("contraseña2").style.display = "none";
+  }
 }
-
 </script>
 
 <template>
@@ -475,20 +481,25 @@ function modificarC(){
 
           <div class="row mb-2 pb-2">
             <div class="col d-flex justify-content-center">
-                <input type="checkbox" @input="modificarC()" id="modifyP"
-                style="width: 30px; height: 30px; border-color: #5e5e5e" class="form-check-input mt-2">
-                <h5 class="italika">Modificar contraseña</h5>
+              <input
+                type="checkbox"
+                @input="modificarC()"
+                id="modifyP"
+                style="width: 30px; height: 30px; border-color: #5e5e5e"
+                class="form-check-input mt-2"
+              />
+              <h5 class="italika">Modificar contraseña</h5>
             </div>
           </div>
-          <div class="row mb-2 pb-2 d-flex align-items-center" >
+          <div class="row mb-2 pb-2 d-flex align-items-center">
             <div class="col mt-2" id="contraseña">
               <h5 class="italika">Constraseña</h5>
               <input
-              id="pswd"
-              :type="tipoPass"
-              class="form-control inptElement"
-              @input="validarPsw()"
-              v-model="contrasena"
+                id="pswd"
+                :type="tipoPass"
+                class="form-control inptElement"
+                @input="validarPsw()"
+                v-model="contrasena"
               />
             </div>
           </div>
@@ -498,11 +509,11 @@ function modificarC(){
             <div class="col mt-2" id="contraseña2">
               <h5 class="italika">Confirmar constraseña</h5>
               <input
-              id="pswdC"
-              :type="tipoConfPass"
-              class="form-control inptElement"
-              @input="compararPsw()"
-              v-model="confContrasena"
+                id="pswdC"
+                :type="tipoConfPass"
+                class="form-control inptElement"
+                @input="compararPsw()"
+                v-model="confContrasena"
               />
             </div>
           </div>
@@ -558,19 +569,35 @@ function modificarC(){
         </div>
         <div class="modal-body">El usuario {{ nickname }} fue creado exitosamente.</div>
         <div class="modal-footer">
-          <button
-            type="button"
-            class="btn btn-primary"
-            @click="resetCampos()"
-            data-bs-dismiss="modal"
-          >
-            Seguir creando roles
-          </button>
           <button type="button" class="btn btn-success" @click="verUsuarios()">
-            Ver roles
+            Volver a usuarios
           </button>
         </div>
       </div>
+    </div>
+  </div>
+
+  <div
+    class="modal fade"
+    id="modalError"
+    data-bs-backdrop="static"
+    data-bs-keyboard="false"
+    tabindex="-1"
+    aria-labelledby="staticBackdropLabel"
+    aria-hidden="true"
+  >
+  <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="staticBackdropLabel">Error al cargar los datos</h5>
+            </div>
+            <div class="modal-body">Vuelva a carga el usuario</div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-success" @click="verUsuarios()">
+                Volver a usuarios
+                </button>
+            </div>
+        </div>
     </div>
   </div>
 </template>
@@ -583,12 +610,12 @@ body {
   min-height: 100vh;
 }
 
-#contraseña{
-    display: none;
+#contraseña {
+  display: none;
 }
 
-#contraseña2{
-    display: none;
+#contraseña2 {
+  display: none;
 }
 
 .italika {
