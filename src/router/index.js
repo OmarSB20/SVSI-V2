@@ -6,7 +6,8 @@ import RegistroRol from '../views/RegistroRol.vue'
 import CrearUsuario from '../views/CrearUsuario.vue'
 import login from '../views/Login.vue'
 import usuarioRegistrado from '../views/usuariosRegistrados.vue'
-import ActualizarUsuario from '../views/ActualizarUsuario.vue'
+import MediosContacto from '../views/MediosContacto.vue'
+
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -56,9 +57,9 @@ const router = createRouter({
       component: usuarioRegistrado
     },
     {
-      path: '/actualizarUsuario',
-      name: 'actualizarUsuario',
-      component: ActualizarUsuario
+      path: '/mediosContacto',
+      name: 'mediosContacto',
+      component: MediosContacto
     }
   ]
 })
