@@ -179,9 +179,10 @@ function irMenu() {
               <div>
                 <input
                 type="text"
-                class="form-control input-f inptElement"
+                class="form-control input-f inptElement Drk"
                 v-model.trim="nickname"
                 @input="camposVacios()"
+                autofocus
               />
               </div>
               
@@ -194,7 +195,7 @@ function irMenu() {
               <div class="input-group mb-3">
                 <input
                   :type="tipoInput"
-                  class="form-control input-f inptElement mb-4"
+                  class="form-control input-f inptElement mb-4 Drk"
                   v-model.trim="contrasena"
                   @input="camposVacios()"
                 />
@@ -265,7 +266,7 @@ body {
   color: #ffffff;
 }
 
-.inptElement {
+.Drk {
   height: 50px;
   font-size: 20px;
   background-color: #22242f;
@@ -273,7 +274,7 @@ body {
   border-color: #22242f;
 }
 
-.inptElement:focus {
+.Drk:focus {
   background-color: #22242f;
   border-color: #213ee2;
   color: white;

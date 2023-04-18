@@ -5,6 +5,7 @@ import { usuariosStore } from "../stores/usuarios";
 import { rolesStore } from "../stores/roles";
 
 import CompHeader from "../components/Header.vue";
+import router from "../router";
 
 //declaramos como constantes los metodos exactos que vamos a usar de las stores y lo igualamos a la store de donde vienen
 //           metodo    =     store de la que viene
@@ -27,6 +28,7 @@ const repetido = ref(false);
 const tipoConfPass = ref("password");
 const tipoPass = ref("password");
 const rolSeleccionado = ref("Seleccionar rol");
+const btnSeguirCreando = ref(null);
 //variable asociada al modal
 var modal;
 var tried = false;
@@ -163,6 +165,13 @@ const crearUsuario = async () => {
     await agregarUsuario(usuarioNuevo); //creamos el rol
 
     modal.show(); //al ser todo exitoso, mostramos el modal notificando el exito
+    var myModal = document.getElementById("modal");
+
+    myModal.addEventListener("shown.bs.modal", function () {
+      btnSeguirCreando.value.focus();
+      btnSeguirCreando.value.style.borderColor = "#90aee5";
+      btnSeguirCreando.value.style.borderWidth="4px"
+    });
   } catch (error) {
     console.log(error);
   }
@@ -249,7 +258,8 @@ function sbmtUsuario() {
 }
 
 function verUsuarios() {
-  window.location.href = "http://localhost:5173/modificarRol";
+  modal.hide();
+  router.push({name:"usuarioRegistrado"});
 }
 </script>
 
@@ -260,13 +270,13 @@ function verUsuarios() {
       <!-----------------------    Row de titulo  --------------------------->
       <div class="row mb-3 pt-5">
         <div class="col-1 d-flex justify-content-end">
-          <a href="http://localhost:5173">
+          <router-link to="http://localhost:5173">
             <img
               class="img-fluid"
               style="margin-top: 20px; width: 31.23px; height: 35.5px"
               src="../assets/triangulito.png"
             />
-          </a>
+          </router-link>
         </div>
         <div class="col ms-4">
           <p class="italika d-flex justify-content-start" style="font-size: 50px">
@@ -287,6 +297,7 @@ function verUsuarios() {
               class="form-control input-f inptElement"
               v-model.trim="nombre"
               @input="colorCampos()"
+              autofocus
               required
             />
           </div>
@@ -485,11 +496,12 @@ function verUsuarios() {
             class="btn btn-primary"
             @click="resetCampos()"
             data-bs-dismiss="modal"
+            ref="btnSeguirCreando"
           >
-            Seguir creando roles
+            Seguir creando usuarios
           </button>
           <button type="button" class="btn btn-success" @click="verUsuarios()">
-            Ver roles
+            Ver usuarios
           </button>
         </div>
       </div>
