@@ -22,6 +22,7 @@ const permisosDeRolArray = ref([]);
 const idRolEliminar = ref();
 var modal;
 var modalConfirmacion;
+var nombre;
 
 onMounted(() => {
   consultarRoles();
@@ -54,14 +55,16 @@ const consultarRoles = async () => {
 };
 
 const consultarPermisosDeRol = async (idRol) => {
-  permisosDeRolArray.value = [];
+  
   try {
+    permisosDeRolArray.value = [];
     const permisosDeRol = await obtenerPermisosDelRol(idRol);
     const body = permisosDeRol.data.body;
     for (var j in body) {
       permisosDeRolArray.value.push(body[j]);
     }
-    modal.show();
+    await modal.show();
+    console.log("fin funcion")
   } catch (error) {
     console.log(error);
   }
@@ -90,6 +93,7 @@ const modificarRol = async (idRol) => {
 };
 
 function actualizarTabla(nombre) {
+  console.log(nombre)
   if (nombre.trim() == "") {
     rolesDesplegados.value = rolesArray.value;
   } else {
@@ -102,9 +106,9 @@ function actualizarTabla(nombre) {
   }
 }
 
-function confirmar(idRol) {
+async function confirmar(idRol) {
   idRolEliminar.value = idRol;
-  modalConfirmacion.show();
+  await modalConfirmacion.show();
 }
 </script>
 <template>
@@ -112,13 +116,13 @@ function confirmar(idRol) {
     <CompHeader/>
     <div class="row ">
       <div class="col-1 mb-3 pt-5">
-        <a href="http://localhost:5173">
+        <router-link to="http://localhost:5173">
           <img
             class="img-fluid mt-3"
             style="margin-top: 20px; width: 31.23px; height: 35.5px"
             src="../assets/triangulito.png"
           />
-        </a>
+        </router-link>
       </div>
       <div class="col-8 mb-3 pt-5">
         <div class="row align-items-end">
@@ -144,9 +148,9 @@ function confirmar(idRol) {
             <h5 class="italika mt-3">Agregar Roles</h5>
           </div>
           <div class="col-1">
-            <router-link to="../crearRol">
+            <router-link to="../crearRol" style="text-decoration: none;">
               <button
-                class="btn btn-primary mt-2 d-flex align-items-center"
+                class="btn btn-primary mt-2 d-flex align-items-center justify-content-center"
                 type="submit"
                 style="
                   background-color: #66d054;
