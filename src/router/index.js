@@ -6,6 +6,7 @@ import RegistroRol from '../views/RegistroRol.vue'
 import CrearUsuario from '../views/CrearUsuario.vue'
 import login from '../views/Login.vue'
 import usuarioRegistrado from '../views/usuariosRegistrados.vue'
+import CrearCreditos from '../views/crearCreditos.vue'
 
 
 const router = createRouter({
@@ -57,7 +58,13 @@ const router = createRouter({
       path: '/usuarioRegistrado',
       name: 'usuarioRegistrado',
       component: usuarioRegistrado
+    },
+    {
+      path: '/crearCredito',
+      name: 'crearCredito',
+      component: CrearCredito
     }
+
   ]
 })
 
