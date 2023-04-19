@@ -66,7 +66,8 @@ const router = createRouter({
       path: '/mediosContacto',
       name: 'mediosContacto',
       component: MediosContacto
-    }
+    },
+    
   ]
 })
 
