@@ -1,4 +1,5 @@
 <script setup>
+
 import { ref } from "vue"; //para usar variables reactivas
 
 import { permisosStore } from "../stores/permisos"; //para poder usar store de permisos
@@ -55,6 +56,7 @@ function resetCampos() {
     checksDir.value[j] = false;
   }
 }
+
 
 //consulta los roles usando el metodo de la store, los almacena en rolesArray
 const consultarRoles = async () => {
