@@ -4,7 +4,10 @@ import ModificarRol from '../views/ModificarRol.vue'
 import CrearRol from '../views/CrearRol.vue'
 import RegistroRol from '../views/RegistroRol.vue'  
 import CrearUsuario from '../views/CrearUsuario.vue'
-import ModificarUsuario from '../views/ModificarUsuario.vue'
+import login from '../views/Login.vue'
+import usuarioRegistrado from '../views/usuariosRegistrados.vue'
+import ActualizarUsuarios from '../views/ActualizarUsuarios.vue'
+import MediosContacto from '../views/MediosContacto.vue'
 
 
 const router = createRouter({
@@ -23,7 +26,6 @@ const router = createRouter({
       // which is lazy-loaded when the route is visited.
       component: () => import('../views/AboutView.vue')
     },
-
     {
       path: '/crearRol',
       name: 'crearRol',
@@ -46,9 +48,24 @@ const router = createRouter({
       component: CrearUsuario
     },
     {
-      path: '/modificarUsuario',
-      name: 'modificarUsuario',
-      component: ModificarUsuario
+      path: '/login',
+      name: 'login',
+      component: login
+    },
+    {
+      path: '/usuarioRegistrado',
+      name: 'usuarioRegistrado',
+      component: usuarioRegistrado
+    },
+    {
+      path: '/ActualizarUsuarios',
+      name: 'ActualizarUsuarios',
+      component: ActualizarUsuarios
+    },
+    {
+      path: '/mediosContacto',
+      name: 'mediosContacto',
+      component: MediosContacto
     }
   ]
 })
