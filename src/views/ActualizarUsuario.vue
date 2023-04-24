@@ -3,7 +3,7 @@ import { ref } from "vue"; //para usar variables reactivas
 import { onMounted } from "vue"; //para poder usar el onMounted, que ejecuta todo lo que tenga adentro cada que cargue la pagina
 import { usuariosStore } from "../stores/usuarios";
 import { rolesStore } from "../stores/roles";
-import router  from '../router/index'
+import router  from '../router/index.js'
 
 
 import CompHeader from "../components/Header.vue";
