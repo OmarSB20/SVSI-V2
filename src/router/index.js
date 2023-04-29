@@ -6,7 +6,9 @@ import RegistroRol from '../views/RegistroRol.vue'
 import CrearUsuario from '../views/CrearUsuario.vue'
 import login from '../views/Login.vue'
 import usuarioRegistrado from '../views/usuariosRegistrados.vue'
-import CrearCreditos from '../views/crearCreditos.vue'
+import ActualizarUsuario from '../views/ActualizarUsuario.vue'
+import MediosContacto from '../views/MediosContacto.vue'
+import RegistroCreditos from '../views/RegistroCreditos.vue'
 
 
 const router = createRouter({
@@ -25,7 +27,6 @@ const router = createRouter({
       // which is lazy-loaded when the route is visited.
       component: () => import('../views/AboutView.vue')
     },
-
     {
       path: '/crearRol',
       name: 'crearRol',
@@ -46,9 +47,7 @@ const router = createRouter({
       path: '/crearUsuario',
       name: 'crearUsuario',
       component: CrearUsuario
-    }
-
-    ,
+    },
     {
       path: '/login',
       name: 'login',
@@ -60,9 +59,19 @@ const router = createRouter({
       component: usuarioRegistrado
     },
     {
-      path: '/crearCredito',
-      name: 'crearCredito',
-      component: CrearCredito
+      path: '/actualizarUsuario',
+      name: 'actualizarUsuario',
+      component: ActualizarUsuario
+    },
+    {
+      path: '/mediosContacto',
+      name: 'mediosContacto',
+      component: MediosContacto
+    },
+    {
+      path: '/registroCreditos',
+      name: 'registroCreditos',
+      component: RegistroCreditos
     }
 
   ]

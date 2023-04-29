@@ -43,102 +43,6 @@ onMounted(async () => {
   });
 });
 
-//consulta los roles usando el metodo de la store, los almacena en rolesArray
-const consultarRoles = async () => {
-  try {
-    roles.value = await obtenerRoles();
-    roles.value = roles.value.data.body;
-    console.log(roles.value);
-  } catch (error) {
-    console.log(error);
-  }
-};
-
-const consultarUsuarios = async () => {
-  try {
-    const usuariosArray = (await obtenerUsuarios()).data.body;
-    console.log(usuariosArray);
-    usuarios.value = usuariosArray.reduce((acc, cur) => {
-      acc[cur.Usuario] = cur;
-      return acc;
-    }, {});
-    usuariosFiltrados.value = usuarios.value;
-  } catch (error) {
-    console.log(error);
-  }
-};
-
-const buscarRol = (idRol) => {
-  const rolEncontrado = roles.value.find((rol) => rol.idRoles == idRol);
-  console.log(rolEncontrado.Nombre);
-  return rolEncontrado.Nombre;
-};
-
-const eliminarRoles = async (idRol) => {
-  try {
-    await eliminarPermisosDelRol(idRol);
-    await eliminarRol(idRol);
-    await consultarRoles();
-  } catch (error) {
-    console.log(error);
-  }
-};
-
-function myFunction() {
-  var input, filter, table, tr, td, i, txtValue;
-  input = document.getElementById("myInput");
-  filter = input.value.toUpperCase();
-  table = document.getElementById("myTable");
-  tr = table.getElementsByTagName("tr");
-  for (i = 0; i < tr.length; i++) {
-    td = tr[i].getElementsByTagName("td")[0];
-    if (td) {
-      txtValue = td.textContent || td.innerText;
-      if (txtValue.toUpperCase().indexOf(filter) > -1) {
-        tr[i].style.display = "";
-      } else {
-        tr[i].style.display = "none";
-      }
-    }
-  }
-}
-
-function modificaruser(idEmpleados) {
-  setIdUsuario(idEmpleados); //guardar el ide en el store
-  //mandar a otra interfaz
-  router.push({ name: "actualizarUsuario", params: { idUsrAct: idEmpleados }});
-}
-
-function confirmar(idEmpleados) {
-  idempleadoEliminar.value = idEmpleados;
-  modalConfirmacion.show();
-}
-
-function mostrarmodal(unombreUsuario, idUsuario) {
-  nombreUsuarioAct.value = unombreUsuario;
-  idUsuarioAct.value = idUsuario;
-
-  modal.show();
-  console.log(idUsuarioAct.value);
-  console.log(nombreUsuarioAct.value);
-}
-
-async function desactivarUsuario(idEmpleado) {
-  console.log(idEmpleado);
-  //decalro un objeto lo que se recibe la funcion con el inactivo
-  const usuarioActualizar = {
-    idEmpleados: idEmpleado,
-    EstatusActividad_idEstatusActividad: 2,
-  };
-
-  //mando llamar el metodo
-  try {
-    await actualizarUsuario(usuarioActualizar);
-  } catch (error) {
-    console.log(error);
-  }
-  consultarUsuarios();
-}
 </script>
 <template>
   <div class="container-fluid">
@@ -156,10 +60,7 @@ async function desactivarUsuario(idEmpleado) {
       </div>
       <div class="col-8 mb-3 pt-5">
         <div class="row align-items-end">
-          <p class="italika" style="font-size: 50px">Usuarios</p>
-        </div>
-        <div class="row align-items-end">
-          <h5 class="italika d-flex justify-content-start">Usuarios registrados</h5>
+          <p class="italika" style="font-size: 50px">Medios de contacto</p>
         </div>
       </div>
       <div class="col-3 align-items-end">
@@ -173,31 +74,26 @@ async function desactivarUsuario(idEmpleado) {
             placeholder="Buscar"
           />
         </div>
-        <div class="row">
-          <div class="col-7">
-            <h5 class="italika mt-3 d-flex justify-content-end">Agregar Usuarios</h5>
-          </div>
-
-          <div class="col">
-            <router-link to="../crearUsuario" style="text-decoration: none">
-              <button
-                class="btn btn-primary mt-2 d-flex align-items-center justify-content-center"
-                type="button"
-                style="
-                  background-color: #66d054;
-                  width: 40px;
-                  height: 40px;
-                  border-color: #5e5e5e;
-                "
-              >
-                <h4>+</h4>
-              </button>
-            </router-link>
-          </div>
-          <div class="col-3"></div>
-        </div>
       </div>
     </div>
+    <div class="row mb-5">
+        <div class="col-2 mt-2 ms-5">
+          <h5 class="italika d-flex justify-content-end">Nombre del medio:</h5>
+        </div>
+        <div class="col-6">
+          <input
+            type="text"
+            class="form-control"
+            @input="revisarRolExistente()"
+            v-model="rolNuevo"
+          />
+        </div>
+        <div class="col">
+          <button class="btn btn-success" type="submit" :disabled="deshabilitado">
+            Guardar nuevo
+          </button>
+        </div>
+      </div>
     <div class="table-responsive-sm">
       <table
         id="myTable"
@@ -206,20 +102,9 @@ async function desactivarUsuario(idEmpleado) {
       >
         <thead>
           <tr style="background-color: #2b4677; color: white; vertical-align: middle">
-            <th scope="col">Nombre Usuario</th>
-            <!-- <th scope="col" style="width: 200px"></th> -->
             <th scope="col">Nombre</th>
             <!-- <th scope="col" style="width: 200px"></th> -->
-            <th scope="col">Apellido paterno</th>
-            <!-- <th scope="col" style="width: 200px"></th> -->
-            <th scope="col">Apellido materno</th>
-            <!-- <th scope="col" style="width: 200px"></th> -->
-            <th scope="col">Correo</th>
-            <!-- <th scope="col" style="width: 200px"></th> -->
-            <th scope="col">Telefono</th>
-            <th scope="col">Rol</th>
-            <!-- <th scope="col" style="width: 200px"></th> -->
-            <th scope="col" class="sticky" style="position: sticky; right: 0">
+            <th scope="col" class="sticky" style="position: sticky; right: 0; width:200px">
               Opciones
             </th>
             <!-- <th scope="col" style="width: 200px"></th> -->
@@ -228,7 +113,6 @@ async function desactivarUsuario(idEmpleado) {
         </thead>
         <tbody>
           <tr v-for="usuario in usuarios" :key="usuario.idEmpleados">
-            <td>{{ usuario.Usuario }}</td>
             <td>{{ usuario.Nombre }}</td>
             <td>{{ usuario.Apellido_Paterno }}</td>
             <td>{{ usuario.Apellido_Materno }}</td>

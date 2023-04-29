@@ -20,6 +20,7 @@ export const usuariosStore = defineStore("usuarios",{
         return this.token;
     },
 
+    //trae todos los usuarios ACTIVOS
     async obtenerUsuarios(){
         try {
             const res = await axios.get('http://localhost:4000/api/usuarios')
@@ -30,6 +31,30 @@ export const usuariosStore = defineStore("usuarios",{
             throw(error);
         }
     },
+
+//Trae TODOS los nombres de usuario que existen
+    async obtenerNicknames(){
+        try {
+            const res = await axios.get('http://localhost:4000/api/usuarios/nicks')
+            return res;
+        } catch (error) {
+            console.log(error)
+        }
+    },
+//Trae los datos solo del usuario especificado, hay que mandarle el idEmpleados
+    async obtenerUnUser(idEmpleados){
+        try {
+            if (idEmpleados=="") {
+                throw error
+            }
+            console.log('http://localhost:4000/api/usuarios/'+idEmpleados)
+            const res = await axios.get('http://localhost:4000/api/usuarios/'+idEmpleados)
+            return res;
+        } catch (error) {
+            throw error
+        }
+    },
+
 
 
     //metodos para resibir usuario y guardar el que se esta modificando
@@ -42,10 +67,6 @@ export const usuariosStore = defineStore("usuarios",{
     getIdUsuario(){
         return this.idUsuarioActual
     },
-
-
-
-
     
     //hay que mandarle el json ya creado
     async agregarUsuario(usuario){

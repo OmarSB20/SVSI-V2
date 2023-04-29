@@ -7,6 +7,7 @@ import { permisosRolesStore } from "../stores/permisosRoles"; //para poder usar 
 import { onMounted } from "vue"; //para poder usar el onMounted, que ejecuta todo lo que tenga adentro cada que cargue la pagina
 
 import CompHeader from '../components/Header.vue'
+import router from "../router";
 //declaramos como constantes los metodos exactos que vamos a usar de las stores y lo igualamos a la store de donde vienen
 //           metodo    =     store de la que viene
 const { obtenerPermisos } = permisosStore();
@@ -29,6 +30,7 @@ const checksVacios = ref(false); //es true si no se ha seleccionado ningun check
 const idRolActualizar = ref();
 const permisosDelRol = ref([]);
 const deshabilitado = ref(false);
+const btnVolver = ref(null)
 //variable asociada al modal
 var modal;
 
@@ -143,6 +145,13 @@ const actualizar = async (nombreRol) => {
       await agregarPermisosDelRol(idRolActualizar.value, permisosAgregados.value[j]);
     }
     modal.show(); //al ser todo exitoso, mostramos el modal notificando el exito
+    var myModal = document.getElementById("modal");
+
+    myModal.addEventListener("shown.bs.modal", function () {
+      btnVolver.value.focus();
+      btnVolver.value.style.borderColor = "#90aee5";
+      btnVolver.value.style.borderWidth="4px"
+    });
   } catch (error) {
     console.log(error);
   }
@@ -158,12 +167,11 @@ function moverPermiso(id) {
   }
 }
 
-function sendToView() {
-  // Comprobas todo lo que sea necesario
-  // y finalmente redireccionas
-  // ...
-  this.$router.push("http://localhost:5173/ModificarRol");
+function irRoles(){
+  modal.hide();
+  router.push({ name: "modificarRol" });
 }
+
 </script>
 
 <template>
@@ -172,13 +180,14 @@ function sendToView() {
       <CompHeader/>
       <div class="row mb-3 pt-5">
         <div class="col-1 d-flex justify-content-end">
-          <a href="http://localhost:5173/modificarRol">
+          <router-link to="/modificarRol">
+
             <img
               class="img-fluid"
               style="margin-top: 20px; width: 31.23px; height: 35.5px"
               src="../assets/triangulito.png"
             />
-          </a>
+          </router-link>
         </div>
         <div class="col ms-4">
           <p class="italika d-flex justify-content-start" style="font-size: 50px">
@@ -196,6 +205,7 @@ function sendToView() {
             class="form-control"
             @input="revisarRolExistente()"
             v-model="rolNuevo"
+            autofocus
           />
           <div
             v-if="repetido"
@@ -249,8 +259,7 @@ function sendToView() {
                   style="
                     border-style: inherit;
                     border-right-color: #2b4677;
-                    border-right-width: 2px;
-                  "
+                    border-right-width: 2px;                  "
                 >
                   {{ item.Descripcion }}
                 </td>
@@ -289,9 +298,7 @@ function sendToView() {
         </div>
         <div class="modal-body">El rol {{ rolNuevo }} fue actualizado exitosamente.</div>
         <div class="modal-footer">
-          <a href="http://localhost:5173/ModificarRol">
-            <button type="button" class="btn btn-success">Volver a Roles</button>
-          </a>
+            <button type="button" class="btn btn-success" ref="btnVolver" @click="irRoles()">Volver a Roles</button>
         </div>
       </div>
     </div>
