@@ -1,101 +1,226 @@
 <script setup>
 import { ref } from "vue"; 
 import { onMounted } from "vue";
+import { catalogoStore } from "../stores/catalogo";
 import router from "../router";
 import CompHeader from "../components/Header.vue";
 
 //Declaracion de los constantes de los metodos de la store
+const { getidMotocicleta } = catalogoStore();
+const { setidMotocicleta } = catalogoStore();
+const { consultarMotocicletas } = catalogoStore();
+const { obtenerUnModelo } = catalogoStore();
+const { agregarModelo } = catalogoStore();
+const { actualizarModelo } = catalogoStore();
 
 //Variables reactivas
-const idModelo = ref("");
-const motosArray = ref([]);
-const modeloNuevo = ref("");
+const nombre = ref("");
+const modelo = ref("");
+const idModelo = ref(0);
+const motoActual = ref([]);
+const motos = ref([]);
+const motosDesplegadas = ref([]);
 const actualizar = ref(false);
-const checksVacios = ref(false);
-const validado = ref(true);
+const validado = ref(false);
 const alertaLlenado = ref(false);
+const deshabilitado = ref(true);
+const repetido = ref(false);
+const vS = ref(false);
+const vN = ref(false);
 
 var modal;
 
 onMounted(async () => {
     console.log();
-    await consultarMotos();
-    await obtenerDatosMoto();
+        await consultarMotos();
+
 });
 
 //Consultar todas las motos de la base de datos
 const consultarMotos = async () => {
     try{
-
-    } catch{
-
+        motos.value = await consultarMotocicletas();
+        motos.value = motos.value.data.body;
+        motosDesplegadas.value = motos.value;
+        console.log(motos.value);
+        for(var i in motos.value){
+            if(motos.value.estatusVigencia[i] == "1"){
+                motos.value.estatusVigencia[i] = "Si";
+            }else{
+                motos.value.estatusVigencia[i] = "No";
+            }
+        }
+        console.log(motos.value);
+    } catch(error){
+        console.log(error);
     }
 };
 
 //Obtener los datos de la moto segun su id (Actualizar)
-const obtenerDatosMoto = async () => {
+const obtenerDatosMoto = async (idMoto) => {
     try{
-
+        console.log(idMoto);
+        if(idMoto != ""){
+            console.log(idMoto);
+            motoActual.value  = await obtenerUnModelo(idMoto);
+            motoActual.value = motoActual.value.data.body[0];
+            console.log(motoActual.value);
+            modelo.value = motoActual.value.Modelo;
+            console.log(motoActual.value.EstatusVigencia);
+            if(motoActual.value.estatusVigencia == "1"){
+                vS.value = true;
+            }else{
+                vN.value = true;
+            }
+        }
     } catch{
 
     }
 };
 
-//Consulta el id de la moto que se va a actualizar
-function obtenerIdMoto (){
-
-}
-
 //Consultar si el modelo que se desea ingresar ya existe
-function consultarModeloExistente() {
-    
+function consultarModeloExistente(modelo) {
+    if(modelo.trim() == ""){
+        deshabilitado.value = true;
+        return;
+    }
+    else{
+        motos.value.forEach((element) => {
+            if (element.Modelo.toLowerCase() == modelo.toLowerCase()) {
+                repetido.value = true;
+                deshabilitado.value = true;
+                return true;
+            }
+        });
+    }
+    repetido.value = false;
+    deshabilitado.value = false;
+    return false;
 }
 
 //Guarda una nueva moto
 const crearModelo = async () => {
     try{
 
-    } catch{
+        //Almenos uno de los 2 tiene que estar seleccionado
 
+        if(vS.value == true){
+            const motoNueva = {
+                idMoto: 0,
+                Modelo: modelo.value,
+                EstatusVigencia: 1
+            };
+            await agregarModelo(motoNueva);
+        }
+        else if(vN.value == true){
+            const motoNueva = {
+                idMoto: 0,
+                Modelo: modelo.value,
+                EstatusVigencia: 2
+            };
+            await agregarModelo(motoNueva);
+        }else{
+            alertaLlenado.value = true;
+        }
+        
+        modal.show();
+    } catch{
+        console.log(error);
     }
 }
 
 //Actualiza una moto seleccionada
-const actModelo = async () => {
+const actualizarMoto = async () => {
     try{
-
-    } catch{
-
+        if(vS.value == true) {
+            const motoAct = {
+                idMoto: idModelo.value,
+                Modelo: modelo.value,
+                EstatusVigencia: 1
+            };
+            await actualizarModelo(motoAct);
+        }
+        else if(vN.value == true) {
+            const motoAct = {
+                idMoto: idModelo.value,
+                Modelo: modelo.value,
+                EstatusVigencia: 2
+            };
+            await actualizarModelo(motoAct);
+        }else{
+            alertaLlenado.value = true;
+        }
+    }catch(error){
+        console.log(error);
     }
+}
+
+//realiza cambios en la pagina al buscar modificar una moto
+const actModelo = async (idMoto) => {
+    try{
+        resetCampos();
+        idModelo.value = idMoto;
+        console.log(idModelo.value);
+        obtenerDatosMoto(idMoto);
+        actualizar.value = true;
+        deshabilitado.value = false;
+
+        document.getElementById("guardar").style.display = "none";
+        document.getElementById("actualizar").style.display = "inline-block";
+
+    } catch(error){
+        console.log(error);
+    }
+}
+
+//Regrasar a crear
+const regresar = async () => {
+    try{
+        actualizar.value = false;
+        deshabilitado.value = true;
+        resetCampos();
+
+        document.getElementById("guardar").style.display = "inline-block";
+        document.getElementById("actualizar").style.display = "none";
+
+    } catch(error){
+        console.log(error);
+    }
+}
+
+//Verificar que solo un checkbox este seleccionado
+function checkboxSi() {
+    vN.value == false;
 }
 
 //Verifica los datos colocados
 function sbmtMoto() {
-    //Almenos uno de los 2 tiene que estar seleccionado
-    const checkboxSi = document.getElementById("modifyP");
-    const checkboxNo = document.getElementById("modifyP");
-}
-
-//Modifica el diseño y el funcionamiento del boton guardar
-function modificarBoton() {
-
+    if(actualizar.value == false){
+        crearModelo();
+    }
+    else{
+        actualizarMoto();
+    }
 }
 
 //Borra los campos cuando se vuelver a agregar nueva moto despes de
 //actualizar
 function resetCampos() {
-  
+    modelo.value = "";
+    vS.value = false;
+    vN.value = false;
+    idModelo.value = 0;
 }
 
 //Actualiza la tabla segun lo que se coloque en el buscador
 function actualizarTabla(nombre) {
   if (nombre.trim() == "") {
-    rolesDesplegados.value = rolesArray.value;
+    motosDesplegadas.value = motos.value;
   } else {
-    rolesDesplegados.value = [];
-    rolesArray.value.forEach((element) => {
-      if (element.Nombre.toLowerCase().includes(nombre.toLowerCase())) {
-        rolesDesplegados.value.push(element);
+    motosDesplegadas.value = [];
+    motos.value.forEach((element) => {
+      if (element.Modelo.toLowerCase().includes(nombre.toLowerCase())) {
+        motosDesplegadas.value.push(element);
       }
     });
   }
@@ -130,7 +255,7 @@ function actualizarTabla(nombre) {
                             class="form-control rounded-pill"
                             style="width: 250px; height: 50px; border-color: #5e5e5e"
                             placeholder="Buscar"
-                            v-model="nombre"
+                            v-model.trim="nombre"
                             @input="actualizarTabla(nombre)"
                         />
                     </div>
@@ -148,8 +273,8 @@ function actualizarTabla(nombre) {
                             class="form-control rounded-pill"
                             style="width: 350px; height: 50px; border-color: #5e5e5e"
                             placeholder=""
-                            v-model="modelo"
-                            @input=""
+                            v-model.trim="modelo"
+                            @input="consultarModeloExistente(modelo)"
                         />
                 </div>
                 <div class="col-2 m-0">
@@ -163,8 +288,8 @@ function actualizarTabla(nombre) {
                         <div class="col p-0">
                             <input
                                 type="checkbox"
-                                @input="modificarC()"
-                                id="modifyP"
+                                @input="checkboxSi()"
+                                v-model="vS"
                                 style="width: 30px; height: 30px; border-color: #5e5e5e"
                                 class="form-check-input"
                             />
@@ -175,8 +300,8 @@ function actualizarTabla(nombre) {
                         <div class="col p-0">
                             <input
                                 type="checkbox"
-                                @input="modificarC()"
-                                id="modifyP"
+                                @input="checkboxValidos()"
+                                v-model="vN"
                                 style="width: 30px; height: 30px; border-color: #5e5e5e"
                                 class="form-check-input"
                             />
@@ -187,11 +312,21 @@ function actualizarTabla(nombre) {
                 <div class="col-3 p-0">
                     <button
                         class="btn btn-primary rounded-pill"
+                        id="guardar"
                         style="width: 180px; height: 50px; background-color:#27D257"
                         type="submit"
-                        :disabled="deshabilitado"
+                        v-bind:disabled="deshabilitado"
                     >
                         Guardar
+                    </button>
+                    <button
+                        class="btn btn-primary rounded-pill"
+                        id="actualizar"
+                        style="width: 180px; height: 50px; background-color:#27D257"
+                        type="submit"
+                        v-bind:disabled="deshabilitado"
+                    >
+                        Actualizar
                     </button>
                 </div>
                 <div class="col-1">
@@ -213,23 +348,22 @@ function actualizarTabla(nombre) {
             </tr>
         </thead>
         <tbody>
-            <tr v-for="moto in motosArray">
+            <tr v-for="moto in motosDesplegadas">
             <td>
-                {{ moto.Nombre }}
+                {{ moto.Modelo }}
             </td> 
             <td>
-                {{ moto.Disponible }}
+                {{ moto.estatusVigencia }}
             </td> 
-            <td>
-                {{ moto.Disponible }}
-            </td>
             <th scope="row" class="sticky" style="position: sticky">
                 <div class="align-items-center">
                 <button
+                    v-if="moto.idMoto != idModelo"
                     class="btn btn-primary mx-1"
+                    id="modificar"
                     type="submit"
                     style="background-color: #ffbe16; border-color: #ffbe16; height: 37px"
-                    @click="modificarRol(rol.idRoles)"
+                    @click="actModelo(moto.idMoto)"
                 >
                     <img
                     class="img-fluid mb-3"
@@ -238,15 +372,17 @@ function actualizarTabla(nombre) {
                     />
                 </button>
                 <button
+                    v-if="moto.idMoto == idModelo"
                     class="btn btn-primary mx-1"
+                    id="regresar"
                     type="submit"
-                    style="background-color: #c01a1a; border-color: #c01a1a; height: 37px"
-                    @click="confirmar(rol.idRoles)"
+                    style="background-color: #ffff16; border-color: #ffbe16; height: 37px"
+                    @click="regresar()"
                 >
                     <img
-                    class="img-fluid mb-1"
-                    style="width: 24.5px; height: 22.75px"
-                    src="../assets/basura.png"
+                    class="img-fluid mb-3"
+                    style="width: 24.5px; height: 25.75px; margin-top: 0% !important"
+                    src="../assets/lapiz.png"
                     />
                 </button>
                 </div>
@@ -263,14 +399,6 @@ body {
   padding: 0;
   background-image: linear-gradient(113.96deg, #000103 2.35%, #164193 100%);
   min-height: 100vh;
-}
-
-#contraseña {
-  display: none;
-}
-
-#contraseña2 {
-  display: none;
 }
 
 .italika {
@@ -291,5 +419,11 @@ body {
 .table-hover tbody tr:hover td,
 .table-hover tbody tr:hover th {
   background-color: #bebebe;
+}
+#actualizar{
+    display: none;
+}
+#guardar{
+    display: inline-block;
 }
 </style>
