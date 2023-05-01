@@ -3,6 +3,7 @@ import { ref, computed } from "vue"; //para usar variables reactivas
 import { onMounted } from "vue"; //para poder usar el onMounted, que ejecuta todo lo que tenga adentro cada que cargue la pagina
 import { usuariosStore } from "../stores/usuarios";
 import { rolesStore } from "../stores/roles";
+import { loginStore } from "../stores/login";
 import CompHeader from "../components/Header.vue";
 import router from "../router";
 
@@ -15,7 +16,8 @@ const { obtenerUsuarios } = usuariosStore();
 const { eliminarUsuario } = usuariosStore();
 const { actualizarUsuario } = usuariosStore();
 const { getIdUsuario } = usuariosStore();
-
+const { reanudarSesion } = loginStore();
+const {verificarPermisos} = loginStore();
 //variables reactivas
 const usuarios = ref({});
 const roles = ref([]);
@@ -35,12 +37,14 @@ const alertaLlenado = ref(false);
 
 //al cargar la pagina se consultan los permisos y roles que hay en la BD y se define el objeto relacionado al modal
 onMounted(async () => {
-  await consultarRoles();
-  await consultarUsuarios();
-  deshabilitado.value = true;
-  modal = new bootstrap.Modal(document.getElementById("modal"), {
-    keyboard: false,
+  
+    await consultarRoles();
+    await consultarUsuarios();
+    deshabilitado.value = true;
+    modal = new bootstrap.Modal(document.getElementById("modal"), {
+      keyboard: false,
   });
+  
 });
 
 //consulta los roles usando el metodo de la store, los almacena en rolesArray
@@ -146,7 +150,7 @@ async function desactivarUsuario(idEmpleado) {
 
     <div class="row">
       <div class="col-1 mb-3 pt-5">
-        <router-link to=" http://localhost:5173">
+        <router-link to="/italika">
           <img
             class="img-fluid mt-3"
             style="margin-top: 20px; width: 31.23px; height: 35.5px"
