@@ -10,6 +10,7 @@ import login from '../views/Login.vue'
 import Usuarios from '../views/Usuarios.vue'
 import ActualizarUsuario from '../views/ActualizarUsuario.vue'
 import MediosContacto from '../views/MediosContacto.vue'
+import Asesores from '../views/Asesores.vue'
 
 
 //const { reanudarSesion } = loginStore();
@@ -21,6 +22,7 @@ const interfaces = {
   home: '0',
   login: '0',
   mediosContacto: '3',
+  asesores: '5',
   crearUsuario: '9',
   usuarios: '9',
   actualizarUsuario: '9',
@@ -93,6 +95,12 @@ const router = createRouter({
       path: '/mediosContacto',
       name: 'mediosContacto',
       component: MediosContacto
+      
+    },
+    {
+      path: '/asesores',
+      name: 'asesores',
+      component: Asesores
       
     }
   ]
