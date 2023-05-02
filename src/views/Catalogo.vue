@@ -27,6 +27,7 @@ const deshabilitado = ref(true);
 const repetido = ref(false);
 const vS = ref(false);
 const vN = ref(false);
+const element = ref(null);
 
 var modal;
 
@@ -44,10 +45,10 @@ const consultarMotos = async () => {
         motosDesplegadas.value = motos.value;
         console.log(motos.value);
         for(var i in motos.value){
-            if(motos.value.estatusVigencia[i] == "1"){
-                motos.value.estatusVigencia[i] = "Si";
+            if(motos.value[i].estatusVigencia == "1"){
+                motos.value[i].estatusVigencia= "Si";
             }else{
-                motos.value.estatusVigencia[i] = "No";
+                motos.value[i].estatusVigencia = "No";
             }
         }
         console.log(motos.value);
@@ -79,23 +80,30 @@ const obtenerDatosMoto = async (idMoto) => {
 };
 
 //Consultar si el modelo que se desea ingresar ya existe
-function consultarModeloExistente(modelo) {
-    if(modelo.trim() == ""){
+function consultarModeloExistente() {
+    if(modelo.value.trim() == ""){
         deshabilitado.value = true;
+        alertaLlenado.value = false;
+        repetido.value = false;
         return;
     }
     else{
-        motos.value.forEach((element) => {
-            if (element.Modelo.toLowerCase() == modelo.toLowerCase()) {
-                repetido.value = true;
-                deshabilitado.value = true;
-                return true;
-            }
+        //find obtiene un elemento
+        element.value = motos.value.find((element) => {
+            return element.Modelo.toLowerCase() == modelo.value.toLowerCase()      
         });
     }
-    repetido.value = false;
-    deshabilitado.value = false;
-    return false;
+
+    if (element.value == null) {
+        repetido.value = false;
+        deshabilitado.value = false;
+    }else{
+        repetido.value = true;
+        deshabilitado.value = true;
+    }
+    return;
+
+    
 }
 
 //Guarda una nueva moto
@@ -111,6 +119,11 @@ const crearModelo = async () => {
                 EstatusVigencia: 1
             };
             await agregarModelo(motoNueva);
+
+            modal = new bootstrap.Modal(document.getElementById("modal"), {
+                keyboard: false,
+            });
+            modal.show();
         }
         else if(vN.value == true){
             const motoNueva = {
@@ -119,11 +132,15 @@ const crearModelo = async () => {
                 EstatusVigencia: 2
             };
             await agregarModelo(motoNueva);
+
+            modal = new bootstrap.Modal(document.getElementById("modal"), {
+                keyboard: false,
+            });
+            modal.show();
         }else{
             alertaLlenado.value = true;
         }
         
-        modal.show();
     } catch{
         console.log(error);
     }
@@ -139,6 +156,11 @@ const actualizarMoto = async () => {
                 EstatusVigencia: 1
             };
             await actualizarModelo(motoAct);
+
+            modal = new bootstrap.Modal(document.getElementById("modalAct"), {
+                keyboard: false,
+            });
+            modal.show();
         }
         else if(vN.value == true) {
             const motoAct = {
@@ -147,9 +169,15 @@ const actualizarMoto = async () => {
                 EstatusVigencia: 2
             };
             await actualizarModelo(motoAct);
+
+            modal = new bootstrap.Modal(document.getElementById("modalAct"), {
+                keyboard: false,
+            });
+            modal.show();
         }else{
             alertaLlenado.value = true;
         }
+
     }catch(error){
         console.log(error);
     }
@@ -207,6 +235,9 @@ function sbmtMoto() {
 //actualizar
 function resetCampos() {
     modelo.value = "";
+    alertaLlenado.value = false;
+    repetido.value = false;
+    deshabilitado.value = false;
     vS.value = false;
     vN.value = false;
     idModelo.value = 0;
@@ -224,6 +255,20 @@ function actualizarTabla(nombre) {
       }
     });
   }
+}
+
+function verMotos() {
+    //router.push({ name: 'usuarioRegistrado'});
+    modal.hide();
+    resetCampos();
+    consultarMotos();
+}
+
+function volverAMotos() {
+    //router.push({ name: 'usuarioRegistrado'});
+    modal.hide();
+    regresar();
+    consultarMotos();
 }
 
 </script>
@@ -267,15 +312,17 @@ function actualizarTabla(nombre) {
                 <div class="col-1 p-0">
                     <h5 class="italika m-0 p-3">Modelo:</h5>
                 </div>
-                <div class="col-4 p-0">
-                    <input
-                            type="text"
-                            class="form-control rounded-pill"
-                            style="width: 350px; height: 50px; border-color: #5e5e5e"
-                            placeholder=""
-                            v-model.trim="modelo"
-                            @input="consultarModeloExistente(modelo)"
-                        />
+                <div class="col-4 p-0">                    
+                    <div class="row">
+                        <input
+                                type="text"
+                                class="form-control rounded-pill"
+                                style="width: 350px; height: 50px; border-color: #5e5e5e"
+                                placeholder=""
+                                v-model.trim="modelo"
+                                @input="consultarModeloExistente()"
+                            />
+                    </div>
                 </div>
                 <div class="col-2 m-0">
                     <div class="row align-items-center">
@@ -310,35 +357,67 @@ function actualizarTabla(nombre) {
                 </div>
                 <div class="col-1"></div>
                 <div class="col-3 p-0">
-                    <button
-                        class="btn btn-primary rounded-pill"
-                        id="guardar"
-                        style="width: 180px; height: 50px; background-color:#27D257"
-                        type="submit"
-                        v-bind:disabled="deshabilitado"
-                    >
-                        Guardar
-                    </button>
-                    <button
-                        class="btn btn-primary rounded-pill"
-                        id="actualizar"
-                        style="width: 180px; height: 50px; background-color:#27D257"
-                        type="submit"
-                        v-bind:disabled="deshabilitado"
-                    >
-                        Actualizar
-                    </button>
+                    <div class="row">
+                        <button
+                            class="btn btn-primary rounded-pill"
+                            id="guardar"
+                            style="width: 180px; height: 50px; background-color:#27D257"
+                            type="submit"
+                            v-bind:disabled="deshabilitado"
+                        >
+                            Guardar
+                        </button>
+                        <button
+                            class="btn btn-primary rounded-pill"
+                            id="actualizar"
+                            style="width: 180px; height: 50px; background-color:#27D257"
+                            type="submit"
+                            v-bind:disabled="deshabilitado"
+                        >
+                            Actualizar
+                        </button>
+                    </div>
                 </div>
                 <div class="col-1">
 
                 </div>
+            </div>
+            <!-- Alertas -->
+            <div class="row mb-3 pt-0 d-flex align-items-center">
+                <div class="col-2"></div>
+                <div class="col-4">
+                    <div class="row align-items-center">
+                        <div
+                            v-if="repetido"
+                            class="alert alert-danger mt-0 d-flex align-items-center"
+                            style="height: 38px; width: 300px"
+                            role="alert"
+                        >
+                            "{{ modelo }}" ya existe
+                        </div>
+                    </div>
+                </div>
+                <div class="col-3"></div>
+                <div class="col-3">
+                    <div class="row">
+                        <div
+                            v-if="alertaLlenado"
+                            class="alert alert-danger mt-2 d-flex align-items-center"
+                            style="height: 38px; width: 280px"
+                            role="alert"
+                        >
+                            Por favor, llene todos los campos
+                        </div>
+                    </div>
+                </div>
+                <div class="col-1"></div>
             </div>
         </div>
     </form>
     <div class="container-fluid">
         <table
         class="table table-hover table-striped text-center mt-4 mx-auto"
-        style="width: 900px"
+        style="width: 750px"
         >
         <thead>
             <tr style="background-color: #2b4677; color: white; vertical-align: middle">
@@ -376,12 +455,12 @@ function actualizarTabla(nombre) {
                     class="btn btn-primary mx-1"
                     id="regresar"
                     type="submit"
-                    style="background-color: #ffff16; border-color: #ffbe16; height: 37px"
+                    style="background-color: #FF9533; border-color: #5E8BFF; height: 37px; border-width: 3px;"
                     @click="regresar()"
                 >
                     <img
                     class="img-fluid mb-3"
-                    style="width: 24.5px; height: 25.75px; margin-top: 0% !important"
+                    style="width: 24.5px; height: 25.75px; margin-top: 0%; padding-bottom: 2px; !important"
                     src="../assets/lapiz.png"
                     />
                 </button>
@@ -390,6 +469,66 @@ function actualizarTabla(nombre) {
             </tr>
         </tbody>
         </table>
+    </div>
+    <!-- Modal -->
+    <div
+        class="modal fade"
+        id="modal"
+        data-bs-backdrop="static"
+        data-bs-keyboard="false"
+        tabindex="-1"
+        aria-labelledby="staticBackdropLabel"
+        aria-hidden="true"
+    >
+        <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+            <h5 class="modal-title" id="staticBackdropLabel">¡Moto creada!</h5>
+            <button
+                type="button"
+                class="btn-close"
+                data-bs-dismiss="modal"
+                aria-label="Close"
+            ></button>
+            </div>
+            <div class="modal-body">La moto {{ modelo }} fue creada exitosamente.</div>
+            <div class="modal-footer">
+            <button type="button" class="btn btn-success" @click="volverAMotos()">
+                Volver a motos
+            </button>
+            </div>
+        </div>
+        </div>
+    </div>
+
+    <div
+        class="modal fade"
+        id="modalAct"
+        data-bs-backdrop="static"
+        data-bs-keyboard="false"
+        tabindex="-1"
+        aria-labelledby="staticBackdropLabel"
+        aria-hidden="true"
+    >
+        <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+            <h5 class="modal-title" id="staticBackdropLabel">¡Moto actualizada!</h5>
+            <button
+                type="button"
+                class="btn-close"
+                data-bs-dismiss="modal"
+                aria-label="Close"
+            ></button>
+            </div>
+            <div class="modal-body">La moto {{ modelo }} fue actualizada exitosamente.</div>
+            <div class="modal-footer">
+            <button type="button" class="btn btn-success" @click="volverAMotos()">
+                Volver a motos
+            </button>
+            </div>
+        </div>
+        </div>
     </div>
 </template>
 
