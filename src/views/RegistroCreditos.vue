@@ -1,19 +1,19 @@
 <script setup>
 import { ref } from "vue";
-import { permisosRolesStore } from "../stores/permisosRoles";
-import { rolesStore } from "../stores/roles";
+//import { permisosRolesStore } from "../stores/permisosRoles";
+//import { rolesStore } from "../stores/roles";
 import { onMounted } from "vue";
 import router from '../router/index'
 import { creditosStore } from '../stores/creditos'
 
 import CompHeader from '../components/Header.vue'
 
-const { obtenerPermisosDelRol } = permisosRolesStore();
-const { eliminarPermisosDelRol } = permisosRolesStore();
-const { obtenerRoles } = rolesStore();
-const { eliminarRol } = rolesStore();
+// const { obtenerPermisosDelRol } = permisosRolesStore();
+// const { eliminarPermisosDelRol } = permisosRolesStore();
+// const { obtenerRoles } = rolesStore();
+// const { eliminarRol } = rolesStore();
 const { setCredito } = creditosStore();
-const { obtenerCredito, agregarCredito,actualizarCredito} = creditosStore();
+const { obtenerCredito, agregarCredito, actualizarCredito } = creditosStore();
 
 
 
@@ -23,10 +23,10 @@ const roles = ref([]);
 const creditoArray = ref([]);
 const creditosDesplegados = ref([]);
 const permisosDeRolArray = ref([]);
-const idRolEliminar = ref();
-const creditoNuevo =ref("");
-const repetido =ref(false);
-const deshabilitado=ref(false);
+const idCreditoEliminar = ref();
+const creditoNuevo = ref("");
+const repetido = ref(false);
+const deshabilitado = ref(false);
 const botonActualizar = ref(false);
 const idBotonActualizar = ref(0);
 const botonRegresar = ref(false);
@@ -41,7 +41,7 @@ onMounted(() => {
     keyboard: false,
   });
 
-  
+
 });
 
 const consultarCredito = async () => {
@@ -49,7 +49,7 @@ const consultarCredito = async () => {
     const credito = await obtenerCredito()
     console.log(credito.data.body)
     creditoArray.value = credito.data.body //guardo tofo
-    creditosDesplegados.value =credito.data.body //filtrado
+    creditosDesplegados.value = credito.data.body //filtrado
 
   } catch (error) {
     console.log(error)
@@ -57,38 +57,25 @@ const consultarCredito = async () => {
 
 
 }
-const consultarRoles = async () => {
-  buscador.value = [];
-  rolesArray.value = [];
-  rolDir.value = [];
-  try {
-    roles.value = await obtenerRoles();
-    const body = roles.value.data.body;
-    console.log(roles.value);
-    for (var j in body) {
-      rolesArray.value.push(body[j]);
-      buscador.value.push(body[j].Nombre);
-      rolDir.value.push(body[j].idRoles);
-    }
-    rolesDesplegados.value = rolesArray.value;
-  } catch (error) {
-    console.log(error);
-  }
-};
+// const consultarRoles = async () => {
+//   buscador.value = [];
+//   rolesArray.value = [];
+//   rolDir.value = [];
+//   try {
+//     roles.value = await obtenerRoles();
+//     const body = roles.value.data.body;
+//     console.log(roles.value);
+//     for (var j in body) {
+//       rolesArray.value.push(body[j]);
+//       buscador.value.push(body[j].Nombre);
+//       rolDir.value.push(body[j].idRoles);
+//     }
+//     rolesDesplegados.value = rolesArray.value;
+//   } catch (error) {
+//     console.log(error);
+//   }
+// };
 
-const consultarPermisosDeRol = async (idRol) => {
-  permisosDeRolArray.value = [];
-  try {
-    const permisosDeRol = await obtenerPermisosDelRol(idRol);
-    const body = permisosDeRol.data.body;
-    for (var j in body) {
-      permisosDeRolArray.value.push(body[j]);
-    }
-    modal.show();
-  } catch (error) {
-    console.log(error);
-  }
-};
 
 const eliminarRoles = async (idEmpleados) => {
   try {
@@ -100,55 +87,47 @@ const eliminarRoles = async (idEmpleados) => {
   }
 };
 
-
-
-
-function modificarNombreCredito (Descripcion,idTipos_De_Creditos){
-  creditoNuevo.value =Descripcion 
-  idBotonActualizar.value =idTipos_De_Creditos
-  if (!botonActualizar.value ){
+function modificarNombreCredito(Descripcion, idTipos_De_Creditos) {
+  creditoNuevo.value = Descripcion
+  idBotonActualizar.value = idTipos_De_Creditos
+  if (!botonActualizar.value) {
     botonActualizar.value = true;
-   }
+  }
 
- else 
- {
-  botonActualizar.value = false;
-  idBotonActualizar.value = -1;
-  creditoNuevo.value = "";
- }
-  
+  else {
+    botonActualizar.value = false;
+    idBotonActualizar.value = -1;
+    creditoNuevo.value = "";
+  }
+
 }
 
-async function  guardarCreditos(Descripcion)
-{
+async function guardarCreditos(Descripcion) {
   try {
     console.log(Descripcion);
     await agregarCredito(Descripcion);
     creditoNuevo.value = ""
-     
-    modal1.show(); 
-    
+
+    modal1.show();
+    this.consultarCredito();
+
   } catch (error) {
-     console.log(error)
+    console.log(error)
   }
-    
+
 }
 
-async function modificarCreditos(idTipos_De_Creditos, Descripcion)
-{
+async function modificarCreditos(idTipos_De_Creditos, Descripcion, idEstatusActividad) {
   try {
-     await actualizarCredito(idTipos_De_Creditos,Descripcion);
-     creditoNuevo.value = ""
-     botonActualizar.value = false;
-     idBotonActualizar.value = -1;
+    await actualizarCredito(idTipos_De_Creditos, Descripcion, idEstatusActividad);
+    creditoNuevo.value = ""
+    botonActualizar.value = false;
+    idBotonActualizar.value = -1;
+    this.consultarCredito();
   } catch (error) {
     console.log(error)
   }
 }
-
-
-
-
 
 function actualizarTabla(nombre) {
   console.log(nombre)
@@ -158,14 +137,14 @@ function actualizarTabla(nombre) {
     creditosDesplegados.value = []; //inicializa vacio deja limpio
     creditoArray.value.forEach((element) => { //recorre el elemento
       if (element.Descripcion.toLowerCase().includes(nombre.toLowerCase())) { //checa si  coincide
-       creditosDesplegados.value.push(element); //aqui lo va a grefgar a creditosDesplegaados
+        creditosDesplegados.value.push(element); //aqui lo va a grefgar a creditosDesplegaados
       }
     });
   }
 }
 
-function confirmar(idRol) {
-  idRolEliminar.value = idRol;
+function confirmar(idEstatusActividad) {
+  idCreditoEliminar.value = idEstatusActividad;
   modalConfirmacion.show();
 }
 
@@ -195,8 +174,22 @@ const revisarCreditoExistente = async () => {
 };
 
 
+async function desactivarCredito(idTipos_De_Creditos) { //idEmpleado
+  console.log(idTipos_De_Creditos);
+  //decalro un objeto lo que se recibe la funcion con el inactivo
+  const crearActualizar = {
+    idTipos_De_Creditos1: idTipos_De_Creditos,
+    EstatusActividad_idEstatusActividad: 2,
+  };
 
-
+  //mando llamar el metodo
+  try {
+    await actualizarUsuario(usuarioActualizar);
+  } catch (error) {
+    console.log(error);
+  }
+  consultarUsuarios();
+}
 
 </script>
 <template>
@@ -217,7 +210,7 @@ const revisarCreditoExistente = async () => {
 
 
         <!-- cambiar el tamaño a 5 si lo quiero mas lejos de la tabla -->
-       
+
       </div>
       <div class="col-3 align-items-end ">
         <div class="row align-items-end pt-2">
@@ -225,38 +218,36 @@ const revisarCreditoExistente = async () => {
             style="width: 250px; height: 50px; border-color: #5e5e5e" placeholder="Buscar" v-model="nombre"
             @input="actualizarTabla(nombre)" />
         </div>
-        
+
 
       </div>
     </div>
     <div class="row mb-5">
-          <div class="col-2 mt-2 ms-5">
-            <h5 class="italika d-flex justify-content-end">Tipo de crédito:</h5>
+      <div class="col-2 mt-2 ms-5">
+        <h5 class="italika d-flex justify-content-end">Tipo de crédito:</h5>
 
-          </div>
-          <div class="col-6 ms-4">
-            <input type="text" ref="inputRol" class="form-control" @input="revisarCreditoExistente()" v-model="creditoNuevo" />
-            <div v-if="repetido" class="alert alert-danger mt-2 d-flex align-items-center" style="height: 38px"
-              role="alert">
-              "{{ creditoNuevo }}" ya existe
-            </div>
-          </div>
-          <div class="col">
-            <button  v-if="!botonActualizar" 
-            class="btn btn-primary"
-             type="submit" 
-             :disabled="deshabilitado"
-             @click="guardarCreditos(creditoNuevo)">
-              Guardar
-              
-            </button>
-           
-            <button   v-if="botonActualizar" class="btn btn-success" type="submit" :disabled="deshabilitado " @click="modificarCreditos(idBotonActualizar, creditoNuevo)">
-              Actualizar
-
-            </button>
-          </div>
+      </div>
+      <div class="col-6 ms-4">
+        <input type="text" ref="inputRol" class="form-control" @input="revisarCreditoExistente()"
+          v-model="creditoNuevo" />
+        <div v-if="repetido" class="alert alert-danger mt-2 d-flex align-items-center" style="height: 38px" role="alert">
+          "{{ creditoNuevo }}" ya existe
         </div>
+      </div>
+      <div class="col">
+        <button v-if="!botonActualizar" class="btn btn-primary" type="submit" :disabled="deshabilitado"
+          @click="guardarCreditos(creditoNuevo)">
+          Guardar
+
+        </button>
+
+        <button v-if="botonActualizar" class="btn btn-success" type="submit" :disabled="deshabilitado"
+          @click="modificarCreditos(idBotonActualizar, creditoNuevo)">
+          Actualizar
+
+        </button>
+      </div>
+    </div>
     <table class="table table-hover table-striped text-center mt-4 mx-auto" style="width: 900px">
       <thead>
         <tr style="background-color: #2b4677; color: white">
@@ -266,7 +257,7 @@ const revisarCreditoExistente = async () => {
       </thead>
       <tbody>
         <tr v-for="credito in creditosDesplegados ">
-          
+
           <td>
             {{ credito.Descripcion }}
           </td>
@@ -285,28 +276,18 @@ const revisarCreditoExistente = async () => {
                 />
               </button> -->
 
-              
-              <button  :id ="credito.idTipos_De_Creditos" :class="[botonActualizar && idBotonActualizar == credito.idTipos_De_Creditos ? 'btn btn-primary mx-1' : 'btn btn-warning mx-1' ]" type="submit"
-                style="border-color: #ffbe16; height: 37px" @click="modificarNombreCredito(credito.Descripcion, credito.idTipos_De_Creditos)" >
-                <i :class="[botonActualizar && idBotonActualizar == credito.idTipos_De_Creditos ? 'fa-solid fa-clock-rotate-left' : 'fa-solid fa-pen-to-square' ]"></i>
-               
-              
-              
-                
+              <button :id="credito.idTipos_De_Creditos"
+                :class="[botonActualizar && idBotonActualizar == credito.idTipos_De_Creditos ? 'btn btn-primary mx-1' : 'btn btn-warning mx-1']"
+                type="submit" style="border-color: #ffbe16; height: 37px"
+                @click="modificarNombreCredito(credito.Descripcion, credito.idTipos_De_Creditos)">
+                <i
+                  :class="[botonActualizar && idBotonActualizar == credito.idTipos_De_Creditos ? 'fa-solid fa-clock-rotate-left' : 'fa-solid fa-pen-to-square']"></i>
+
                 <!-- <img class="img-fluid mb-3" style="width: 24.5px; height: 25.75px; margin-top: 0% !important"
                 :src="[botonActualizar && idBotonActualizar == credito.idTipos_De_Creditos ? 'https://cdn-icons-png.flaticon.com/512/3585/3585896.png' : 'SVSI-V2/src/assets/lapiz.png' ]"   /> -->
-              </button> 
-               
-
-              
-
-              
-
-             
-            
-             
+              </button>
               <button class="btn btn-primary mx-1" type="submit"
-                style="background-color: #c01a1a; border-color: #c01a1a; height: 37px" @click="confirmar(rol.idRoles)">
+                style="background-color: #c01a1a; border-color: #c01a1a; height: 37px" @click="desactivarCredito(credito.idTipos_De_Creditos)">
                 <img class="img-fluid mb-1" style="width: 24.5px; height: 22.75px" src="../assets/basura.png" />
               </button>
             </div>
@@ -326,17 +307,13 @@ const revisarCreditoExistente = async () => {
         <div class="modal-header">
           <h5 class="modal-title" id="exampleModalLabel">Tipos de Creditos</h5>
 
-          
+
           <button type="button" class="btn-close" data-bs-dismiss="modal1" aria-label="Close"></button>
         </div>
         <div class="modal-body">
-          <h5>¿Guardado exitosamente!</h5>
-          
-          </div>
-        
+          <h5>Guardado exitosamente</h5>
 
-
-
+        </div>
 
         <div class="modal-footer">
           <button type="button" class="btn btn-primary" data-bs-dismiss="modal">
