@@ -41,6 +41,18 @@ export const creditosStore = defineStore("tipos_de_creditos",{
         }
     },
 
+    
+    async obtenerNombresCreditos(){
+        try {
+            const res = await axios.get('http://localhost:4000/api/creditos/nombreCreditos')
+            return res;
+            
+        } catch (error) {
+            console.log(error)
+            throw(error);
+        }
+    },
+
     async agregarCredito(nombreCredito){
         try {
             
@@ -58,12 +70,13 @@ export const creditosStore = defineStore("tipos_de_creditos",{
             
         }
     },
-    async actualizarCredito(idTipos_De_Creditos, nombreCredito){
+    async actualizarCredito(idTipos_De_Creditos, nombreCredito,idEstatus){
         try {
             console.log(idTipos_De_Creditos);
             console.log(nombreCredito);
             const res = await axios.post('http://localhost:4000/api/creditos',{"idTipos_De_Creditos":idTipos_De_Creditos,
-            "Descripcion":nombreCredito
+            "Descripcion":nombreCredito,
+            "idEstatusActividad":idEstatus
            })
 
            console.log(res)
