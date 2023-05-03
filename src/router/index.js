@@ -17,7 +17,7 @@ import Asesores from '../views/Asesores.vue'
 //const { reanudarSesion } = loginStore();
 //const reanudarSesion = loginStore();
 //const {verificarPermisos} = loginStore();
-
+import Catalogo from '../views/Catalogo.vue'
 
 const interfaces = {
   home: '0',
@@ -109,6 +109,12 @@ const router = createRouter({
       path: '/asesores',
       name: 'asesores',
       component: Asesores
+      
+    },
+    {
+      path: '/catalogo',
+      name: 'catalogo',
+      component: Catalogo
       
     }
 

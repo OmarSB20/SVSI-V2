@@ -6,7 +6,12 @@ import { creditosStore } from "../stores/creditos";
 
 import CompHeader from "../components/Header.vue";
 
-const { obtenerCredito, agregarCredito, actualizarCredito, obtenerNombresCreditos} = creditosStore();
+const {
+  obtenerCredito,
+  agregarCredito,
+  actualizarCredito,
+  obtenerNombresCreditos,
+} = creditosStore();
 
 const creditoArray = ref([]);
 const creditosDesplegados = ref([]);
@@ -31,16 +36,15 @@ var modal1;
 var modalConfirmacion;
 var nombre;
 
-onMounted(async() => {
+onMounted(async () => {
   revisarCreditoExistente();
   await consultarCredito();
-  
 });
 
-const consultarNombres = async ()=>{
+const consultarNombres = async () => {
   arrayNombres.value = (await obtenerNombresCreditos()).data.body;
-  console.log(arrayNombres.value)
-}
+  console.log(arrayNombres.value);
+};
 
 const consultarCredito = async () => {
   try {
@@ -60,14 +64,14 @@ function modificarNombreCredito(Descripcion, idTipos_De_Creditos) {
   idBotonActualizar.value = idTipos_De_Creditos;
   if (!botonActualizar.value) {
     nombreActual = Descripcion;
-    console.log(nombreActual)
+    console.log(nombreActual);
     botonActualizar.value = true;
   } else {
     botonActualizar.value = false;
     idBotonActualizar.value = -1;
     creditoNuevo.value = "";
-    nombreActual="";
-    console.log(nombreActual)
+    nombreActual = "";
+    console.log(nombreActual);
   }
   repetido.value = false;
 }
@@ -78,11 +82,11 @@ async function guardarCreditos(Descripcion) {
     await agregarCredito(Descripcion);
     await consultarCredito();
     modal1 = new bootstrap.Modal(document.getElementById("modal1"), {
-    keyboard: false,
-  });
+      keyboard: false,
+    });
     modal1.show();
     creditoAgregado.value = creditoNuevo.value;
-    console.log(creditoAgregado.value)
+    console.log(creditoAgregado.value);
     creditoNuevo.value = "";
   } catch (error) {
     console.log(error);
@@ -93,24 +97,22 @@ async function modificarCreditos(idTipos_De_Creditos, Descripcion) {
   try {
     nombreAntiguo.value = nombreActual;
     nombreActualizado.value = Descripcion;
-    console.log(Descripcion + "Es el que recibira")
-    console.log(nombreActual + "es el original")
-    await actualizarCredito(idTipos_De_Creditos, Descripcion,1);
+    console.log(Descripcion + "Es el que recibira");
+    console.log(nombreActual + "es el original");
+    await actualizarCredito(idTipos_De_Creditos, Descripcion, 1);
     await consultarCredito();
     creditoNuevo.value = "";
     botonActualizar.value = false;
     idBotonActualizar.value = -1;
     modal1 = new bootstrap.Modal(document.getElementById("modalAct"), {
-    keyboard: false,
-  });
-  modal1.show();
-  nombreActual="";
-  
+      keyboard: false,
+    });
+    modal1.show();
+    nombreActual = "";
   } catch (error) {
     console.log(error);
   }
 }
-
 
 function actualizarTabla(nombre) {
   console.log(nombre);
@@ -131,7 +133,7 @@ function actualizarTabla(nombre) {
 
 async function eliminarCredito() {
   try {
-    await actualizarCredito(idCredEl.value, nombreCreditEl.value,2);
+    await actualizarCredito(idCredEl.value, nombreCreditEl.value, 2);
     await consultarCredito();
     creditoNuevo.value = "";
     botonActualizar.value = false;
@@ -151,8 +153,7 @@ function mostrarModalEliminar(idTipos_De_Creditos, Descripcion) {
 }
 
 const revisarCreditoExistente = () => {
-
-  if (creditoNuevo.value.trim() == ""|| creditoNuevo.value.trim()==nombreActual) {
+  if (creditoNuevo.value.trim() == "" || creditoNuevo.value.trim() == nombreActual) {
     deshabilitado.value = true;
     return;
   }
@@ -164,12 +165,12 @@ const revisarCreditoExistente = () => {
       ) {
         repetido.value = true;
         deshabilitado.value = true;
-        console.log(creditoNuevo.value)
-        console.log(arrayNombres.value[j].Descripcion)
+        console.log(creditoNuevo.value);
+        console.log(arrayNombres.value[j].Descripcion);
         return true;
       }
     }
-    console.log(repetido.value)
+    console.log(repetido.value);
     repetido.value = false;
     deshabilitado.value = false;
     return false;
@@ -184,7 +185,7 @@ const revisarCreditoExistente = () => {
   <div class="container-fluid">
     <CompHeader />
     <div class="row">
-      <div class="col-1 mb-3 pt-5">
+      <div class="col-1 d-flex justify-content-end pt-5">
         <router-link to="/italika">
           <img
             class="img-fluid mt-3"
@@ -195,7 +196,7 @@ const revisarCreditoExistente = () => {
       </div>
       <div class="col-8 mb-3 pt-5">
         <div class="row align-items-end">
-          <p class="italika" style="font-size: 50px">Tipos de Créditos</p>
+          <p class="italika ms-4" style="font-size: 50px">Tipos de Créditos</p>
         </div>
 
         <!-- cambiar el tamaño a 5 si lo quiero mas lejos de la tabla -->
@@ -315,7 +316,9 @@ const revisarCreditoExistente = () => {
                 class="btn btn-primary mx-1"
                 type="submit"
                 style="background-color: #c01a1a; border-color: #c01a1a; height: 37px"
-                @click="mostrarModalEliminar(credito.idTipos_De_Creditos, credito.Descripcion )"
+                @click="
+                  mostrarModalEliminar(credito.idTipos_De_Creditos, credito.Descripcion)
+                "
               >
                 <img
                   class="img-fluid mb-1"
@@ -383,7 +386,11 @@ const revisarCreditoExistente = () => {
           ></button>
         </div>
         <div class="modal-body">
-          <span>¿Está seguro de que quiere eliminar el tipo de crédito "{{ nombreCreditEl }}"?</span>
+          <span
+            >¿Está seguro de que quiere eliminar el tipo de crédito "{{
+              nombreCreditEl
+            }}"?</span
+          >
         </div>
         <div class="modal-footer">
           <button
@@ -399,8 +406,8 @@ const revisarCreditoExistente = () => {
     </div>
   </div>
 
-<!---------------------------------------------------------------------------->
-<div
+  <!---------------------------------------------------------------------------->
+  <div
     class="modal fade"
     id="modalAct"
     tabindex="-1"
@@ -420,7 +427,10 @@ const revisarCreditoExistente = () => {
           ></button>
         </div>
         <div class="modal-body">
-          <h5>¡Crédito "{{ nombreAntiguo }}" actualizado a "{{ nombreActualizado }}" con exito!</h5>
+          <h5>
+            ¡Crédito "{{ nombreAntiguo }}" actualizado a "{{ nombreActualizado }}" con
+            exito!
+          </h5>
         </div>
 
         <div class="modal-footer">
@@ -431,7 +441,6 @@ const revisarCreditoExistente = () => {
       </div>
     </div>
   </div>
-
 </template>
 
 <style>
