@@ -6,7 +6,6 @@ import { rolesStore } from "../stores/roles";
 import { loginStore } from "../stores/login";
 import CompHeader from "../components/Header.vue";
 import router from "../router";
-
 //declaramos como constantes los metodos exactos que vamos a usar de las stores y lo igualamos a la store de donde vienen
 //           metodo    =     store de la que viene
 const { setIdUsuario } = usuariosStore();
@@ -28,13 +27,11 @@ const usuariosFiltrados = ref({});
 const valorBusqueda = ref("");
 const nombreUsuarioAct = ref("");
 const idUsuarioAct = ref("");
-
 //variable asociada al modal
 var modal;
 var tried = false;
 const validado = ref(true);
 const alertaLlenado = ref(false);
-
 //al cargar la pagina se consultan los permisos y roles que hay en la BD y se define el objeto relacionado al modal
 onMounted(async () => {
   
@@ -46,7 +43,6 @@ onMounted(async () => {
   });
   
 });
-
 //consulta los roles usando el metodo de la store, los almacena en rolesArray
 const consultarRoles = async () => {
   try {
@@ -57,7 +53,6 @@ const consultarRoles = async () => {
     console.log(error);
   }
 };
-
 const consultarUsuarios = async () => {
   try {
     const usuariosArray = (await obtenerUsuarios()).data.body;
@@ -71,13 +66,11 @@ const consultarUsuarios = async () => {
     console.log(error);
   }
 };
-
 const buscarRol = (idRol) => {
   const rolEncontrado = roles.value.find((rol) => rol.idRoles == idRol);
   console.log(rolEncontrado.Nombre);
   return rolEncontrado.Nombre;
 };
-
 const eliminarRoles = async (idRol) => {
   try {
     await eliminarPermisosDelRol(idRol);
@@ -87,7 +80,6 @@ const eliminarRoles = async (idRol) => {
     console.log(error);
   }
 };
-
 function myFunction() {
   var input, filter, table, tr, td, i, txtValue;
   input = document.getElementById("myInput");
@@ -106,27 +98,22 @@ function myFunction() {
     }
   }
 }
-
 function modificaruser(idEmpleados) {
   setIdUsuario(idEmpleados); //guardar el ide en el store
   //mandar a otra interfaz
   router.push({ name: "actualizarUsuario", params: { idUsrAct: idEmpleados }});
 }
-
 function confirmar(idEmpleados) {
   idempleadoEliminar.value = idEmpleados;
   modalConfirmacion.show();
 }
-
 function mostrarmodal(unombreUsuario, idUsuario) {
   nombreUsuarioAct.value = unombreUsuario;
   idUsuarioAct.value = idUsuario;
-
   modal.show();
   console.log(idUsuarioAct.value);
   console.log(nombreUsuarioAct.value);
 }
-
 async function desactivarUsuario(idEmpleado) {
   console.log(idEmpleado);
   //decalro un objeto lo que se recibe la funcion con el inactivo
@@ -134,7 +121,6 @@ async function desactivarUsuario(idEmpleado) {
     idEmpleados: idEmpleado,
     EstatusActividad_idEstatusActividad: 2,
   };
-
   //mando llamar el metodo
   try {
     await actualizarUsuario(usuarioActualizar);
@@ -377,7 +363,6 @@ body {
   background-image: linear-gradient(113.96deg, #000103 2.35%, #164193 100%);
   min-height: 100vh;
 }
-
 .btn-spacer {
   margin-right: 10px;
 }
@@ -388,49 +373,40 @@ body {
   letter-spacing: 0.04em;
   color: #ffffff;
 }
-
 #myInput {
   background-repeat: no-repeat;
 }
-
 .table-striped tbody tr .sticky {
   background-color: white;
 }
 .table-striped tbody tr:nth-child(2n) .sticky {
   background-color: inherit;
 }
-
 .table-striped tbody th .sticky {
   background-color: #2b4677;
   color: white;
 }
-
 #myTable th {
   background-color: #2b4677;
   color: white;
 }
-
 #myTable .sticky {
   border-collapse: collapse;
   position: sticky;
   right: 0%;
 }
-
 #myTable th,
 #myTable td {
   text-align: center;
   padding: 12px;
 }
-
 #myTable tr {
   border-bottom: 1px solid #ddd;
 }
-
 #myTable tr.header,
 #myTable tr:hover {
   background-color: #f1f1f1;
 }
-
 .table-container {
   max-width: 100%;
   overflow-x: scroll;

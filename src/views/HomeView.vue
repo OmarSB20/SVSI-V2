@@ -179,24 +179,24 @@ function redirigir(interfaz){
                 <div class="">
                   <button v-if="estadoBotones[4]" class="noAccordionBtn w-100 ps-5 d-flex justify-content-start align-items-center" type="button" :style="{ height:altoBtn+'px',borderTopWidth:'5px'}">Asesores BAZ</button>
                   <button v-if="estadoBotones[5]" class="noAccordionBtn w-100 ps-5 d-flex justify-content-start align-items-center" type="button" :style="{ height:altoBtn+'px'}">Estatus de cotización</button>
-                  <button v-if="estadoBotones[6]" class="noAccordionBtn w-100 ps-5 d-flex justify-content-start align-items-center" type="button" :style="{ height:altoBtn+'px',borderBottomWidth:'5px'}">Tipos de creditos</button>
+                  <button v-if="estadoBotones[6]" class="noAccordionBtn w-100 ps-5 d-flex justify-content-start align-items-center" @click="redirigir('creditos')" type="button" :style="{ height:altoBtn+'px',borderBottomWidth:'5px'}">Tipos de creditos</button>
                 </div>
               </div>
             </div>
             <!-------------------------------------------------SERVICIOS---------------------------------------------------------   -->
-            <button v-if="estadoBotones[7]" class="noAccordionBtn w-100 ps-4 d-flex justify-content-start align-items-center" type="button" :style="{ height:altoBtn+'px'}">Servicios</button>
+            <button v-if="estadoBotones[7]" class="noAccordionBtn w-100 ps-4 d-flex justify-content-start align-items-center" @click="redirigir('servicios')" type="button" :style="{ height:altoBtn+'px'}">Servicios</button>
             <!-------------------------------------------------AREA Usuarios---------------------------------------------------------   -->
             <button v-if="estadoBotones[8]" class="noAccordionBtn w-100 ps-4 d-flex justify-content-start align-items-center" @click="redirigir('usuarios')" type="button" :style="{ height:altoBtn+'px'}">Usuarios</button>
             <!-------------------------------------------------AREA Clientes---------------------------------------------------------   -->
-            <button v-if="estadoBotones[9]" class="noAccordionBtn w-100 ps-4 d-flex justify-content-start align-items-center" type="button" :style="{ height:altoBtn+'px'}">Clientes</button>
+            <button v-if="estadoBotones[9]" class="noAccordionBtn w-100 ps-4 d-flex justify-content-start align-items-center" @click="redirigir('clientes')" type="button" :style="{ height:altoBtn+'px'}">Clientes</button>
             <!-------------------------------------------------AREA Motos---------------------------------------------------------   -->
-            <button v-if="estadoBotones[10]" class="noAccordionBtn w-100 ps-4 d-flex justify-content-start align-items-center" type="button" :style="{ height:altoBtn+'px'}">Motos</button>
+            <button v-if="estadoBotones[10]" class="noAccordionBtn w-100 ps-4 d-flex justify-content-start align-items-center" @click="redirigir('catalogo')" type="button" :style="{ height:altoBtn+'px'}">Catalogo</button>
             <!-------------------------------------------------AREA roles---------------------------------------------------------   -->
             <button v-if="estadoBotones[13]" class="noAccordionBtn w-100 ps-4 d-flex justify-content-start align-items-center" @click="redirigir('roles')" type="button" :style="{ height:altoBtn+'px'}">Roles</button>
             <!-------------------------------------------------AREA citas---------------------------------------------------------   -->
-            <button v-if="estadoBotones[12]" class="noAccordionBtn w-100 ps-4 d-flex justify-content-start align-items-center" type="button" :style="{ height:altoBtn+'px'}">Citas</button>
+            <button v-if="estadoBotones[12]" class="noAccordionBtn w-100 ps-4 d-flex justify-content-start align-items-center" @click="redirigir('citas')" type="button" :style="{ height:altoBtn+'px'}">Citas</button>
             <!-------------------------------------------------AREA reportes---------------------------------------------------------   -->
-            <button v-if="estadoBotones[11]" class="noAccordionBtn w-100 ps-4 d-flex justify-content-start align-items-center" type="button" :style="{ height:altoBtn+'px'}">Reportes</button>
+            <button v-if="estadoBotones[11]" class="noAccordionBtn w-100 ps-4 d-flex justify-content-start align-items-center" @click="redirigir('reportes')" type="button" :style="{ height:altoBtn+'px'}">Reportes</button>
             <!-------------------------------------------------AREA reportes---------------------------------------------------------   -->
             <button class="noAccordionBtn w-100 ps-4 d-flex justify-content-start align-items-center" type="button" @click="logOut()" :style="{ height:altoBtn+'px'}">Cerrar sesión</button>
           </div>

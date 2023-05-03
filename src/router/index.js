@@ -10,6 +10,7 @@ import login from '../views/Login.vue'
 import Usuarios from '../views/Usuarios.vue'
 import ActualizarUsuario from '../views/ActualizarUsuario.vue'
 import MediosContacto from '../views/MediosContacto.vue'
+import Creditos from '../views/Creditos.vue'
 import Asesores from '../views/Asesores.vue'
 
 
@@ -23,9 +24,11 @@ const interfaces = {
   login: '0',
   mediosContacto: '3',
   asesores: '5',
+  creditos:'7',
   crearUsuario: '9',
   usuarios: '9',
   actualizarUsuario: '9',
+  catalogo:'11',
   crearRol: '14',
   actualizarRol: '14',
   roles: '14',
@@ -95,6 +98,11 @@ const router = createRouter({
       path: '/mediosContacto',
       name: 'mediosContacto',
       component: MediosContacto
+    },
+    {
+      path: '/creditos',
+      name: 'creditos',
+      component: Creditos
       
     },
     {
@@ -103,6 +111,7 @@ const router = createRouter({
       component: Asesores
       
     }
+
   ]
 })
 

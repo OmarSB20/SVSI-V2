@@ -268,7 +268,7 @@ function irRoles(){
                     border-right-color: #2b4677;
                     border-right-width: 2px;                  "
                 >
-                  {{ item.Descripcion }}{{ item.idPermisos }}
+                  {{ item.Descripcion }}
                 </td>
                 <th scope="row">
                   <div class="form-check d-flex justify-content-center">
