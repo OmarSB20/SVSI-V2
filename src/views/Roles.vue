@@ -5,6 +5,9 @@ import { rolesStore } from "../stores/roles";
 import { onMounted } from "vue";
 import router  from '../router/index'
 import CompHeader from '../components/Header.vue'
+import { loginStore } from "../stores/login";
+const { reanudarSesion } = loginStore();
+const {verificarPermisos} = loginStore();
 const { obtenerPermisosDelRol } = permisosRolesStore();
 const { eliminarPermisosDelRol } = permisosRolesStore();
 const { obtenerRoles } = rolesStore();
@@ -20,8 +23,9 @@ const idRolEliminar = ref();
 var modal;
 var modalConfirmacion;
 var nombre;
-onMounted(() => {
-  consultarRoles();
+onMounted(async() => {
+  
+    consultarRoles();
   modal = new bootstrap.Modal(document.getElementById("modal"), {
     keyboard: false,
   });
@@ -72,7 +76,7 @@ const eliminarRoles = async (idEmpleados) => {
 const modificarRol = async (idRol) => {
   try {
     setRol(idRol);
-    router.push({ name: 'registroRol', params: { idRolAct: idRol }});
+    router.push({ name: 'actualizarRol', params: { idRolAct: idRol }});
     //window.location.href = "http://localhost:5173/registroRol";
     //this.$router.push("http://localhost:5173/crearRol");
   } catch (error) {
@@ -102,7 +106,7 @@ function confirmar(idRol) {
     <CompHeader/>
     <div class="row ">
       <div class="col-1 mb-3 pt-5">
-        <router-link to="http://localhost:5173">
+        <router-link to="/italika">
           <img
             class="img-fluid mt-3"
             style="margin-top: 20px; width: 31.23px; height: 35.5px"
@@ -134,7 +138,7 @@ function confirmar(idRol) {
             <h5 class="italika mt-3">Agregar Roles</h5>
           </div>
           <div class="col-1">
-            <router-link to="../crearRol" style="text-decoration: none;">
+            <router-link to="crearRol" style="text-decoration: none;">
               <button
                 class="btn btn-primary mt-2 d-flex align-items-center justify-content-center"
                 type="submit"

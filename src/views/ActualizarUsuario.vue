@@ -3,6 +3,7 @@ import { ref } from "vue"; //para usar variables reactivas
 import { onMounted } from "vue"; //para poder usar el onMounted, que ejecuta todo lo que tenga adentro cada que cargue la pagina
 import { usuariosStore } from "../stores/usuarios";
 import { rolesStore } from "../stores/roles";
+import { loginStore } from "../stores/login";
 import router from "../router/index";
 import CompHeader from "../components/Header.vue";
 //declaramos como constantes los metodos exactos que vamos a usar de las stores y lo igualamos a la store de donde vienen
@@ -14,6 +15,8 @@ const { getIdUsuario } = usuariosStore();
 const { obtenerNicknames } = usuariosStore();
 const { obtenerUnUser } = usuariosStore();
 const { actualizarUsuario } = usuariosStore();
+const {reanudarSesion} = loginStore();
+const {verificarPermisos} = loginStore();
 //variables reactivas
 const texto1=ref(false);
 const texto2=ref(false);
@@ -48,16 +51,18 @@ const validado = ref(true);
 const alertaLlenado = ref(false);
 //al cargar la pagina se consultan los permisos y roles que hay en la BD y se define el objeto relacionado al modal
 onMounted(async () => {
-  console.log(getIdUsuario());
-  await consultarRoles();
-  await obtenerDatosUsr();
-  await consultarUsuarios();
-  nicknameActual = nickname.value;
-  console.log(nicknameActual);
+  
+    console.log(getIdUsuario());
+    await consultarRoles();
+    await obtenerDatosUsr();
+    await consultarUsuarios();
+    nicknameActual = nickname.value;
+    console.log(nicknameActual);
+  
 });
 //consulta los roles usando el metodo de la store, los almacena en rolesArray
 const consultarRoles = async () => {
-  try {
+    try {
     roles.value = await obtenerRoles();
     roles.value = roles.value.data.body;
     console.log(roles.value);
@@ -323,7 +328,7 @@ function sbmtUsuario() {
 function verUsuarios() {
   //router.push({ name: 'usuarioRegistrado'});
   modal.hide();
-  router.push({ name: "usuarioRegistrado" });
+  router.push({ name: "usuarios" });
 }
 function modificarC() {
   const checkbox = document.getElementById("modifyP");
@@ -344,13 +349,13 @@ function modificarC() {
       <!-----------------------    Row de titulo  --------------------------->
       <div class="row mb-3 pt-5">
         <div class="col-1 d-flex justify-content-end">
-          <a href="http://localhost:5173">
+          <router-link to="usuarios"> 
             <img
               class="img-fluid"
               style="margin-top: 20px; width: 31.23px; height: 35.5px"
               src="../assets/triangulito.png"
             />
-          </a>
+          </router-link>
         </div>
         <div class="col ms-4">
           <p class="italika d-flex justify-content-start" style="font-size: 50px">

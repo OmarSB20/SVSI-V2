@@ -8,6 +8,9 @@ import CompHeader from '../components/Header.vue'
 import router from "../router";
 //declaramos como constantes los metodos exactos que vamos a usar de las stores y lo igualamos a la store de donde vienen
 //           metodo    =     store de la que viene
+import { loginStore } from "../stores/login";
+const { reanudarSesion } = loginStore();
+const {verificarPermisos} = loginStore();
 const { obtenerPermisos } = permisosStore();
 const { actualizarRol } = rolesStore(); //se modifico de guardar a actualizar
 const { obtenerRoles } = rolesStore();
@@ -30,14 +33,16 @@ const deshabilitado = ref(false);
 const btnVolver = ref(null)
 //variable asociada al modal
 var modal;
-//al cargar la pagina se consultan los permisos y roles que hay en la BD y se define el objeto relacionado al modal
-onMounted(() => {
+ 
+onMounted(async() => {
+  
   consultarPermisos();
   consultarRoles();
   //rolNuevo.value = permisosArray.value[idRolActualizar.value - 1].Nombre;
   modal = new bootstrap.Modal(document.getElementById("modal"), {
     keyboard: false,
   });
+  
 });
 //función que vacía el textbox, el arreglo de permisos arreglados y deselecciona los checkbox
 //se activará cuando se de click en "seguir creando roles" en el modal
@@ -148,7 +153,7 @@ function moverPermiso(id) {
 }
 function irRoles(){
   modal.hide();
-  router.push({ name: "modificarRol" });
+  router.push({ name: "roles" });
 }
 </script>
 
@@ -158,7 +163,7 @@ function irRoles(){
       <CompHeader/>
       <div class="row mb-3 pt-5">
         <div class="col-1 d-flex justify-content-end">
-          <router-link to="/modificarRol">
+          <router-link to="/roles">
 
             <img
               class="img-fluid"
@@ -239,7 +244,7 @@ function irRoles(){
                     border-right-color: #2b4677;
                     border-right-width: 2px;                  "
                 >
-                  {{ item.Descripcion }}{{ item.idPermisos }}
+                  {{ item.Descripcion }}
                 </td>
                 <th scope="row">
                   <div class="form-check d-flex justify-content-center">

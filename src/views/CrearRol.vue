@@ -8,6 +8,9 @@ import router from "../router";
 import CompHeader from "../components/Header.vue";
 //declaramos como constantes los metodos exactos que vamos a usar de las stores y lo igualamos a la store de donde vienen
 //           metodo    =     store de la que viene
+import { loginStore } from "../stores/login";
+const { reanudarSesion } = loginStore();
+const {verificarPermisos} = loginStore();
 const { obtenerPermisos } = permisosStore();
 const { agregarRol } = rolesStore();
 const { obtenerRoles } = rolesStore();
@@ -27,8 +30,9 @@ const inputRol = ref(null);
 //variable asociada al modal
 var modal;
 //al cargar la pagina se consultan los permisos y roles que hay en la BD y se define el objeto relacionado al modal
-onMounted(() => {
-  consultarPermisos();
+onMounted(async() => {
+  
+    consultarPermisos();
   consultarRoles();
   if (rolNuevo.value.trim() == "") {
     deshabilitado.value = true;
@@ -37,6 +41,8 @@ onMounted(() => {
     keyboard: false,
   });
   inputRol.value.focus();
+  
+  
 });
 //función que vacía el textbox, el arreglo de permisos arreglados y deselecciona los checkbox
 //se activará cuando se de click en "seguir creando roles" en el modal
@@ -142,7 +148,7 @@ function moverPermiso(id) {
 }
 function verRoles() {
   modal.hide();
-  router.push({ name: "modificarRol" });
+  router.push({ name: "roles" });
 //http://localhost:5173/modificarRol";
 }
 </script>
@@ -153,7 +159,7 @@ function verRoles() {
       <CompHeader />
       <div class="row mb-3 pt-5">
         <div class="col-1 d-flex justify-content-end">
-          <router-link to="http://localhost:5173">
+          <router-link to="/roles">
             <img
               class="img-fluid"
               style="margin-top: 20px; width: 31.23px; height: 35.5px"

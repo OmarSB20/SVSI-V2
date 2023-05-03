@@ -3,6 +3,7 @@ import { ref } from "vue"; //para usar variables reactivas
 import { onMounted } from "vue"; //para poder usar el onMounted, que ejecuta todo lo que tenga adentro cada que cargue la pagina
 import { usuariosStore } from "../stores/usuarios";
 import { rolesStore } from "../stores/roles";
+import { loginStore } from "../stores/login";
 import CompHeader from "../components/Header.vue";
 import router from "../router";
 //declaramos como constantes los metodos exactos que vamos a usar de las stores y lo igualamos a la store de donde vienen
@@ -11,6 +12,8 @@ const { agregarUsuario } = usuariosStore();
 const { obtenerRoles } = rolesStore();
 const { obtenerNicknames } = usuariosStore();
 const { obtenerUsuarios } = usuariosStore();
+const { reanudarSesion } = loginStore();
+const {verificarPermisos} = loginStore();
 //variables reactivas
 const nombre = ref("");
 const paterno = ref("");
@@ -37,13 +40,16 @@ var tried = false;
 const validado = ref(true);
 const alertaLlenado = ref(false);
 //al cargar la pagina se consultan los permisos y roles que hay en la BD y se define el objeto relacionado al modal
-onMounted(() => {
-  consultarRoles();
-  consultarUsuarios();
-  deshabilitado.value = true;
-  modal = new bootstrap.Modal(document.getElementById("modal"), {
-    keyboard: false,
+onMounted(async() => {
+  
+    consultarRoles();
+    consultarUsuarios();
+    deshabilitado.value = true;
+    modal = new bootstrap.Modal(document.getElementById("modal"), {
+      keyboard: false,
   });
+  
+  
 });
 //función que vacía el textbox, el arreglo de permisos arreglados y deselecciona los checkbox
 //se activará cuando se de click en "seguir creando roles" en el modal
@@ -257,7 +263,7 @@ function sbmtUsuario() {
 }
 function verUsuarios() {
   modal.hide();
-  router.push({name:"usuarioRegistrado"});
+  router.push({name:"usuarios"});
 }
 </script>
 
@@ -268,7 +274,7 @@ function verUsuarios() {
       <!-----------------------    Row de titulo  --------------------------->
       <div class="row mb-3 pt-5">
         <div class="col-1 d-flex justify-content-end">
-          <router-link to="http://localhost:5173">
+          <router-link to="usuarios">
             <img
               class="img-fluid"
               style="margin-top: 20px; width: 31.23px; height: 35.5px"

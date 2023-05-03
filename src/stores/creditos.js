@@ -4,9 +4,8 @@ import axios from "axios";
 export const creditosStore = defineStore("tipos_de_creditos",{
   state: ()=>({
     creditos: [],
-    idCreditoActual:0,
-    idEstatusActividad:1
-}), 
+    idCreditoActual:0
+  }), 
   actions:{
 
     setCredito(idTipos_De_Creditos){
@@ -42,10 +41,24 @@ export const creditosStore = defineStore("tipos_de_creditos",{
         }
     },
 
+    
+    async obtenerNombresCreditos(){
+        try {
+            const res = await axios.get('http://localhost:4000/api/creditos/nombreCreditos')
+            return res;
+            
+        } catch (error) {
+            console.log(error)
+            throw(error);
+        }
+    },
+
     async agregarCredito(nombreCredito){
         try {
+            
             const res = await axios.post('http://localhost:4000/api/creditos',{"idTipos_De_Creditos":0,
-            "Descripcion":nombreCredito,"idEstatusActividad":1
+            "Descripcion":nombreCredito,
+            "idEstatusActividad":1
            })
 
            console.log(res)
@@ -57,10 +70,13 @@ export const creditosStore = defineStore("tipos_de_creditos",{
             
         }
     },
-    async actualizarCredito(idTipos_De_Creditos, nombreCredito){
+    async actualizarCredito(idTipos_De_Creditos, nombreCredito,idEstatus){
         try {
+            console.log(idTipos_De_Creditos);
+            console.log(nombreCredito);
             const res = await axios.post('http://localhost:4000/api/creditos',{"idTipos_De_Creditos":idTipos_De_Creditos,
-            "Descripcion":nombreCredito, "idEstatusActividad":1
+            "Descripcion":nombreCredito,
+            "idEstatusActividad":idEstatus
            })
 
            console.log(res)
@@ -76,7 +92,7 @@ export const creditosStore = defineStore("tipos_de_creditos",{
     async eliminarCredito(idTipos_De_Creditos){
         try {
             const res = await axios.put('http://localhost:4000/api/creditos/',{
-                "idTipos_De_Creditos":idTipos_De_Creditos, "idEstatusActividad":2
+                "idTipos_De_Creditos":idTipos_De_Creditos
         });
 
            console.log(res)
@@ -90,6 +106,3 @@ export const creditosStore = defineStore("tipos_de_creditos",{
     },
   } 
 })
-
-
-  

@@ -4,6 +4,7 @@ import { onMounted } from "vue"; //para poder usar el onMounted, que ejecuta tod
 import { loginStore } from "../stores/login";
 import router from "../router/index";
 const { login } = loginStore();
+const { reanudarSesion } = loginStore();
 const nickname = ref("");
 const contrasena = ref("");
 const deshabilitado = ref(true);
@@ -19,9 +20,11 @@ function ajustarAlto() {
   screenHeight -= 140;
   container.style.height = screenHeight + "px";
 }
-onMounted(() => {
-  deshabilitado.value = true;
-  ajustarAlto();
+onMounted(async() => {
+ 
+    deshabilitado.value = true;
+    ajustarAlto();
+  
 });
 function mostrarTexto(){
   tipoInput.value = "text";
@@ -64,7 +67,7 @@ async function iniciarSesion() {
   }
 }
 function irMenu() {
-  router.push({ name: "modificarRol" });
+  router.push({ name: "home" });
 }
 </script>
 
