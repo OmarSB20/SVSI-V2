@@ -1,15 +1,21 @@
 <script setup>
+
 import { ref } from "vue"; //para usar variables reactivas
 
 import { permisosStore } from "../stores/permisos"; //para poder usar store de permisos
 import { rolesStore } from "../stores/roles"; //para poder usar store de roles
 import { permisosRolesStore } from "../stores/permisosRoles"; //para poder usar store de permisosRoles
 import { onMounted } from "vue"; //para poder usar el onMounted, que ejecuta todo lo que tenga adentro cada que cargue la pagina
+import router from "../router";
 
 import CompHeader from "../components/Header.vue";
 
 //declaramos como constantes los metodos exactos que vamos a usar de las stores y lo igualamos a la store de donde vienen
 //           metodo    =     store de la que viene
+import { loginStore } from "../stores/login";
+
+const { reanudarSesion } = loginStore();
+const {verificarPermisos} = loginStore();
 const { obtenerPermisos } = permisosStore();
 const { agregarRol } = rolesStore();
 const { obtenerRoles } = rolesStore();
@@ -31,8 +37,9 @@ const inputRol = ref(null);
 var modal;
 
 //al cargar la pagina se consultan los permisos y roles que hay en la BD y se define el objeto relacionado al modal
-onMounted(() => {
-  consultarPermisos();
+onMounted(async() => {
+  
+    consultarPermisos();
   consultarRoles();
   if (rolNuevo.value.trim() == "") {
     deshabilitado.value = true;
@@ -41,6 +48,9 @@ onMounted(() => {
     keyboard: false,
   });
   inputRol.value.focus();
+  
+
+  
 });
 
 //función que vacía el textbox, el arreglo de permisos arreglados y deselecciona los checkbox
@@ -54,6 +64,7 @@ function resetCampos() {
     checksDir.value[j] = false;
   }
 }
+
 
 //consulta los roles usando el metodo de la store, los almacena en rolesArray
 const consultarRoles = async () => {
@@ -135,8 +146,8 @@ const crearRol = async (nombreRol) => {
 
     myModal.addEventListener("shown.bs.modal", function () {
       btnSeguirCreando.value.focus();
-      btnSeguirCreando.value.style.borderColor = "green";
-      btnSeguirCreando.value.style.borderWidth="10px"
+      btnSeguirCreando.value.style.borderColor = "#90aee5";
+      btnSeguirCreando.value.style.borderWidth="4px"
     });
   } catch (error) {
     console.log(error);
@@ -154,7 +165,9 @@ function moverPermiso(id) {
 }
 
 function verRoles() {
-  window.location.href = "http://localhost:5173/modificarRol";
+  modal.hide();
+  router.push({ name: "roles" });
+//http://localhost:5173/modificarRol";
 }
 </script>
 
@@ -164,13 +177,13 @@ function verRoles() {
       <CompHeader />
       <div class="row mb-3 pt-5">
         <div class="col-1 d-flex justify-content-end">
-          <a href="http://localhost:5173">
+          <router-link to="/roles">
             <img
               class="img-fluid"
               style="margin-top: 20px; width: 31.23px; height: 35.5px"
               src="../assets/triangulito.png"
             />
-          </a>
+          </router-link>
         </div>
         <div class="col ms-4">
           <p class="italika d-flex justify-content-start" style="font-size: 50px">

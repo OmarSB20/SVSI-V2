@@ -3,8 +3,8 @@ import { ref } from "vue"; //para usar variables reactivas
 import { onMounted } from "vue"; //para poder usar el onMounted, que ejecuta todo lo que tenga adentro cada que cargue la pagina
 import { usuariosStore } from "../stores/usuarios";
 import { rolesStore } from "../stores/roles";
-import router  from '../router/index'
-
+import { loginStore } from "../stores/login";
+import router from "../router/index";
 
 import CompHeader from "../components/Header.vue";
 
@@ -17,8 +17,13 @@ const { getIdUsuario } = usuariosStore();
 const { obtenerNicknames } = usuariosStore();
 const { obtenerUnUser } = usuariosStore();
 const { actualizarUsuario } = usuariosStore();
+const {reanudarSesion} = loginStore();
+const {verificarPermisos} = loginStore();
 
 //variables reactivas
+const texto1=ref(false);
+const texto2=ref(false);
+const texto3=ref(false);
 const nombreRol = ref("");
 const nombre = ref("");
 const paterno = ref("");
@@ -37,6 +42,12 @@ const tipoPass = ref("password");
 const rolSeleccionado = ref("Seleccionar rol");
 const idUsrActualizar = ref("");
 const usuario = ref([]);
+const tagNombre = ref(null);
+const tagPaterno = ref(null);
+const tagMaterno = ref(null);
+
+var nicknameActual = "";
+
 //variable asociada al modal
 var modal;
 var modalError;
@@ -46,16 +57,19 @@ const alertaLlenado = ref(false);
 
 //al cargar la pagina se consultan los permisos y roles que hay en la BD y se define el objeto relacionado al modal
 onMounted(async () => {
-  console.log(getIdUsuario())
-  await consultarRoles();
-  await obtenerDatosUsr();
-  await consultarUsuarios();
-
+  
+    console.log(getIdUsuario());
+    await consultarRoles();
+    await obtenerDatosUsr();
+    await consultarUsuarios();
+    nicknameActual = nickname.value;
+    console.log(nicknameActual);
+  
 });
 
 //consulta los roles usando el metodo de la store, los almacena en rolesArray
 const consultarRoles = async () => {
-  try {
+    try {
     roles.value = await obtenerRoles();
     roles.value = roles.value.data.body;
     console.log(roles.value);
@@ -66,38 +80,37 @@ const consultarRoles = async () => {
 
 const obtenerDatosUsr = async () => {
   try {
-    idUsrActualizar.value =  getIdUsuario();
-    if (idUsrActualizar.value != ""){
-        console.log(idUsrActualizar.value);
-        usuario.value = await obtenerUnUser(idUsrActualizar.value);
-        usuario.value = usuario.value.data.body[0];
-        roles.value = await obtenerRoles();
-        roles.value = roles.value.data.body;
-        roles.value.forEach((element) => {
+    idUsrActualizar.value = getIdUsuario();
+    if (idUsrActualizar.value != "") {
+      console.log(idUsrActualizar.value);
+      usuario.value = await obtenerUnUser(idUsrActualizar.value);
+      usuario.value = usuario.value.data.body[0];
+      roles.value = await obtenerRoles();
+      roles.value = roles.value.data.body;
+      roles.value.forEach((element) => {
         if (element.idRoles == usuario.value.Roles_idRoles) {
-            nombreRol.value = element.Nombre;
+          nombreRol.value = element.Nombre;
         }
-        });
-        console.log(nombreRol.value);
-        console.log(usuario.value.Nombre);
-        nombre.value = usuario.value.Nombre;
-        paterno.value = usuario.value.Apellido_Paterno;
-        materno.value = usuario.value.Apellido_Materno;
-        email.value = usuario.value.Correo;
-        telefono.value = usuario.value.Telefono;
-        nickname.value = usuario.value.Usuario;
-        rolSeleccionado.value = nombreRol.value;
-        console.log(nombre.value);
-        console.log(nickname.value);
-        console.log(rolSeleccionado.value);
-        return true;
+      });
+      console.log(nombreRol.value);
+      console.log(usuario.value.Nombre);
+      nombre.value = usuario.value.Nombre;
+      paterno.value = usuario.value.Apellido_Paterno;
+      materno.value = usuario.value.Apellido_Materno;
+      email.value = usuario.value.Correo;
+      telefono.value = usuario.value.Telefono;
+      nickname.value = usuario.value.Usuario;
+      rolSeleccionado.value = nombreRol.value;
+      console.log(nombre.value);
+      console.log(nickname.value);
+      console.log(rolSeleccionado.value);
+      return true;
     } else {
-        modal = new bootstrap.Modal(document.getElementById("modalError"), {
-            keyboard: false,
-        });
-        modal.show();
+      modal = new bootstrap.Modal(document.getElementById("modalError"), {
+        keyboard: false,
+      });
+      modal.show();
     }
-    
   } catch (error) {
     console.log(error);
     //Mostrar modal bloqueado
@@ -124,7 +137,13 @@ function revisarUsuarioExistente() {
   }
 
   for (var j in arrayNicknames.value) {
-    if (arrayNicknames.value[j].toLowerCase() == nickname.value.trim().toLowerCase()) {
+    console.log(arrayNicknames.value[j]);
+    console.log(nicknameActual);
+    if (
+      arrayNicknames.value[j].Usuario.toLowerCase() ==
+        nickname.value.trim().toLowerCase() &&
+      nicknameActual != nickname.value.trim().toLowerCase()
+    ) {
       repetido.value = true;
       deshabilitado.value = true;
       return true;
@@ -189,7 +208,7 @@ const actUsuario = async () => {
     };
     await actualizarUsuario(usuarioNuevo); //Actualizamos el usuario
     modal = new bootstrap.Modal(document.getElementById("modal"), {
-        keyboard: false,
+      keyboard: false,
     });
     modal.show(); //al ser todo exitoso, mostramos el modal notificando el exito
   } catch (error) {
@@ -217,13 +236,31 @@ const actUsuarioSC = async () => {
     };
     await actualizarUsuario(usuarioNuevo); //Actualizamos el usuario
     modal = new bootstrap.Modal(document.getElementById("modal"), {
-        keyboard: false,
+      keyboard: false,
     });
     modal.show(); //al ser todo exitoso, mostramos el modal notificando el exito
   } catch (error) {
     console.log(error);
   }
 };
+
+function validarTexto(input) {
+  console.log("validandoTexto");
+  console.log(input.value);
+  //input.value = input.value.trim();
+  var re =  /^[a-zA-Z ]+$/;
+ // var pswd = document.getElementById("emailInpt");
+  if (!re.test(input.value)) {
+    input.style.borderColor = "red";
+    input.style.borderWidth = "4px";
+    validado.value = false;
+    return false;
+  } else {
+    input.style.borderColor = "#3ac74d";
+    input.style.borderWidth = "4px";
+    return true;
+  }
+}
 
 function validarEmail() {
   console.log("validandomeail");
@@ -244,8 +281,8 @@ function validarEmail() {
 
 function validarTlfn() {
   let tlfnInpt = document.getElementById("tlfn");
-  var re = /\d/;
-  if (!(telefono.value.length == 10 && re.test(telefono.value))) {
+  var re = /^[0-9]+$/;
+  if (!(telefono.value.length == 10 && telefono.value.match(re))) {
     tlfnInpt.style.borderColor = "red";
     tlfnInpt.style.borderWidth = "4px";
     validado.value = false;
@@ -295,24 +332,17 @@ function sbmtUsuario() {
 
   if (checkbox.checked) {
     tried = true;
-    validado.value = true;
-    colorCampos();
-    validarEmail();
-    validarPsw();
-    compararPsw();
-    validarTlfn();
-    if (validado.value) {
+    //validado.value = true;
+   
+    if(validarPsw()&&compararPsw()&&colorCampos()&&validarEmail()&&validarTlfn()&&validarTexto(tagNombre.value)&&validarTexto(tagPaterno.value)&&validarTexto(tagMaterno.value)&&validado.value){
       actUsuario();
     } else {
       alertaLlenado.value = true;
     }
   } else {
     tried = true;
-    validado.value = true;
-    colorCampos();
-    validarEmail();
-    validarTlfn();
-    if (validado.value) {
+    //validado.value = true;
+    if(colorCampos()&&validarEmail()&&validarTlfn()&&validarTexto(tagNombre.value)&&validarTexto(tagPaterno.value)&&validarTexto(tagMaterno.value)&&validado.value){
       actUsuarioSC();
     } else {
       alertaLlenado.value = true;
@@ -321,9 +351,9 @@ function sbmtUsuario() {
 }
 
 function verUsuarios() {
-    //router.push({ name: 'usuarioRegistrado'});
-    modal.hide();
-    router.push({name:"usuarioRegistrado"});
+  //router.push({ name: 'usuarioRegistrado'});
+  modal.hide();
+  router.push({ name: "usuarios" });
 }
 
 function modificarC() {
@@ -346,17 +376,17 @@ function modificarC() {
       <!-----------------------    Row de titulo  --------------------------->
       <div class="row mb-3 pt-5">
         <div class="col-1 d-flex justify-content-end">
-          <a href="http://localhost:5173">
+          <router-link to="usuarios"> 
             <img
               class="img-fluid"
               style="margin-top: 20px; width: 31.23px; height: 35.5px"
               src="../assets/triangulito.png"
             />
-          </a>
+          </router-link>
         </div>
         <div class="col ms-4">
           <p class="italika d-flex justify-content-start" style="font-size: 50px">
-            Crear Usuario
+            Actualizar Usuario
           </p>
         </div>
       </div>
@@ -372,7 +402,8 @@ function modificarC() {
               type="text"
               class="form-control input-f inptElement"
               v-model.trim="nombre"
-              @input="colorCampos()"
+              @input="validarTexto(tagNombre)"
+              ref="tagNombre"
               required
             />
           </div>
@@ -388,7 +419,8 @@ function modificarC() {
                 <input
                   type="text"
                   class="form-control input-f inptElement"
-                  @input="colorCampos()"
+                  @input="validarTexto(tagPaterno)"
+                  ref="tagPaterno"
                   required
                   v-model.trim="paterno"
                 />
@@ -403,7 +435,8 @@ function modificarC() {
                 <input
                   type="text"
                   class="form-control input-f inptElement"
-                  @input="colorCampos()"
+                  @input="validarTexto(tagMaterno)"
+                  ref="tagMaterno"
                   v-model.trim="materno"
                   required
                 />
@@ -474,6 +507,7 @@ function modificarC() {
               class="form-control input-f inptElement"
               @input="revisarUsuarioExistente()"
               v-model.trim="nickname"
+              maxlength="23"
               required
             />
           </div>
@@ -533,7 +567,7 @@ function modificarC() {
               style="height: 38px"
               role="alert"
             >
-              Por favor, llene todos los campos
+              Por favor, llene correctamente todos los campos
             </div>
           </div>
           <div class="row mb-2 pb-2">
@@ -567,7 +601,7 @@ function modificarC() {
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title" id="staticBackdropLabel">¡Usuario creado!</h5>
+          <h5 class="modal-title" id="staticBackdropLabel">¡Usuario actualizado!</h5>
           <button
             type="button"
             class="btn-close"
@@ -575,7 +609,9 @@ function modificarC() {
             aria-label="Close"
           ></button>
         </div>
-        <div class="modal-body">El usuario {{ nickname }} fue modificado exitosamente.</div>
+        <div class="modal-body">
+          El usuario {{ nickname }} fue modificado exitosamente.
+        </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-success" @click="verUsuarios()">
             Volver a usuarios
@@ -595,17 +631,17 @@ function modificarC() {
     aria-hidden="true"
   >
     <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="staticBackdropLabel">Error al cargar los datos</h5>
-            </div>
-            <div class="modal-body">Vuelva a carga el usuario</div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-success" @click="verUsuarios()">
-                    Volver a usuarios
-                </button>
-            </div>
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="staticBackdropLabel">Error al cargar los datos</h5>
         </div>
+        <div class="modal-body">Vuelva a carga el usuario</div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-success" @click="verUsuarios()">
+            Volver a usuarios
+          </button>
+        </div>
+      </div>
     </div>
   </div>
 </template>

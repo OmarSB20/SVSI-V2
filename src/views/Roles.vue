@@ -6,7 +6,10 @@ import { onMounted } from "vue";
 import router  from '../router/index'
 
 import CompHeader from '../components/Header.vue'
+import { loginStore } from "../stores/login";
 
+const { reanudarSesion } = loginStore();
+const {verificarPermisos} = loginStore();
 const { obtenerPermisosDelRol } = permisosRolesStore();
 const { eliminarPermisosDelRol } = permisosRolesStore();
 const { obtenerRoles } = rolesStore();
@@ -24,8 +27,9 @@ var modal;
 var modalConfirmacion;
 var nombre;
 
-onMounted(() => {
-  consultarRoles();
+onMounted(async() => {
+  
+    consultarRoles();
   modal = new bootstrap.Modal(document.getElementById("modal"), {
     keyboard: false,
   });
@@ -33,6 +37,7 @@ onMounted(() => {
   modalConfirmacion = new bootstrap.Modal(document.getElementById("modalCon"), {
     keyboard: false,
   });
+
 });
 
 const consultarRoles = async () => {
@@ -55,16 +60,14 @@ const consultarRoles = async () => {
 };
 
 const consultarPermisosDeRol = async (idRol) => {
-  
+  permisosDeRolArray.value = [];
   try {
-    permisosDeRolArray.value = [];
     const permisosDeRol = await obtenerPermisosDelRol(idRol);
     const body = permisosDeRol.data.body;
     for (var j in body) {
       permisosDeRolArray.value.push(body[j]);
     }
-    await modal.show();
-    console.log("fin funcion")
+    modal.show();
   } catch (error) {
     console.log(error);
   }
@@ -83,7 +86,7 @@ const eliminarRoles = async (idEmpleados) => {
 const modificarRol = async (idRol) => {
   try {
     setRol(idRol);
-    router.push({ name: 'registroRol', params: { idRolAct: idRol }});
+    router.push({ name: 'actualizarRol', params: { idRolAct: idRol }});
 
     //window.location.href = "http://localhost:5173/registroRol";
     //this.$router.push("http://localhost:5173/crearRol");
@@ -106,9 +109,9 @@ function actualizarTabla(nombre) {
   }
 }
 
-async function confirmar(idRol) {
+function confirmar(idRol) {
   idRolEliminar.value = idRol;
-  await modalConfirmacion.show();
+  modalConfirmacion.show();
 }
 </script>
 <template>
@@ -116,7 +119,7 @@ async function confirmar(idRol) {
     <CompHeader/>
     <div class="row ">
       <div class="col-1 mb-3 pt-5">
-        <router-link to="http://localhost:5173">
+        <router-link to="/italika">
           <img
             class="img-fluid mt-3"
             style="margin-top: 20px; width: 31.23px; height: 35.5px"
@@ -148,7 +151,7 @@ async function confirmar(idRol) {
             <h5 class="italika mt-3">Agregar Roles</h5>
           </div>
           <div class="col-1">
-            <router-link to="../crearRol" style="text-decoration: none;">
+            <router-link to="crearRol" style="text-decoration: none;">
               <button
                 class="btn btn-primary mt-2 d-flex align-items-center justify-content-center"
                 type="submit"

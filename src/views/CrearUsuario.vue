@@ -3,14 +3,21 @@ import { ref } from "vue"; //para usar variables reactivas
 import { onMounted } from "vue"; //para poder usar el onMounted, que ejecuta todo lo que tenga adentro cada que cargue la pagina
 import { usuariosStore } from "../stores/usuarios";
 import { rolesStore } from "../stores/roles";
+import { loginStore } from "../stores/login";
+
 
 import CompHeader from "../components/Header.vue";
+import router from "../router";
 
 //declaramos como constantes los metodos exactos que vamos a usar de las stores y lo igualamos a la store de donde vienen
 //           metodo    =     store de la que viene
 const { agregarUsuario } = usuariosStore();
 const { obtenerRoles } = rolesStore();
+const { obtenerNicknames } = usuariosStore();
 const { obtenerUsuarios } = usuariosStore();
+const { reanudarSesion } = loginStore();
+const {verificarPermisos} = loginStore();
+
 //variables reactivas
 const nombre = ref("");
 const paterno = ref("");
@@ -27,6 +34,10 @@ const repetido = ref(false);
 const tipoConfPass = ref("password");
 const tipoPass = ref("password");
 const rolSeleccionado = ref("Seleccionar rol");
+const btnSeguirCreando = ref(null);
+const tagNombre = ref(null);
+const tagPaterno = ref(null);
+const tagMaterno = ref(null);
 //variable asociada al modal
 var modal;
 var tried = false;
@@ -34,13 +45,16 @@ const validado = ref(true);
 const alertaLlenado = ref(false);
 
 //al cargar la pagina se consultan los permisos y roles que hay en la BD y se define el objeto relacionado al modal
-onMounted(() => {
-  consultarRoles();
-  consultarUsuarios();
-  deshabilitado.value = true;
-  modal = new bootstrap.Modal(document.getElementById("modal"), {
-    keyboard: false,
+onMounted(async() => {
+  
+    consultarRoles();
+    consultarUsuarios();
+    deshabilitado.value = true;
+    modal = new bootstrap.Modal(document.getElementById("modal"), {
+      keyboard: false,
   });
+  
+  
 });
 
 //función que vacía el textbox, el arreglo de permisos arreglados y deselecciona los checkbox
@@ -82,11 +96,10 @@ const consultarRoles = async () => {
 const consultarUsuarios = async () => {
   try {
     arrayNicknames.value = [];
-    let usuarios = await obtenerUsuarios();
+    let usuarios = await obtenerNicknames();
     usuarios = usuarios.data.body;
     usuarios.forEach((element) => {
-      console.log(element.Usuario);
-      arrayNicknames.value.push(element.Usuario);
+      arrayNicknames.value.push(element);
     });
   } catch (error) {
     console.log(error);
@@ -100,7 +113,7 @@ function revisarUsuarioExistente() {
   }
 
   for (var j in arrayNicknames.value) {
-    if (arrayNicknames.value[j].toLowerCase() == nickname.value.trim().toLowerCase()) {
+    if (arrayNicknames.value[j].Usuario.toLowerCase() == nickname.value.trim().toLowerCase()) {
       repetido.value = true;
       deshabilitado.value = true;
       return true;
@@ -163,6 +176,13 @@ const crearUsuario = async () => {
     await agregarUsuario(usuarioNuevo); //creamos el rol
 
     modal.show(); //al ser todo exitoso, mostramos el modal notificando el exito
+    var myModal = document.getElementById("modal");
+
+    myModal.addEventListener("shown.bs.modal", function () {
+      btnSeguirCreando.value.focus();
+      btnSeguirCreando.value.style.borderColor = "#90aee5";
+      btnSeguirCreando.value.style.borderWidth="4px"
+    });
   } catch (error) {
     console.log(error);
   }
@@ -187,8 +207,8 @@ function validarEmail() {
 
 function validarTlfn() {
   let tlfnInpt = document.getElementById("tlfn");
-  var re = /\d/;
-  if (!(telefono.value.length == 10 && re.test(telefono.value))) {
+  var re = /^[0-9]+$/;
+  if (!(telefono.value.length == 10 && telefono.value.match(re))) {
     tlfnInpt.style.borderColor = "red";
     tlfnInpt.style.borderWidth = "4px";
     validado.value = false;
@@ -233,6 +253,24 @@ function compararPsw() {
   }
 }
 
+function validarTexto(input) {
+  console.log("validandoTexto");
+  console.log(input.value);
+  //input.value = input.value.trim();
+  var re =  /^[a-zA-Z ]+$/;
+ // var pswd = document.getElementById("emailInpt");
+  if (!re.test(input.value)) {
+    input.style.borderColor = "red";
+    input.style.borderWidth = "4px";
+    validado.value = false;
+    return false;
+  } else {
+    input.style.borderColor = "#3ac74d";
+    input.style.borderWidth = "4px";
+    return true;
+  }
+}
+
 function sbmtUsuario() {
   tried = true;
   validado.value = true;
@@ -241,7 +279,7 @@ function sbmtUsuario() {
   validarPsw();
   compararPsw();
   validarTlfn();
-  if (validado.value) {
+  if(colorCampos()&&validarEmail()&&validarTlfn()&&validarTexto(tagNombre.value)&&validarTexto(tagPaterno.value)&&validarTexto(tagMaterno.value)&&validado.value){
     crearUsuario();
   } else {
     alertaLlenado.value = true;
@@ -249,7 +287,8 @@ function sbmtUsuario() {
 }
 
 function verUsuarios() {
-  window.location.href = "http://localhost:5173/usuarioRegistrado";
+  modal.hide();
+  router.push({name:"usuarios"});
 }
 </script>
 
@@ -260,13 +299,13 @@ function verUsuarios() {
       <!-----------------------    Row de titulo  --------------------------->
       <div class="row mb-3 pt-5">
         <div class="col-1 d-flex justify-content-end">
-          <a href="http://localhost:5173">
+          <router-link to="usuarios">
             <img
               class="img-fluid"
               style="margin-top: 20px; width: 31.23px; height: 35.5px"
               src="../assets/triangulito.png"
             />
-          </a>
+          </router-link>
         </div>
         <div class="col ms-4">
           <p class="italika d-flex justify-content-start" style="font-size: 50px">
@@ -286,7 +325,9 @@ function verUsuarios() {
               type="text"
               class="form-control input-f inptElement"
               v-model.trim="nombre"
-              @input="colorCampos()"
+              @input="validarTexto(tagNombre)"
+              ref="tagNombre"
+              autofocus
               required
             />
           </div>
@@ -302,7 +343,8 @@ function verUsuarios() {
                 <input
                   type="text"
                   class="form-control input-f inptElement"
-                  @input="colorCampos()"
+                  @input="validarTexto(tagPaterno)"
+                  ref="tagPaterno"
                   required
                   v-model.trim="paterno"
                 />
@@ -317,7 +359,8 @@ function verUsuarios() {
                 <input
                   type="text"
                   class="form-control input-f inptElement"
-                  @input="colorCampos()"
+                  @input="validarTexto(tagMaterno)"
+                  ref="tagMaterno"
                   v-model.trim="materno"
                   required
                 />
@@ -387,6 +430,7 @@ function verUsuarios() {
               class="form-control input-f inptElement"
               @input="revisarUsuarioExistente()"
               v-model.trim="nickname"
+              maxlength="23"
               required
             />
           </div>
@@ -436,7 +480,7 @@ function verUsuarios() {
               style="height: 38px"
               role="alert"
             >
-              Por favor, llene todos los campos
+              Por favor, llene correctamente todos los campos
             </div>
           </div>
           <div class="row mb-2 pb-2">
@@ -485,6 +529,7 @@ function verUsuarios() {
             class="btn btn-primary"
             @click="resetCampos()"
             data-bs-dismiss="modal"
+            ref="btnSeguirCreando"
           >
             Seguir creando usuarios
           </button>

@@ -5,6 +5,7 @@ import { loginStore } from "../stores/login";
 import router from "../router/index";
 
 const { login } = loginStore();
+const { reanudarSesion } = loginStore();
 
 const nickname = ref("");
 const contrasena = ref("");
@@ -24,9 +25,11 @@ function ajustarAlto() {
   container.style.height = screenHeight + "px";
 }
 
-onMounted(() => {
-  deshabilitado.value = true;
-  ajustarAlto();
+onMounted(async() => {
+ 
+    deshabilitado.value = true;
+    ajustarAlto();
+  
 });
 
 function mostrarTexto(){
@@ -75,7 +78,7 @@ async function iniciarSesion() {
 }
 
 function irMenu() {
-  router.push({ name: "modificarRol" });
+  router.push({ name: "home" });
 }
 </script>
 
@@ -182,6 +185,7 @@ function irMenu() {
                 class="form-control input-f inptElement inptDrk"
                 v-model.trim="nickname"
                 @input="camposVacios()"
+                autofocus
               />
               </div>
               
