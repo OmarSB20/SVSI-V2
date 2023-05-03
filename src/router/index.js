@@ -6,9 +6,10 @@ import RegistroRol from '../views/RegistroRol.vue'
 import CrearUsuario from '../views/CrearUsuario.vue'
 import login from '../views/Login.vue'
 import usuarioRegistrado from '../views/usuariosRegistrados.vue'
-import ActualizarUsuarios from '../views/ActualizarUsuarios.vue'
+import ActualizarUsuario from '../views/ActualizarUsuario.vue'
 import MediosContacto from '../views/MediosContacto.vue'
-
+import CrearCredito from '../views/CrearCredito.vue'
+import CrearEstatusCotizacion from '../views/CrearEstatusCotizacion.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -58,14 +59,24 @@ const router = createRouter({
       component: usuarioRegistrado
     },
     {
-      path: '/ActualizarUsuarios',
-      name: 'ActualizarUsuarios',
-      component: ActualizarUsuarios
+      path: '/actualizarUsuario',
+      name: 'actualizarUsuario',
+      component: ActualizarUsuario
     },
     {
       path: '/mediosContacto',
       name: 'mediosContacto',
       component: MediosContacto
+    },
+    {
+      path: '/crearCredito',
+      name: 'crearCredito',
+      component: CrearCredito
+    },
+    {
+      path: '/crearEstatusCotizacion',
+      name: 'crearEstatusCotizacion',
+      component: CrearEstatusCotizacion
     }
   ]
 })

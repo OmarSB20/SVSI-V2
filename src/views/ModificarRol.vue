@@ -19,6 +19,7 @@ const permisosDeRolArray = ref([]);
 const idRolEliminar = ref();
 var modal;
 var modalConfirmacion;
+var nombre;
 onMounted(() => {
   consultarRoles();
   modal = new bootstrap.Modal(document.getElementById("modal"), {
@@ -59,10 +60,10 @@ const consultarPermisosDeRol = async (idRol) => {
     console.log(error);
   }
 };
-const eliminarRoles = async (idRol) => {
+const eliminarRoles = async (idEmpleados) => {
   try {
-    await eliminarPermisosDelRol(idRol);
-    await eliminarRol(idRol);
+    await eliminarPermisosDelRol(idEmpleados);
+    await eliminarRol(idEmpleados);
     await consultarRoles();
   } catch (error) {
     console.log(error);
@@ -79,6 +80,7 @@ const modificarRol = async (idRol) => {
   }
 };
 function actualizarTabla(nombre) {
+  console.log(nombre)
   if (nombre.trim() == "") {
     rolesDesplegados.value = rolesArray.value;
   } else {
@@ -100,13 +102,13 @@ function confirmar(idRol) {
     <CompHeader/>
     <div class="row ">
       <div class="col-1 mb-3 pt-5">
-        <a href="http://localhost:5173">
+        <router-link to="http://localhost:5173">
           <img
             class="img-fluid mt-3"
             style="margin-top: 20px; width: 31.23px; height: 35.5px"
             src="../assets/triangulito.png"
           />
-        </a>
+        </router-link>
       </div>
       <div class="col-8 mb-3 pt-5">
         <div class="row align-items-end">
@@ -132,9 +134,9 @@ function confirmar(idRol) {
             <h5 class="italika mt-3">Agregar Roles</h5>
           </div>
           <div class="col-1">
-            <router-link to="../crearRol">
+            <router-link to="../crearRol" style="text-decoration: none;">
               <button
-                class="btn btn-primary mt-2 d-flex align-items-center"
+                class="btn btn-primary mt-2 d-flex align-items-center justify-content-center"
                 type="submit"
                 style="
                   background-color: #66d054;
@@ -164,7 +166,7 @@ function confirmar(idRol) {
         <tr v-for="rol in rolesDesplegados">
           <td>
             {{ rol.Nombre }}
-          </td>
+          </td> 
           <th scope="row">
             <div class="align-items-center">
               <button
@@ -293,6 +295,4 @@ body {
   letter-spacing: 0.04em;
   color: #ffffff;
 }
-
-
 </style>
