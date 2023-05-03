@@ -3,6 +3,8 @@ import { ref } from "vue"; //para usar variables reactivas
 import { onMounted } from "vue"; //para poder usar el onMounted, que ejecuta todo lo que tenga adentro cada que cargue la pagina
 import { usuariosStore } from "../stores/usuarios";
 import { rolesStore } from "../stores/roles";
+import router  from '../router/index.js'
+
 
 import CompHeader from "../components/Header.vue";
 
@@ -33,11 +35,11 @@ const repetido = ref(false);
 const tipoConfPass = ref("password");
 const tipoPass = ref("password");
 const rolSeleccionado = ref("Seleccionar rol");
-const idUsrActualizar = ref();
+const idUsrActualizar = ref("");
 const usuario = ref([]);
-const permisosDelRol = ref([]); //Probable necesidad
 //variable asociada al modal
 var modal;
+var modalError;
 var tried = false;
 const validado = ref(true);
 const alertaLlenado = ref(false);
@@ -49,9 +51,6 @@ onMounted(async () => {
   await obtenerDatosUsr();
   await consultarUsuarios();
 
-  modal = new bootstrap.Modal(document.getElementById("modal"), {
-    keyboard: false,
-  });
 });
 
 //consulta los roles usando el metodo de la store, los almacena en rolesArray
@@ -68,29 +67,37 @@ const consultarRoles = async () => {
 const obtenerDatosUsr = async () => {
   try {
     idUsrActualizar.value =  getIdUsuario();
-    console.log(idUsrActualizar.value);
-    usuario.value = await obtenerUnUser(idUsrActualizar.value);
-    usuario.value = usuario.value.data.body[0];
-    roles.value = await obtenerRoles();
-    roles.value = roles.value.data.body;
-    roles.value.forEach((element) => {
-      if (element.idRoles == usuario.value.Roles_idRoles) {
-        nombreRol.value = element.Nombre;
-      }
-    });
-    console.log(nombreRol.value);
-    console.log(usuario.value.Nombre);
-    nombre.value = usuario.value.Nombre;
-    paterno.value = usuario.value.Apellido_Paterno;
-    materno.value = usuario.value.Apellido_Materno;
-    email.value = usuario.value.Correo;
-    telefono.value = usuario.value.Telefono;
-    nickname.value = usuario.value.Usuario;
-    rolSeleccionado.value = nombreRol.value;
-    console.log(nombre.value);
-    console.log(nickname.value);
-    console.log(rolSeleccionado.value);
-    return true;
+    if (idUsrActualizar.value != ""){
+        console.log(idUsrActualizar.value);
+        usuario.value = await obtenerUnUser(idUsrActualizar.value);
+        usuario.value = usuario.value.data.body[0];
+        roles.value = await obtenerRoles();
+        roles.value = roles.value.data.body;
+        roles.value.forEach((element) => {
+        if (element.idRoles == usuario.value.Roles_idRoles) {
+            nombreRol.value = element.Nombre;
+        }
+        });
+        console.log(nombreRol.value);
+        console.log(usuario.value.Nombre);
+        nombre.value = usuario.value.Nombre;
+        paterno.value = usuario.value.Apellido_Paterno;
+        materno.value = usuario.value.Apellido_Materno;
+        email.value = usuario.value.Correo;
+        telefono.value = usuario.value.Telefono;
+        nickname.value = usuario.value.Usuario;
+        rolSeleccionado.value = nombreRol.value;
+        console.log(nombre.value);
+        console.log(nickname.value);
+        console.log(rolSeleccionado.value);
+        return true;
+    } else {
+        modal = new bootstrap.Modal(document.getElementById("modalError"), {
+            keyboard: false,
+        });
+        modal.show();
+    }
+    
   } catch (error) {
     console.log(error);
     //Mostrar modal bloqueado
@@ -181,7 +188,9 @@ const actUsuario = async () => {
       Correo: email.value,
     };
     await actualizarUsuario(usuarioNuevo); //Actualizamos el usuario
-
+    modal = new bootstrap.Modal(document.getElementById("modal"), {
+        keyboard: false,
+    });
     modal.show(); //al ser todo exitoso, mostramos el modal notificando el exito
   } catch (error) {
     console.log(error);
@@ -207,7 +216,9 @@ const actUsuarioSC = async () => {
       Correo: email.value,
     };
     await actualizarUsuario(usuarioNuevo); //Actualizamos el usuario
-
+    modal = new bootstrap.Modal(document.getElementById("modal"), {
+        keyboard: false,
+    });
     modal.show(); //al ser todo exitoso, mostramos el modal notificando el exito
   } catch (error) {
     console.log(error);
@@ -310,7 +321,9 @@ function sbmtUsuario() {
 }
 
 function verUsuarios() {
-  window.location.href = "http://localhost:5173/modificarRol";
+    //router.push({ name: 'usuarioRegistrado'});
+    modal.hide();
+    router.push({name:"usuarioRegistrado"});
 }
 
 function modificarC() {
@@ -481,9 +494,9 @@ function modificarC() {
                 @input="modificarC()"
                 id="modifyP"
                 style="width: 30px; height: 30px; border-color: #5e5e5e"
-                class="form-check-input mt-2"
+                class="form-check-input"
               />
-              <h5 class="italika">Modificar contraseña</h5>
+              <h5 class="italika mt-2">Modificar contraseña</h5>
             </div>
           </div>
           <div class="row mb-2 pb-2 d-flex align-items-center">
@@ -554,7 +567,7 @@ function modificarC() {
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title" id="staticBackdropLabel">¡Usuario creado!</h5>
+          <h5 class="modal-title" id="staticBackdropLabel">¡Usuario actualizado!</h5>
           <button
             type="button"
             class="btn-close"
@@ -562,21 +575,37 @@ function modificarC() {
             aria-label="Close"
           ></button>
         </div>
-        <div class="modal-body">El usuario {{ nickname }} fue creado exitosamente.</div>
+        <div class="modal-body">El usuario {{ nickname }} fue modificado exitosamente.</div>
         <div class="modal-footer">
-          <button
-            type="button"
-            class="btn btn-primary"
-            @click="resetCampos()"
-            data-bs-dismiss="modal"
-          >
-            Seguir creando roles
-          </button>
           <button type="button" class="btn btn-success" @click="verUsuarios()">
-            Ver roles
+            Volver a usuarios
           </button>
         </div>
       </div>
+    </div>
+  </div>
+
+  <div
+    class="modal fade"
+    id="modalError"
+    data-bs-backdrop="static"
+    data-bs-keyboard="false"
+    tabindex="-1"
+    aria-labelledby="staticBackdropLabel"
+    aria-hidden="true"
+  >
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="staticBackdropLabel">Error al cargar los datos</h5>
+            </div>
+            <div class="modal-body">Vuelva a carga el usuario</div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-success" @click="verUsuarios()">
+                    Volver a usuarios
+                </button>
+            </div>
+        </div>
     </div>
   </div>
 </template>
@@ -598,14 +627,6 @@ body {
 }
 
 .italika {
-  font-family: "Fjalla One";
-  font-style: normal;
-  font-weight: 400;
-  letter-spacing: 0.04em;
-  color: #ffffff;
-}
-
-.italikaC {
   font-family: "Fjalla One";
   font-style: normal;
   font-weight: 400;
