@@ -218,8 +218,10 @@ function checkboxNo() {
 function sbmtMoto() {
   if (actualizar.value == false) {
     crearModelo();
+    consultarMotos();
   } else {
     actualizarMoto();
+    consultarMotos();
   }
 }
 
