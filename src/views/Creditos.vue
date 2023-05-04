@@ -79,7 +79,7 @@ function modificarNombreCredito(Descripcion, idTipos_De_Creditos) {
 async function guardarCreditos(Descripcion) {
   try {
     console.log(Descripcion);
-    await agregarCredito(Descripcion);
+    await agregarCredito(Descripcion.trim());
     await consultarCredito();
     modal1 = new bootstrap.Modal(document.getElementById("modal1"), {
       keyboard: false,
@@ -99,7 +99,7 @@ async function modificarCreditos(idTipos_De_Creditos, Descripcion) {
     nombreActualizado.value = Descripcion;
     console.log(Descripcion + "Es el que recibira");
     console.log(nombreActual + "es el original");
-    await actualizarCredito(idTipos_De_Creditos, Descripcion, 1);
+    await actualizarCredito(idTipos_De_Creditos, Descripcion.trim(), 1);
     await consultarCredito();
     creditoNuevo.value = "";
     botonActualizar.value = false;
