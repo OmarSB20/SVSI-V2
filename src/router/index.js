@@ -29,6 +29,7 @@ const interfaces = {
   login: '0',
   mediosContacto: '3',
   asesores: '5',
+  estatusCotizacion:'6',
   creditos:'7',
   crearUsuario: '9',
   usuarios: '9',
@@ -123,14 +124,8 @@ const router = createRouter({
       
     },
     {
-      path: '/crearEstatusCotizacion',
-      name: 'estatusCotizacion',
-      component: CrearEstatusCotizacion
-      
-    },
-    {
       path: '/estatusCotizacion',
-      name: 'EstatusCotizacion',
+      name: 'estatusCotizacion',
       component: EstatusCotizacion
       
     }

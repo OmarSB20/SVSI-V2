@@ -93,13 +93,13 @@ async function guardarEstCot(Descripcion) {
   }
 }
 
-async function modificarEstCot(idEstadoCotizacion, Descripcion) {
+async function modificarEstCot(idEstatusCotizacion, Descripcion) {
   try {
     nombreAntiguo.value = nombreActual;
     nombreActualizado.value = Descripcion;
     console.log(Descripcion + "Es el que recibira");
     console.log(nombreActual + "es el original");
-    await actualizarEstatusCotizacion(idEstadoCotizacion, Descripcion, 1);
+    await actualizarEstatusCotizacion(idEstatusCotizacion, Descripcion, 1);
     await consultarEstCot();
     estCotNuevo.value = "";
     botonActualizar.value = false;
@@ -288,21 +288,21 @@ const revisarEstCotExistente = () => {
               </button> -->
 
               <button
-                :id="estCot.idEstadoCotizacion"
+                :id="estCot.idEstatusCotizacion"
                 :class="[
-                  botonActualizar && idBotonActualizar == estCot.idEstadoCotizacion
+                  botonActualizar && idBotonActualizar == estCot.idEstatusCotizacion
                     ? 'btn btn-primary mx-1'
                     : 'btn btn-warning mx-1',
                 ]"
                 type="submit"
                 style="border-color: #ffbe16; height: 37px"
                 @click="
-                  modificarNombreEstCot(estCot.Descripcion, estCot.idEstadoCotizacion)
+                  modificarNombreEstCot(estCot.Descripcion, estCot.idEstatusCotizacion)
                 "
               >
                 <i
                   :class="[
-                    botonActualizar && idBotonActualizar == estCot.idEstadoCotizacion
+                    botonActualizar && idBotonActualizar == estCot.idEstatusCotizacion
                       ? 'fa-solid fa-clock-rotate-left'
                       : 'fa-solid fa-pen-to-square',
                   ]"
@@ -317,7 +317,7 @@ const revisarEstCotExistente = () => {
                 type="submit"
                 style="background-color: #c01a1a; border-color: #c01a1a; height: 37px"
                 @click="
-                  mostrarModalEliminar(estCot.idEstadoCotizacion, estCot.Descripcion)
+                  mostrarModalEliminar(estCot.idEstatusCotizacion, estCot.Descripcion)
                 "
               >
                 <img

@@ -5,11 +5,8 @@ import { asesoresStore } from "../stores/asesores";
 import { onMounted } from "vue"; 
 import router from "../router";
 import CompHeader from "../components/Header.vue";
-
 const {obtenerAsesoresActivos ,obtenerTodos ,agregarAsesor, actualizarAsesor} = asesoresStore();
- 
 </script>
-
 <template>
 <div class="container-fluid">
     <CompHeader />

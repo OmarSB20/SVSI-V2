@@ -44,7 +44,7 @@ export const estatusCotizacionStore = defineStore("estatuscotizacion",{
       
       async obtenerNombresEstatusCotizacion(){
           try {
-              const res = await axios.get('http://localhost:4000/api/creditos/nombreEstatusCotizacion')
+              const res = await axios.get('http://localhost:4000/api/estatusCotizacion/nombreestatusCotizacion')
               return res;
               
           } catch (error) {
