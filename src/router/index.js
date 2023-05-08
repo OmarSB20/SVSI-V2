@@ -8,7 +8,7 @@ import login from '../views/Login.vue'
 import usuarioRegistrado from '../views/usuariosRegistrados.vue'
 import ActualizarUsuario from '../views/ActualizarUsuario.vue'
 import MediosContacto from '../views/MediosContacto.vue'
-import RegistroCreditos from '../views/RegistroCreditos.vue'
+import Creditos from '../views/Creditos.vue'
 
 
 const router = createRouter({
@@ -69,9 +69,9 @@ const router = createRouter({
       component: MediosContacto
     },
     {
-      path: '/registroCreditos',
-      name: 'registroCreditos',
-      component: RegistroCreditos
+      path: '/creditos',
+      name: 'creditos',
+      component: Creditos
     }
 
   ]
