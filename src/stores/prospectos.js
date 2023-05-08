@@ -3,7 +3,8 @@ import axios from "axios";
 
 export const prospectosStore = defineStore("prospectos",{
   state: ()=>({
-    idProspectos:null
+    idProspectos:null,
+    idClientes:null
   }), 
   actions:{
     setIdProspecto(id){
@@ -14,6 +15,16 @@ export const prospectosStore = defineStore("prospectos",{
     getIdProspecto(){
         console.log(this.idProspectos)
         return this.idProspectos;
+    },
+
+    setIdCliente(id){
+        this.idClientes = id;
+        console.log(this.idClientes)
+    },
+
+    getIdCliente(){
+        console.log(this.idClientes)
+        return this.idClientes;
     },
 
     async prospectoExiste(prospecto){

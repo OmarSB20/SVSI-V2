@@ -3,7 +3,8 @@ import axios from "axios";
 
 export const loginStore = defineStore("login",{
   state: ()=>({
-    token: null
+    token: null,
+    usuario:null
   }), 
   actions:{
     async login(usuario){
@@ -14,6 +15,9 @@ export const loginStore = defineStore("login",{
             this.token = res.data.body.token;
             // Save data to sessionStorage
             sessionStorage.setItem("token", this.token);
+            this.usuario = usuario.Usuario;
+            sessionStorage.setItem("usuario", this.usuario);
+            console.log(this.usuario)
             return res.data.body.token != null;
             
         } catch (error) {
@@ -24,6 +28,11 @@ export const loginStore = defineStore("login",{
     getToken(){
       console.log(this.token)
         return this.token;
+    },
+
+    getUser(){
+      console.log(this.usuario)
+        return this.usuario;
     },
 
     async verificarPermisos(id){
@@ -44,6 +53,7 @@ export const loginStore = defineStore("login",{
     let data = sessionStorage.getItem("token");
     if (data) {
       this.token = data;
+      this.usuario = sessionStorage.getItem("usuario");
       return true;
     }else{
       return false;
@@ -53,7 +63,9 @@ export const loginStore = defineStore("login",{
     async cerrarSesion(){
       // Remove saved data from sessionStorage
       sessionStorage.removeItem("token");
+      sessionStorage.removeItem("usuario");
       this.token = null;
+      this.usuario = null;
     }
   } 
 })

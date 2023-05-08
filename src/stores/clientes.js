@@ -72,11 +72,11 @@ export const clientesStore = defineStore("clientes",{
     async agregarCliente(cliente){
         try {
             const res = await axios.post('http://localhost:4000/api/clientes',cliente)
-            console.log(res)
-            return ;
+            console.log(res.data.body)
+            return res.data.body;
         } catch (error) {
             console.log(error)
-            return ;
+            return null;
             
         }
     },

@@ -5,13 +5,14 @@ import { clientesStore } from "../stores/clientes";
 import CompHeader from "../components/Header.vue";
 import router from "../router";
 
-const { setIdCliente, obtenerClientesActivos, getInterfazOrigen } = clientesStore();
+const { setIdCliente, obtenerClientesActivos, getInterfazOrigen, setInterfazOrigen } = clientesStore();
 
 const clientes = ref();
 const clientesMostrados = ref();
 const busqCliente = ref();
 
 onMounted(async () => {
+  getInterfazOrigen()==null? router.push({name:"home"}):
   await consultarClientes();
 });
 
@@ -49,6 +50,7 @@ function seleccionCliente(id){
      setIdCliente(id);
      console.log(id)
      const nameInterfaz =getInterfazOrigen(); 
+     setInterfazOrigen(null);
      router.push({name:nameInterfaz})
 } 
 
