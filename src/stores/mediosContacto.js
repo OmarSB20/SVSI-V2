@@ -57,7 +57,7 @@ export const mediosContactoStore = defineStore("mediosContacto",{
         try {
             
             const res = await axios.post('http://localhost:4000/api/mediosContacto',{"idMedioDeContacto":0,
-            "Descripcion":nombreMediosContacto
+            "Descripcion":nombreMediosContacto, "idEstatusActividad":1
             
            })
 
@@ -70,12 +70,13 @@ export const mediosContactoStore = defineStore("mediosContacto",{
             
         }
     },
-    async actualizarMedioContacto(idMedioDeContacto, nombreMediosContacto){
+    async actualizarMedioContacto(idMedioDeContacto, nombreMediosContacto,idEstatus){
         try {
             console.log(idMedioDeContacto);
             console.log(nombreMediosContacto);
             const res = await axios.post('http://localhost:4000/api/mediosContacto',{"idMedioDeContacto":idMedioDeContacto,
-            "Descripcion":nombreMediosContacto
+            "Descripcion":nombreMediosContacto,
+            "idEstatusActividad":idEstatus
            
            })
 

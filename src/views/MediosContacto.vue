@@ -5,7 +5,7 @@ import { usuariosStore } from "../stores/usuarios";
 import { rolesStore } from "../stores/roles";
 import CompHeader from "../components/Header.vue";
 import router from "../router";
-import {mediosContactoStore} from  "../stores/mediosContacto"
+import { mediosContactoStore } from "../stores/mediosContacto"
 
 
 //declaramos como constantes los metodos exactos que vamos a usar de las stores y lo igualamos a la store de donde vienen
@@ -17,7 +17,7 @@ const { obtenerUsuarios } = usuariosStore();
 const { eliminarUsuario } = usuariosStore();
 const { actualizarUsuario } = usuariosStore();
 const { getIdUsuario } = usuariosStore();
-const {obtenerMedios,eliminarMedioContacto,actualizarMedioContacto,agregarMediosContacto} = mediosContactoStore();
+const { obtenerMedios, eliminarMedioContacto, actualizarMedioContacto, agregarMediosContacto, obtenerNombresMedios } = mediosContactoStore();
 
 //variables reactivas
 const mediosArray = ref([]);
@@ -29,7 +29,7 @@ const deshabilitado = ref(true);
 const usuariosFiltrados = ref({});
 const valorBusqueda = ref("");
 const nombreUsuarioAct = ref("");
-const medioContactoNuevo= ref("");
+const medioContactoNuevo = ref("");
 const idUsuarioAct = ref("");
 const botonActualizar = ref(false);
 const idMedioEl = ref("");
@@ -38,6 +38,8 @@ const idBotonActualizar = ref(0);
 const medioAgregado = ref("");
 const nombreAntiguo = ref("");
 const nombreActualizado = ref("");
+const mediosActivoArray = ref("");
+const nombre = ref("");
 
 //variable asociada al modal
 var modal1;
@@ -52,6 +54,9 @@ var nombreActual;
 //al cargar la pagina se consultan los permisos y roles que hay en la BD y se define el objeto relacionado al modal
 onMounted(async () => {
   await consultarMediosContacto();
+  const res = await obtenerNombresMedios();
+  mediosActivoArray.value = res.data.body;
+  console.log(res.data.body);
 
   // await consultarUsuarios();
   deshabilitado.value = true;
@@ -67,7 +72,7 @@ onMounted(async () => {
 
 const consultarMediosContacto = async () => {
   try {
-    
+
     const medioContacto = await obtenerMedios();
     console.log(medioContacto.data.body);
     mediosArray.value = medioContacto.data.body; //guardo tofo
@@ -79,7 +84,7 @@ const consultarMediosContacto = async () => {
 
 
 
-function  modificarNombreMediosDeContacto(Descripcion, idMedioDeContacto) {
+function modificarNombreMediosDeContacto(Descripcion, idMedioDeContacto) {
   medioContactoNuevo.value = Descripcion;
 
   idBotonActualizar.value = idMedioDeContacto;
@@ -91,7 +96,7 @@ function  modificarNombreMediosDeContacto(Descripcion, idMedioDeContacto) {
     botonActualizar.value = false;
     idBotonActualizar.value = -1;
     medioContactoNuevo.value = "";
-    nombreActual="";
+    nombreActual = "";
     console.log(nombreActual)
   }
   repetido.value = false;
@@ -110,7 +115,7 @@ function mostrarModalEliminar(idMedioDeContacto, Descripcion) {
 
 async function eliminarmedio() {
   try {
-    await eliminarMedioContacto(idMedioEl.value);
+    await actualizarMedioContacto(idMedioEl.value, nombreMedioEl.value, 2);
     await consultarMediosContacto();
     medioContactoNuevo.value = "";
     botonActualizar.value = false;
@@ -121,33 +126,49 @@ async function eliminarmedio() {
 }
 
 
-const revisarMedioExistente = () => {
+// async function eliminarCredito() {
+//   try {
+//     await actualizarCredito(idCredEl.value, nombreCreditEl.value,2);
+//     await consultarCredito();
+//     creditoNuevo.value = "";
+//     botonActualizar.value = false;
+//     idBotonActualizar.value = -1;
+//   } catch (error) {
+//     console.log(error);
+//   }
+// }
 
-if (medioContactoNuevo.value.trim() == ""|| medioContactoNuevo.value.trim()==nombreActual) {
-  deshabilitado.value = true;
-  return;
-}
-try {
-  for (var j in mediosArray.value) {
-    if (
-     mediosArray.value[j].Descripcion.toLowerCase() ==
-      medioContactoNuevo.value.trim().toLowerCase()
-    ) {
-      repetido.value = true;
-      deshabilitado.value = true;
-      console.log(medioContactoNuevo.value)
-      console.log(mediosArray.value[j].Descripcion)
-      return true;
-    }
+const revisarMedioExistente = () => {
+  console.log(medioContactoNuevo.value);
+  if (medioContactoNuevo.value.trim() == "" || medioContactoNuevo.value.trim() == nombreActual) {
+    deshabilitado.value = true;
+    repetido.value = false;
+    return;
   }
-  console.log(repetido.value)
-  repetido.value = false;
-  deshabilitado.value = false;
-  return false;
-} catch (error) {
-  console.log(error);
-  throw error;
-}
+  try {
+    for (var j in mediosActivoArray.value) {
+      if (
+        mediosActivoArray.value[j].Descripcion.toLowerCase() ==
+        medioContactoNuevo.value.trim().toLowerCase()
+      ) {
+        repetido.value = true;
+        deshabilitado.value = true;
+        console.log(medioContactoNuevo.value)
+
+        return true;
+      } else {
+        repetido.value = false;
+        deshabilitado.value = false;
+      }
+    }
+    console.log(repetido.value)
+    repetido.value = false;
+    deshabilitado.value = false;
+    return false;
+  } catch (error) {
+    console.log(error);
+    throw error;
+  }
 };
 
 
@@ -156,11 +177,13 @@ async function guardarMedio(Descripcion) {
     console.log(Descripcion);
     await agregarMediosContacto(Descripcion);
     await consultarMediosContacto();
+    const res = await obtenerNombresMedios();
+    mediosActivoArray.value = res.data.body;
     modal1 = new bootstrap.Modal(document.getElementById("modal1"), {
-    keyboard: false,
-  });
+      keyboard: false,
+    });
     modal1.show();
-    medioAgregado .value = medioContactoNuevo.value;
+    medioAgregado.value = medioContactoNuevo.value;
     console.log(medioAgregado.value)
     medioContactoNuevo.value = "";
   } catch (error) {
@@ -175,33 +198,35 @@ async function modificarMedio(idMedioDeContacto, Descripcion) {
     nombreActualizado.value = Descripcion;
     console.log(Descripcion + "Es el que recibira")
     console.log(nombreActual + "es el original")
-    await actualizarMedioContacto(idMedioDeContacto, Descripcion,1);
+    await actualizarMedioContacto(idMedioDeContacto, Descripcion, 1);
     await consultarMediosContacto();
+    const res = await obtenerNombresMedios();
+    mediosActivoArray.value = res.data.body;
     medioContactoNuevo.value = "";
     botonActualizar.value = false;
     idBotonActualizar.value = -1;
     modal1 = new bootstrap.Modal(document.getElementById("modalAct"), {
-    keyboard: false,
-  });
-  modal1.show();
-  nombreActual="";
-  
+      keyboard: false,
+    });
+    modal1.show();
+    nombreActual = "";
+
   } catch (error) {
     console.log(error);
   }
 }
 
 
-function actualizarTabla(nombre) {
-  console.log(nombre);
-  if (nombre.trim() == "") {
+function actualizarTabla() {
+  console.log(nombre.value);
+  if (nombre.value.trim() == "") {
     //recorta los espacios
     mediosDesplegados.value = mediosArray.value;
   } else {
     mediosDesplegados.value = []; //inicializa vacio deja limpio
-   mediosArray.value.forEach((element) => {
+    mediosArray.value.forEach((element) => {
       //recorre el elemento
-      if (element.Descripcion.toLowerCase().includes(nombre.toLowerCase())) {
+      if (element.Descripcion.trim().toLowerCase().includes(nombre.value.trim().toLowerCase())) {
         //checa si  coincide
         mediosDesplegados.value.push(element); //aqui lo va a grefgar a creditosDesplegaados
       }
@@ -217,11 +242,8 @@ function actualizarTabla(nombre) {
     <div class="row">
       <div class="col-1 mb-3 pt-5">
         <router-link to=" http://localhost:5173">
-          <img
-            class="img-fluid mt-3"
-            style="margin-top: 20px; width: 31.23px; height: 35.5px"
-            src="../assets/triangulito.png"
-          />
+          <img class="img-fluid mt-3" style="margin-top: 20px; width: 31.23px; height: 35.5px"
+            src="../assets/triangulito.png" />
         </router-link>
       </div>
       <div class="col-8 mb-3 pt-5">
@@ -231,69 +253,41 @@ function actualizarTabla(nombre) {
       </div>
       <div class="col-3 align-items-end">
         <div class="row align-items-end pt-2">
-          <input
-            type="text"
-            class="form-control rounded-pill mt-4"
-            style="width: 250px; height: 50px; border-color: #5e5e5e"
-            placeholder="Buscar"
-            v-model="nombre"
-            @input="actualizarTabla(nombre)"
-          />
+          <input type="text" class="form-control rounded-pill mt-4"
+            style="width: 250px; height: 50px; border-color: #5e5e5e" placeholder="Buscar" v-model="nombre"
+            @input="actualizarTabla(nombre)" />
         </div>
       </div>
     </div>
     <div class="row mb-5">
-        <div class="col-2 mt-2 ms-5">
-          <h5 class="italika d-flex justify-content-end">Nombre del medio:</h5>
-        </div>
-        <div class="col-6">
-          <input
-            type="text"
-            class="form-control"
-            @input="revisarMedioExistente()"
-            v-model="medioContactoNuevo"
-          />
-          <div
-          v-if="repetido"
-          class="alert alert-danger mt-2 d-flex align-items-center"
-          style="height: 38px"
-          role="alert"
-        >
+      <div class="col-2 mt-2 ms-5">
+        <h5 class="italika d-flex justify-content-end">Nombre del medio:</h5>
+      </div>
+      <div class="col-6">
+        <input type="text" class="form-control" @input="revisarMedioExistente()" v-model.trim="medioContactoNuevo" />
+        <div v-if="repetido" class="alert alert-danger mt-2 d-flex align-items-center" style="height: 38px" role="alert">
           "{{ medioContactoNuevo }}" ya existe
         </div>
-          
-        </div>
 
-       
-        <div class="col">
-          <button
-          v-if="!botonActualizar"
-          class="btn btn-primary"
-          type="submit"
-          :disabled="deshabilitado"
-          @click="guardarMedio(medioContactoNuevo)"
-        >
+      </div>
+
+
+      <div class="col">
+        <button v-if="!botonActualizar" class="btn btn-primary" type="submit" :disabled="deshabilitado"
+          @click="guardarMedio(medioContactoNuevo)">
           Guardar
         </button>
 
-        <button
-          v-if="botonActualizar"
-          class="btn btn-success"
-          type="submit"
-          :disabled="deshabilitado"
-          @click="modificarMedio(idBotonActualizar, medioContactoNuevo)"
-        >
+        <button v-if="botonActualizar" class="btn btn-success" type="submit" :disabled="deshabilitado"
+          @click="modificarMedio(idBotonActualizar, medioContactoNuevo)">
           Actualizar
         </button>
-          
-        </div>
+
       </div>
+    </div>
     <div class="table-responsive-sm">
-      <table
-        id="myTable"
-        class="table table-hover table-striped text-center mt-4 mx-auto"
-        style="width: 950px; overflow-x: scroll"
-      >
+      <table id="myTable" class="table table-hover table-striped text-center mt-4 mx-auto"
+        style="width: 950px; overflow-x: scroll">
         <thead>
           <tr style="background-color: #2b4677; color: white; vertical-align: middle">
             <th scope="col">Nombre</th>
@@ -308,48 +302,33 @@ function actualizarTabla(nombre) {
         <tbody>
           <tr v-for="mediosContacto in mediosDesplegados">
             <td>{{ mediosContacto.Descripcion }}</td>
-            
+
             <!-- <td>{{ usuario.Roles_idRoles }}</td>  -->
-           
+
             <td scope="row" class="sticky" style="position: sticky">
               <div class="container">
                 <div class="d-inline-flex">
-                  <button
-                :id="mediosContacto.idMedioDeContacto"
-                :class="[
-                  botonActualizar && idBotonActualizar == mediosContacto.idMedioDeContacto
-                    ? 'btn btn-primary mx-1'
-                    : 'btn btn-warning mx-1',
-                ]"
-                type="submit"
-                style="border-color: #ffbe16; height: 37px"
-                @click="
-                  modificarNombreMediosDeContacto(mediosContacto.Descripcion, mediosContacto.idMedioDeContacto)
-                "
-              >
-                <i
-                  :class="[
+                  <button :id="mediosContacto.idMedioDeContacto" :class="[
                     botonActualizar && idBotonActualizar == mediosContacto.idMedioDeContacto
-                      ? 'fa-solid fa-clock-rotate-left'
-                      : 'fa-solid fa-pen-to-square',
-                  ]"
-                ></i>
+                      ? 'btn btn-primary mx-1'
+                      : 'btn btn-warning mx-1',
+                  ]" type="submit" style="border-color: #ffbe16; height: 37px" @click="
+  modificarNombreMediosDeContacto(mediosContacto.Descripcion, mediosContacto.idMedioDeContacto)
+  ">
+                    <i :class="[
+                      botonActualizar && idBotonActualizar == mediosContacto.idMedioDeContacto
+                        ? 'fa-solid fa-clock-rotate-left'
+                        : 'fa-solid fa-pen-to-square',
+                    ]"></i>
 
-                <!-- <img class="img-fluid mb-3" style="width: 24.5px; height: 25.75px; margin-top: 0% !important"
+                    <!-- <img class="img-fluid mb-3" style="width: 24.5px; height: 25.75px; margin-top: 0% !important"
                 :src="[botonActualizar && idBotonActualizar == credito.idTipos_De_Creditos ? 'https://cdn-icons-png.flaticon.com/512/3585/3585896.png' : 'SVSI-V2/src/assets/lapiz.png' ]"   /> -->
-              </button>
-              <button
-                class="btn btn-primary mx-1"
-                type="submit"
-                style="background-color: #c01a1a; border-color: #c01a1a; height: 37px"
-                @click="mostrarModalEliminar(mediosContacto.idMedioDeContacto, mediosContacto.Descripcion )"
-              >
-                <img
-                  class="img-fluid mb-1"
-                  style="width: 24.5px; height: 22.75px"
-                  src="../assets/basura.png"
-                />
-              </button>
+                  </button>
+                  <button class="btn btn-primary mx-1" type="submit"
+                    style="background-color: #c01a1a; border-color: #c01a1a; height: 37px"
+                    @click="mostrarModalEliminar(mediosContacto.idMedioDeContacto, mediosContacto.Descripcion)">
+                    <img class="img-fluid mb-1" style="width: 24.5px; height: 22.75px" src="../assets/basura.png" />
+                  </button>
                 </div>
               </div>
             </td>
@@ -405,34 +384,18 @@ function actualizarTabla(nombre) {
 
   <!-- Modal  modalCon-->
 
-  <div
-    class="modal fade"
-    id="modal"
-    tabindex="-1"
-    aria-labelledby="exampleModalLabel"
-    aria-hidden="true"
-  >
+  <div class="modal fade" id="modal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title" id="exampleModalLabel">Elminar Medio de Contacto</h5>
-          <button
-            type="button"
-            class="btn-close"
-            data-bs-dismiss="modal"
-            aria-label="Close"
-          ></button>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
           <span>¿Está seguro de que quiere eliminar el Medio de Contacto"{{ nombreMedioEl }}"?</span>
         </div>
         <div class="modal-footer">
-          <button
-            type="button"
-            class="btn btn-danger"
-            data-bs-dismiss="modal"
-            @click="eliminarmedio()"
-          >
+          <button type="button" class="btn btn-danger" data-bs-dismiss="modal" @click="eliminarmedio()">
             Confirmar
           </button>
         </div>
@@ -440,24 +403,13 @@ function actualizarTabla(nombre) {
     </div>
   </div>
 
-  <div
-    class="modal fade"
-    id="modalAct"
-    tabindex="-1"
-    aria-labelledby="exampleModalLabel"
-    aria-hidden="true"
-  >
+  <div class="modal fade" id="modalAct" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title" id="exampleModalLabel">Medios de Contacto</h5>
 
-          <button
-            type="button"
-            class="btn-close"
-            data-bs-dismiss="modalAct"
-            aria-label="Close"
-          ></button>
+          <button type="button" class="btn-close" data-bs-dismiss="modalAct" aria-label="Close"></button>
         </div>
         <div class="modal-body">
           <h5>¡Medio de Contacto "{{ nombreAntiguo }}" actualizado a "{{ nombreActualizado }}" con exito!</h5>
@@ -474,24 +426,13 @@ function actualizarTabla(nombre) {
 
   </div>
 
- <div
-    class="modal fade"
-    id="modal1"
-    tabindex="-1"
-    aria-labelledby="exampleModalLabel"
-    aria-hidden="true"
-  >
+  <div class="modal fade" id="modal1" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title" id="exampleModalLabel">Medios de Contacto</h5>
 
-          <button
-            type="button"
-            class="btn-close"
-            data-bs-dismiss="modal1"
-            aria-label="Close"
-          ></button>
+          <button type="button" class="btn-close" data-bs-dismiss="modal1" aria-label="Close"></button>
         </div>
         <div class="modal-body">
           <h5>¡Medio de Contacto "{{ medioAgregado }}" guardado exitosamente!</h5>
@@ -505,8 +446,6 @@ function actualizarTabla(nombre) {
       </div>
     </div>
   </div>
-
-
 </template>
 <style>
 body {
@@ -519,6 +458,7 @@ body {
 .btn-spacer {
   margin-right: 10px;
 }
+
 .italika {
   font-family: "Fjalla One";
   font-style: normal;
@@ -534,6 +474,7 @@ body {
 .table-striped tbody tr .sticky {
   background-color: white;
 }
+
 .table-striped tbody tr:nth-child(2n) .sticky {
   background-color: inherit;
 }
