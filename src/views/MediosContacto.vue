@@ -241,7 +241,7 @@ function actualizarTabla() {
 
     <div class="row">
       <div class="col-1 mb-3 pt-5">
-        <router-link to=" http://localhost:5173">
+        <router-link to="/italika">
           <img class="img-fluid mt-3" style="margin-top: 20px; width: 31.23px; height: 35.5px"
             src="../assets/triangulito.png" />
         </router-link>

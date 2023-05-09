@@ -1,4 +1,6 @@
 <script setup>
+
+//TODO ACTUALIZAR COMBOBOX
 import { ref } from "vue"; //para usar variables reactivas
 import { onMounted } from "vue"; //para poder usar el onMounted, que ejecuta todo lo que tenga adentro cada que cargue la pagina
 import { clientesStore } from "../stores/clientes";
@@ -6,6 +8,7 @@ import { catalogoStore } from "../stores/catalogo";
 import { usuariosStore } from "../stores/usuarios";
 import { loginStore } from "../stores/login";
 import { prospectosStore } from "../stores/prospectos";
+import { mediosContactoStore } from '../stores/mediosContacto';
 
 import CompHeader from "../components/Header.vue";
 import router from "../router";
@@ -26,7 +29,7 @@ const { obtenerIdPorUser } = usuariosStore();
 const { getUser } = loginStore();
 
 const { prospectoExiste, agregarProspecto } = prospectosStore();
-//const { consultarMedios } = mediosStore();
+const { obtenerMedios } = mediosContactoStore();
 
 //variables reactivas
 const nombre = ref("");
@@ -41,9 +44,9 @@ const comentario = ref("");
 
 const catalogo = ref();
 const mediosContacto = ref([
-  { idMedioDeContacto: 1, Descripcion: "Facebook" },
-  { idMedioDeContacto: 2, Descripcion: "Whatsapp" },
-  { idMedioDeContacto: 3, Descripcion: "Agencia" },
+  { idMedioDeContacto: 1, Descripcion: "df" },
+  { idMedioDeContacto: 2, Descripcion: "fd" },
+  { idMedioDeContacto: 3, Descripcion: "df" },
 ]);
 
 
@@ -105,11 +108,16 @@ onMounted(async () => {
   }
 
   await obtenerMotos();
+  await obtenerMediosF();
   llenarCombos();
 });
 
 async function obtenerMotos() {
   catalogo.value = (await consultarMotocicletasActivas()).data.body;
+}
+
+async function obtenerMediosF() {
+  mediosContacto.value = (await obtenerMedios()).data.body;
 }
 
 function llenarCombos() {
@@ -211,7 +219,7 @@ async function resetCampos() {
 
 console.log("antes")
   await obtenerMotos();
-  
+  await obtenerMediosF();
   //llenarCombos();
   console.log("despues")
 }
