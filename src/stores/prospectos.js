@@ -30,6 +30,7 @@ export const prospectosStore = defineStore("prospectos",{
     async prospectoExiste(prospecto){
         try {
             const res = await axios.post('http://localhost:4000/api/prospectos/existe',prospecto)
+            console.log(res.data.body)
             return res.data.body;
             
         } catch (error) {

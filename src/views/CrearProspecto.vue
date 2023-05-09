@@ -41,13 +41,15 @@ const comentario = ref("");
 
 const catalogo = ref();
 const mediosContacto = ref([
-  { idMedioDeContacto: 1, Descripcion: "medio1" },
-  { idMedioDeContacto: 2, Descripcion: "medio2" },
-  { idMedioDeContacto: 3, Descripcion: "medio3" }
+  { idMedioDeContacto: 1, Descripcion: "Facebook" },
+  { idMedioDeContacto: 2, Descripcion: "Whatsapp" },
+  { idMedioDeContacto: 3, Descripcion: "Agencia" },
 ]);
+
 
 const deshabilitado = ref(false);
 const repetido = ref(false);
+const expermnt = ref(true);
 
 const idCliente = ref(null);
 const idUser = ref(null);
@@ -71,22 +73,31 @@ const existeIgual = ref(false);
 const clientesRepetidos = ref([]);
 
 var nombreRep, paternoRep, maternoRep;
+const today = new Date();
+const year = today.getFullYear();
+const month = String(today.getMonth() + 1).padStart(2, "0"); // El mes se indexa desde 0, por lo que se suma 1
+const day = String(today.getDate()).padStart(2, "0");
+
+const formattedDate = `${year}-${month}-${day}`;
+console.log(formattedDate);
+
 //variable asociada al modal
 var modal;
 var tried = false;
 const validado = ref(true);
 const alertaLlenado = ref(false);
 const esNuevo = ref();
+const canActualizar = ref(false);
 
 //al cargar la pagina se consultan los permisos y roles que hay en la BD y se define el objeto relacionado al modal
 onMounted(async () => {
   idUser.value = await obtenerIdPorUser({ Usuario: getUser() });
   idCliente.value = getIdCliente();
   if (idCliente.value == null) {
-    modal = new bootstrap.Modal(document.getElementById("modalSelect"), {
+    /*modal = new bootstrap.Modal(document.getElementById("modalSelect"), {
       keyboard: false,
     });
-    modal.show();
+    await modal.show();*/
     esNuevo.value = true;
   } else {
     esNuevo.value = false;
@@ -102,8 +113,10 @@ async function obtenerMotos() {
 }
 
 function llenarCombos() {
+  console.log("llenando combos")
   const config = {
     search: true,
+    clearable: true
   };
   let select = document.getElementById("select1");
   mediosContacto.value.forEach((option) => {
@@ -124,6 +137,7 @@ function llenarCombos() {
   });
 
   dselect(tagMoto.value, config); //si jala, no mover xd
+  console.log("acabando Llenar combos")
 }
 
 async function cargarDatosCliente() {
@@ -139,35 +153,67 @@ async function cargarDatosCliente() {
   console.log(cliente);
 
   var inputs = document.querySelectorAll(".base");
-  // Loop over them and prevent submission
   Array.prototype.slice.call(inputs).forEach(function (input) {
     input.style.backgroundColor = "#aaaaaa";
   });
 }
 
-function seleccionCliente() {
+async function seleccionCliente() {
   setInterfazOrigen("crearProspecto");
-  modal.hide();
+  //await modal.hide();
+
   router.push({ name: "seleccionCliente" });
 }
 
-//función que vacía el textbox, el arreglo de permisos arreglados y deselecciona los checkbox
-//se activará cuando se de click en "seguir creando roles" en el modal
-function resetCampos() {
+
+async function resetCampos() {
+  
+  modal = new bootstrap.Modal(document.getElementById("modal"), {
+      keyboard: false,
+    });
+    await modal.hide();
+    await modal.dispose();
+
+  const botones = document.getElementsByClassName('dselect-clear');
+  var elementosArray = Array.from(botones);
+  elementosArray.forEach(elemento=>{
+    elemento.click()
+  })
+  motoValida.value = "";
+  medioValido.value = "";
+
+
   nombre.value = "";
   paterno.value = "";
   materno.value = "";
   email.value = "";
   telefono.value = "";
   noBAZ.value = "";
-
+  comentario.value = "";
+  tagMedio.value.value = -1;
+  tagMoto.value.value = -1;
   alertaLlenado.value = false;
   validado.value = true;
+  deshabilitado.value = false;
+  repetido.value = false;
+  idCliente.value = null;
+  exists.value = false;
+  existeIgual.value = false;
+  esNuevo.value = true;
 
-  let elements = document.querySelectorAll(".inptElement");
-  Array.prototype.slice.call(elements).forEach(function (input) {
-    input.style.borderWidth = "0px";
+  var inputs = document.querySelectorAll(".base");
+  Array.prototype.slice.call(inputs).forEach(function (input) {
+    input.style.backgroundColor = "#FFFFFF";
   });
+
+  idUser.value = await obtenerIdPorUser({ Usuario: getUser() });
+ 
+
+console.log("antes")
+  await obtenerMotos();
+  
+  //llenarCombos();
+  console.log("despues")
 }
 
 function validarEmail() {
@@ -257,11 +303,12 @@ function validarMedio() {
 
 const revisarCliente = async () => {
   try {
+    canActualizar.value = false;
     if (esNuevo.value) {
       exists.value = await clienteExiste({
         Nombre: nombre.value,
         Apellido_Paterno: paterno.value,
-        Apellido_Materno: materno.value
+        Apellido_Materno: materno.value,
       });
 
       if (exists.value) {
@@ -270,40 +317,58 @@ const revisarCliente = async () => {
           Nombre: nombre.value,
           Apellido_Paterno: paterno.value,
           Apellido_Materno: materno.value,
-          EstatusActividad_idEstatusActividad: 2
+          EstatusActividad_idEstatusActividad: 2,
         });
-
+        console.log("existe inactivo:" + existeInactivo);
         if (existeInactivo) {
           modal = new bootstrap.Modal(document.getElementById("modalClienteInhab"), {
             keyboard: false,
           });
-          modal.show();
+          await modal.show();
           return false;
         } else {
-          let baz;
-          noBAZ.value == "" ? (baz = null) : (baz = noBAZ.value);
           const cliente = {
             Nombre: nombre.value,
             Apellido_Paterno: paterno.value,
             Apellido_Materno: materno.value,
             Telefono: telefono.value,
-            NoClienteBAZ: baz,
-            Correo: email.value
+            NoClienteBAZ: noBAZ.value,
+            Correo: email.value,
           };
 
           existeIgual.value = await clienteExiste(cliente);
+          console.log("existe igual:" + existeIgual.value);
           if (!existeIgual.value) {
+            console.log("aquidice que no existe igual");
             modal = new bootstrap.Modal(document.getElementById("modalAct"), {
               keyboard: false,
             });
-            modal.show();
+            await modal.show();
             return true;
           }
         }
       } else {
+        const cliente = {
+          idClientes: 0,
+          Nombre: nombre.value,
+          EstatusActividad_idEstatusActividad: 1,
+          Apellido_Paterno: paterno.value,
+          Apellido_Materno: materno.value,
+          Telefono: telefono.value,
+          NoClienteBAZ: noBAZ.value,
+          Correo: email.value,
+        };
         idCliente.value = await agregarCliente(cliente);
+        await crearProspecto();
+        //modal = new bootstrap.Modal(document.getElementById("modal"), {
+          //keyboard: false,
+        //});
+        //await modal.show();
+        return true;
       }
     }
+    console.log("a revisar prospecto");
+    await revisarProspecto();
 
     return true;
   } catch (error) {
@@ -311,91 +376,103 @@ const revisarCliente = async () => {
   }
 };
 
+async function noActualizar() {
+  canActualizar.value = true;
+  modal.hide();
+  await revisarProspecto();
+}
+
 async function actCliente(idClient) {
   try {
-    await actualizarCliente(idClient);
+    modal.hide();
+    const cliente = {
+      idClientes: idClient,
+      Nombre: nombre.value,
+      EstatusActividad_idEstatusActividad: 1,
+      Apellido_Paterno: paterno.value,
+      Apellido_Materno: materno.value,
+      Telefono: telefono.value,
+      NoClienteBAZ: noBAZ.value,
+      Correo: email.value,
+    };
+
+    await actualizarCliente(cliente);
+    canActualizar.value = true;
     modal = new bootstrap.Modal(document.getElementById("modalActualizado"), {
       keyboard: false,
     });
-    modal.show();
-    await crearProspecto(idClient);
+    await modal.show();
+
+    var myModalEl = document.getElementById("modalActualizado");
+    myModalEl.addEventListener("hidden.bs.modal", async function (event) {
+      // do something...
+      await revisarProspecto();
+    });
   } catch (error) {
     console.log(error);
   }
 }
 
-async function revisarProspecto(idClient) {
-  
-  if (exists.value) {
+async function revisarProspecto() {
+  console.log(exists.value || !esNuevo.value);
+  if (exists.value || !esNuevo.value) {
     const prospecto = {
       Moto_idMoto: tagMoto.value.value,
       Clientes_idClientes: idCliente.value,
-      Fecha_registro: "2023-05-05"
+      Fecha_registro: formattedDate,
     };
-
+    console.log(await prospectoExiste(prospecto));
     if (await prospectoExiste(prospecto)) {
       repetido.value = true;
       return false;
     }
   }
+  repetido.value = false;
+  await crearProspecto();
   return true;
 }
 
-async function crearProspecto(){
-try {
-  const prospecto = {
+async function crearProspecto() {
+  try {
+    const prospecto = {
       idProspectos: 0,
       Moto_idMoto: tagMoto.value.value,
       MedioDeContacto_idMedioDeContacto: tagMedio.value.value,
       Empleados_idEmpleados: idUser.value,
       Clientes_idClientes: idCliente.value,
       Comentario: comentario.value,
-      Fecha_registro: "2023-05-05",
+      Fecha_registro: formattedDate,
     };
 
     await agregarProspecto(prospecto);
-    return true;
-} catch (error) {
-  console.log(error)
-  return false;
-
-}
-  
-
-
-
-  modal = new bootstrap.Modal(document.getElementById("modal"), {
+    repetido.value = false;
+    modal = new bootstrap.Modal(document.getElementById("modal"), {
       keyboard: false,
     });
-    modal.show(); //al ser todo exitoso, mostramos el modal notificando el exito
-    var myModal = document.getElementById("modal");
+    await modal.show(); //al ser todo exitoso, mostramos el modal notificando el exito
 
-    myModal.addEventListener("shown.bs.modal", function () {
-      btnSeguirCreando.value.focus();
-      btnSeguirCreando.value.style.borderColor = "#90aee5";
-      btnSeguirCreando.value.style.borderWidth = "4px";
-    });
+    return true;
+  } catch (error) {
+    console.log(error);
+    return false;
+  }
 }
 
 async function sbmtUsuario() {
-  await revisarCliente();
-  
+  repetido.value = false;
   const validado =
     validarEmail() &&
     validarTlfn() &&
     validarTexto(tagNombre.value) &&
     validarTexto(tagPaterno.value) &&
     validarTexto(tagMaterno.value) &&
-    validarNumBAZ()&&validarMoto()&&validarMedio();
+    validarNumBAZ() &&
+    validarMoto() &&
+    validarMedio();
 
   if (validado) {
     alertaLlenado.value = false;
-    if (!(await revisarClienteExistente())) {
-      repetido.value = false;
-      crearCliente();
-    } else {
-      repetido.value = true;
-    }
+    await revisarCliente();
   } else {
     validarEmail();
     validarTlfn();
@@ -403,12 +480,15 @@ async function sbmtUsuario() {
     validarTexto(tagPaterno.value);
     validarTexto(tagMaterno.value);
     validarNumBAZ();
+    validarMoto();
+    validarMedio();
     alertaLlenado.value = true;
   }
 }
 
-function verProspectos() {
-  modal.hide();
+async function verProspectos() {
+  await modal.hide();
+  console.log("escondido");
   router.push({ name: "prospectos" });
 }
 </script>
@@ -430,13 +510,28 @@ function verProspectos() {
         </div>
         <div class="col ms-4">
           <p class="italika d-flex justify-content-start" style="font-size: 50px">
-            Crear Cliente
+            Crear Prospecto
           </p>
         </div>
       </div>
       <div class="row">
         <div class="col-3"></div>
         <div class="col">
+          <!-----------------------    Row BOTONES   --------------------------->
+          <div class="row mb-1 d-flex align-items-center justify-content-end">
+            <div class="col-5"></div>
+            <div class="col d-flex align-items-center justify-content-end">
+              <button type="button" class="btn btn-success" @click="seleccionCliente()">
+                Seleccionar cliente
+              </button>
+            </div>
+            <div class="col d-flex align-items-center justify-content-end">
+              <button type="button" class="btn btn-primary" @click="resetCampos()">
+                Limpiar campos
+              </button>
+            </div>
+          </div>
+
           <!-----------------------    Row 1 Formulario   --------------------------->
           <div class="row mb-2 pb-2 d-flex align-items-center">
             <div class="col mt-2">
@@ -449,7 +544,7 @@ function verProspectos() {
               @input="validarTexto(tagNombre)"
               ref="tagNombre"
               :disabled="!esNuevo"
-              autofocus
+              
               required
             />
           </div>
@@ -560,6 +655,7 @@ function verProspectos() {
                     id="select2"
                     @change="validarMoto()"
                     ref="tagMoto"
+               
                   >
                     <option value="-1">Seleccionar</option>
                   </select>
@@ -569,7 +665,7 @@ function verProspectos() {
             <div class="col-1"></div>
             <div class="col">
               <div class="row d-flex align-items-center">
-                <div class="col mt-2 me-5 pe-5">
+                <div class="col mt-2 me-5 pe-1">
                   <h5 class="italika">Medio de contacto *</h5>
                 </div>
                 <select
@@ -577,6 +673,8 @@ function verProspectos() {
                   id="select1"
                   @change="validarMedio()"
                   ref="tagMedio"
+  
+
                 >
                   <option value="-1">Seleccionar</option>
                 </select>
@@ -593,6 +691,7 @@ function verProspectos() {
                 class="form-control"
                 id="floatingTextarea2"
                 style="height: 100px"
+                v-model="comentario"
               ></textarea>
             </div>
           </div>
@@ -660,11 +759,7 @@ function verProspectos() {
           <button type="button" class="btn btn-success" @click="actCliente(idCliente)">
             Actualizar cliente y crear
           </button>
-          <button
-            type="button"
-            class="btn btn-primary"
-            @click="crearProspecto(idCliente)"
-          >
+          <button type="button" class="btn btn-primary" @click="noActualizar()">
             No actualizar y crear
           </button>
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
@@ -717,24 +812,22 @@ function verProspectos() {
       <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title" id="staticBackdropLabel">¡Prospecto creado!</h5>
-          <button
-            type="button"
-            class="btn-close"
-            data-bs-dismiss="modal"
-            aria-label="Close"
-          ></button>
         </div>
-        <div v-if="existeIgual" class="modal-body">
+        <div v-show="existeIgual" class="modal-body">
           El cliente {{ nombre }} {{ paterno }} {{ materno }} ya estaba registrado en el
           sistema y sus datos son coincidentes, se creó el prospecto sin generar un nuevo
           cliente
         </div>
-        <div v-if="esNuevo && !exists" class="modal-body">
+        <div v-show="!expermnt" class="modal-body">
+          Esto no debería verse
+        </div>
+        <div v-show="!exists && esNuevo" class="modal-body">
           El Cliente y Prospecto fueron creados exitosamente.
         </div>
-        <div v-if="!esNuevo" class="modal-body">
+        <div v-show="canActualizar || !esNuevo" class="modal-body">
           El prospecto fue creado exitosamente.
         </div>
+        
         <div class="modal-footer">
           <button
             type="button"
@@ -812,6 +905,7 @@ function verProspectos() {
       </div>
     </div>
   </div>
+  
 </template>
 
 <style>
@@ -852,5 +946,10 @@ select.comboMedio + div > button {
 .table-hover tbody tr:hover td,
 .table-hover tbody tr:hover th {
   background-color: #bebebe;
+}
+
+.dselect-clear{
+
+  margin-right: .5rem !important;
 }
 </style>

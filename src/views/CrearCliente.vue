@@ -100,7 +100,7 @@ const crearCliente = async () => {
       Apellido_Materno: materno.value,
       Telefono: telefono.value,
       NoClienteBAZ: baz,
-      Correo: email.value,
+      Correo: email.value
     };
     await agregarCliente(cliente); //creamos el rol
 
@@ -118,7 +118,7 @@ const crearCliente = async () => {
 };
 
 function validarEmail() {
-  email.value = email.value.trim();
+  //email.value = email.value.trim();
   var re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   var pswd = document.getElementById("emailInpt");
   if (!re.test(email.value)) {
@@ -149,11 +149,12 @@ function validarTlfn() {
 }
 
 function validarNumBAZ() {
+  console.log(noBAZ.value)
   if (noBAZ.value == "") {
     tagBAZ.value.style.borderWidth = "0px";
     return true;
   } else {
-    var re = /^[0-9-]+$/;
+    var re = /^[0-9- ]+$/;
     if (!(noBAZ.value.length <= 16 && noBAZ.value.match(re))) {
       tagBAZ.value.style.borderColor = "red";
       tagBAZ.value.style.borderWidth = "4px";
@@ -168,7 +169,7 @@ function validarNumBAZ() {
 }
 
 function validarTexto(input) {
-
+  console.log(input.value)
   //input.value = input.value.trim();
   var re = /^[a-zA-Z ]+$/;
   // var pswd = document.getElementById("emailInpt");
