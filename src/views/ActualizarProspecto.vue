@@ -75,7 +75,6 @@ const existeIgual = ref(false);
 
 const clientesRepetidos = ref([]);
 
-var nombreRep, paternoRep, maternoRep;
 const today = new Date();
 const year = today.getFullYear();
 const month = String(today.getMonth() + 1).padStart(2, "0"); // El mes se indexa desde 0, por lo que se suma 1
@@ -97,11 +96,7 @@ onMounted(async () => {
   idUser.value = await obtenerIdPorUser({ Usuario: getUser() });
   idCliente.value = getIdCliente();
   if (idCliente.value == null) {
-    /*modal = new bootstrap.Modal(document.getElementById("modalSelect"), {
-      keyboard: false,
-    });
-    await modal.show();*/
-    esNuevo.value = true;
+    //////router.push({name:"home"})
   } else {
     esNuevo.value = false;
     cargarDatosCliente();
@@ -163,6 +158,7 @@ async function cargarDatosCliente() {
   var inputs = document.querySelectorAll(".base");
   Array.prototype.slice.call(inputs).forEach(function (input) {
     input.style.backgroundColor = "#aaaaaa";
+    
   });
 }
 
@@ -173,56 +169,6 @@ async function seleccionCliente() {
   router.push({ name: "seleccionCliente" });
 }
 
-
-async function resetCampos() {
-  
-  modal = new bootstrap.Modal(document.getElementById("modal"), {
-      keyboard: false,
-    });
-    await modal.hide();
-    await modal.dispose();
-
-  const botones = document.getElementsByClassName('dselect-clear');
-  var elementosArray = Array.from(botones);
-  elementosArray.forEach(elemento=>{
-    elemento.click()
-  })
-  motoValida.value = "";
-  medioValido.value = "";
-
-
-  nombre.value = "";
-  paterno.value = "";
-  materno.value = "";
-  email.value = "";
-  telefono.value = "";
-  noBAZ.value = "";
-  comentario.value = "";
-  tagMedio.value.value = -1;
-  tagMoto.value.value = -1;
-  alertaLlenado.value = false;
-  validado.value = true;
-  deshabilitado.value = false;
-  repetido.value = false;
-  idCliente.value = null;
-  exists.value = false;
-  existeIgual.value = false;
-  esNuevo.value = true;
-
-  var inputs = document.querySelectorAll(".base");
-  Array.prototype.slice.call(inputs).forEach(function (input) {
-    input.style.backgroundColor = "#FFFFFF";
-  });
-
-  idUser.value = await obtenerIdPorUser({ Usuario: getUser() });
- 
-
-console.log("antes")
-  await obtenerMotos();
-  await obtenerMediosF();
-  //llenarCombos();
-  console.log("despues")
-}
 
 function validarEmail() {
   email.value = email.value.trim();
@@ -307,87 +253,6 @@ function validarMedio() {
     medioValido.value = "";
     return true;
   }
-}
-
-const revisarCliente = async () => {
-  try {
-    canActualizar.value = false;
-    if (esNuevo.value) {
-      exists.value = await clienteExiste({
-        Nombre: nombre.value,
-        Apellido_Paterno: paterno.value,
-        Apellido_Materno: materno.value,
-      });
-
-      if (exists.value) {
-        idCliente.value = exists.value;
-        const existeInactivo = await clienteExiste({
-          Nombre: nombre.value,
-          Apellido_Paterno: paterno.value,
-          Apellido_Materno: materno.value,
-          EstatusActividad_idEstatusActividad: 2,
-        });
-        console.log("existe inactivo:" + existeInactivo);
-        if (existeInactivo) {
-          modal = new bootstrap.Modal(document.getElementById("modalClienteInhab"), {
-            keyboard: false,
-          });
-          await modal.show();
-          return false;
-        } else {
-          const cliente = {
-            Nombre: nombre.value,
-            Apellido_Paterno: paterno.value,
-            Apellido_Materno: materno.value,
-            Telefono: telefono.value,
-            NoClienteBAZ: noBAZ.value,
-            Correo: email.value,
-          };
-
-          existeIgual.value = await clienteExiste(cliente);
-          console.log("existe igual:" + existeIgual.value);
-          if (!existeIgual.value) {
-            console.log("aquidice que no existe igual");
-            modal = new bootstrap.Modal(document.getElementById("modalAct"), {
-              keyboard: false,
-            });
-            await modal.show();
-            return true;
-          }
-        }
-      } else {
-        const cliente = {
-          idClientes: 0,
-          Nombre: nombre.value,
-          EstatusActividad_idEstatusActividad: 1,
-          Apellido_Paterno: paterno.value,
-          Apellido_Materno: materno.value,
-          Telefono: telefono.value,
-          NoClienteBAZ: noBAZ.value,
-          Correo: email.value,
-        };
-        idCliente.value = await agregarCliente(cliente);
-        await crearProspecto();
-        //modal = new bootstrap.Modal(document.getElementById("modal"), {
-          //keyboard: false,
-        //});
-        //await modal.show();
-        return true;
-      }
-    }
-    console.log("a revisar prospecto");
-    await revisarProspecto();
-
-    return true;
-  } catch (error) {
-    console.log(error);
-  }
-};
-
-async function noActualizar() {
-  canActualizar.value = true;
-  modal.hide();
-  await revisarProspecto();
 }
 
 async function actCliente(idClient) {
@@ -777,109 +642,7 @@ async function verProspectos() {
       </div>
     </div>
   </div>
-  <!-- Modal Seleccion tipo de cliente -->
-  <div
-    class="modal fade"
-    id="modalSelect"
-    data-bs-backdrop="static"
-    data-bs-keyboard="false"
-    tabindex="-1"
-    aria-labelledby="staticBackdropLabel"
-    aria-hidden="true"
-  >
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="staticBackdropLabel">Tipo de cliente</h5>
-        </div>
-        <div class="modal-body">
-          ¿El cliente de este prospecto ya está registrado o es un cliente nuevo?
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-success" @click="seleccionCliente()">
-            Ya registrado
-          </button>
-          <button type="button" class="btn btn-primary" data-bs-dismiss="modal">
-            Nuevo
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-  <!-- Modal creacion -->
-  <div
-    class="modal fade"
-    id="modal"
-    data-bs-backdrop="static"
-    data-bs-keyboard="false"
-    tabindex="-1"
-    aria-labelledby="staticBackdropLabel"
-    aria-hidden="true"
-  >
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="staticBackdropLabel">¡Prospecto creado!</h5>
-        </div>
-        <div v-show="existeIgual" class="modal-body">
-          El cliente {{ nombre }} {{ paterno }} {{ materno }} ya estaba registrado en el
-          sistema y sus datos son coincidentes, se creó el prospecto sin generar un nuevo
-          cliente
-        </div>
-        <div v-show="!expermnt" class="modal-body">
-          Esto no debería verse
-        </div>
-        <div v-show="!exists && esNuevo" class="modal-body">
-          El Cliente y Prospecto fueron creados exitosamente.
-        </div>
-        <div v-show="canActualizar || !esNuevo" class="modal-body">
-          El prospecto fue creado exitosamente.
-        </div>
-        
-        <div class="modal-footer">
-          <button
-            type="button"
-            class="btn btn-primary"
-            @click="resetCampos()"
-            data-bs-dismiss="modal"
-            ref="btnSeguirCreando"
-          >
-            Seguir creando prospectos
-          </button>
-          <button type="button" class="btn btn-success" @click="verProspectos()">
-            Ver prospectos
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-  <!-- Modal Cliente inhabilitado -->
-  <div
-    class="modal fade"
-    id="modalClienteInhab"
-    data-bs-backdrop="static"
-    data-bs-keyboard="false"
-    tabindex="-1"
-    aria-labelledby="staticBackdropLabel"
-    aria-hidden="true"
-  >
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="staticBackdropLabel">Imposible crear prospecto</h5>
-        </div>
-        <div class="modal-body">
-          El cliente {{ nombre }} {{ paterno }} {{ materno }} está inhabilitado en el
-          sistema. El prospecto no se generará. Consulte con su gerente.
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-danger" data-bs-dismiss="modal">
-            Cancelar
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
+  
   <!---------Modal Cliente actualizado----->
   <div
     class="modal fade"
