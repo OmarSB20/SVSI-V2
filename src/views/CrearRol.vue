@@ -195,7 +195,7 @@ function verRoles() {
         <div class="col-2 mt-2 ms-5">
           <h5 class="italika d-flex justify-content-end">Nombre del Rol:</h5>
         </div>
-        <div class="col-6">
+        <div class="col-4">
           <input
             type="text"
             ref="inputRol"
@@ -220,10 +220,20 @@ function verRoles() {
             Por favor, seleccione los permisos para el rol
           </div>
         </div>
-        <div class="col">
+        <div class="col-1">
           <button class="btn btn-primary" type="submit" :disabled="deshabilitado">
             Guardar
           </button>
+        </div>
+        <div class="col-2 mt-2 ms-5">
+          <h5 class="italika d-flex justify-content-end">SuperRol:</h5>
+        </div>
+        <div class="col-1 pb-2">
+          <input
+            class="form-check-input"
+            type="checkbox"
+            style="width: 35px; height: 35px;"
+          />
         </div>
       </div>
 

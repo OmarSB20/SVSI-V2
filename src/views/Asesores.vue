@@ -43,11 +43,12 @@ const {obtenerAsesoresActivos ,obtenerTodos ,agregarAsesor, actualizarAsesor} = 
         </div>
       </div>
     </div>
-    <div class="row mb-5">
+    <!------------------------------------------------ROW Nombre ----------------------------------------------->
+    <div class="row mb-3">
       <div class="col-2 mt-2 ms-5">
-        <h5 class="italika d-flex justify-content-end">Tipo de crédito:</h5>
+        <h5 class="italika d-flex justify-content-end">Nombre:</h5>
       </div>
-      <div class="col-6 ms-4">
+      <div class="col-7">
         <input
           type="text"
           ref="inputRol"
@@ -55,14 +56,37 @@ const {obtenerAsesoresActivos ,obtenerTodos ,agregarAsesor, actualizarAsesor} = 
           @input="revisarCreditoExistente()"
           v-model="creditoNuevo"
         />
-        <div
-          v-if="repetido"
-          class="alert alert-danger mt-2 d-flex align-items-center"
-          style="height: 38px"
-          role="alert"
-        >
-          "{{ creditoNuevo }}" ya existe
-        </div>
+      </div>
+      <div class="col">
+      
+      </div>
+    </div>
+    <!------------------------------------------------ROW apellidos y boton ----------------------------------------------->
+    <div class="row mb-1">
+    <div class="col-1"></div>
+      <div class="col-1 ms-5 ">
+        <h5 class="italika d-flex justify-content-end">Apellido paterno:</h5>
+      </div>
+      <div class="col-3  mt-1">
+        <input
+          type="text"
+          ref="inputRol"
+          class="form-control"
+          @input="revisarCreditoExistente()"
+          v-model="creditoNuevo"
+        />
+      </div>
+      <div class="col-1 ms-2">
+        <h5 class="italika d-flex justify-content-end">Apellido paterno:</h5>
+      </div>
+      <div class="col-3 mt-1 pe-4">
+        <input
+          type="text"
+          ref="inputRol"
+          class="form-control"
+          @input="revisarCreditoExistente()"
+          v-model="creditoNuevo"
+        />
       </div>
       <div class="col">
         <button
@@ -86,6 +110,18 @@ const {obtenerAsesoresActivos ,obtenerTodos ,agregarAsesor, actualizarAsesor} = 
         </button>
       </div>
     </div>
+    <!-------------------------------------------------ROW alertas-------------------------------------------------------->
+    <div class="row">
+      <div
+          v-if="repetido"
+          class="alert alert-danger mt-2 d-flex align-items-center"
+          style="height: 38px"
+          role="alert"
+        >
+          "{{ creditoNuevo }}" ya existe
+        </div>
+    </div>
+    <!-------------------------------------------TABLA------------------------------------------------------->
     <table
       class="table table-hover table-striped text-center mt-4 mx-auto"
       style="width: 900px"

@@ -12,6 +12,9 @@ import ActualizarUsuario from '../views/ActualizarUsuario.vue'
 import MediosContacto from '../views/MediosContacto.vue'
 import Creditos from '../views/Creditos.vue'
 import Asesores from '../views/Asesores.vue'
+import CrearCliente from '../views/CrearCliente.vue'
+import CrearProspecto from '../views/CrearProspecto.vue';
+import SeleccionCliente from '../views/SeleccionCliente.vue'
 import Prospectos from '../views/Prospectos.vue'
 
 //const { reanudarSesion } = loginStore();
@@ -22,12 +25,15 @@ import Catalogo from '../views/Catalogo.vue'
 const interfaces = {
   home: '0',
   login: '0',
+  seleccionCliente: '1',
+  crearProspecto: '1',
   mediosContacto: '3',
   asesores: '5',
   creditos:'7',
   crearUsuario: '9',
   usuarios: '9',
   actualizarUsuario: '9',
+  crearCliente: '10',
   catalogo:'11',
   crearRol: '14',
   actualizarRol: '14',
@@ -115,6 +121,24 @@ const router = createRouter({
       path: '/catalogo',
       name: 'catalogo',
       component: Catalogo
+      
+    },
+    {
+      path: '/crearCliente',
+      name: 'crearCliente',
+      component: CrearCliente
+      
+    },
+    {
+      path: '/crearProspecto',
+      name: 'crearProspecto',
+      component: CrearProspecto
+      
+    },
+    {
+      path: '/seleccionCliente',
+      name: 'seleccionCliente',
+      component: SeleccionCliente
       
     },
     {

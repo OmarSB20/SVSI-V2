@@ -39,6 +39,17 @@ export const catalogoStore = defineStore("catalogo",{
             }
         },
 
+        async consultarMotocicletasActivas() {
+            try {
+                const res = await axios.get('http://localhost:4000/api/motos/activas')
+                return res;
+            }catch(error){
+                console.log(error)
+                throw(error);
+            }
+        },
+
+
         //consultar un modelo en especifico
         async obtenerUnModelo(idMotocicleta) {
             try{
