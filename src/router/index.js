@@ -15,6 +15,8 @@ import Asesores from '../views/Asesores.vue'
 import CrearCliente from '../views/CrearCliente.vue'
 import CrearProspecto from '../views/CrearProspecto.vue';
 import SeleccionCliente from '../views/SeleccionCliente.vue'
+import EstatusCotizacion from '../views/EstatusCotizacion.vue'
+
 
 //const { reanudarSesion } = loginStore();
 //const reanudarSesion = loginStore();
@@ -28,6 +30,7 @@ const interfaces = {
   crearProspecto: '1',
   mediosContacto: '3',
   asesores: '5',
+  estatusCotizacion:'6',
   creditos:'7',
   crearUsuario: '9',
   usuarios: '9',
@@ -138,6 +141,12 @@ const router = createRouter({
       path: '/seleccionCliente',
       name: 'seleccionCliente',
       component: SeleccionCliente
+      
+    },
+    {
+      path: '/estatusCotizacion',
+      name: 'estatusCotizacion',
+      component: EstatusCotizacion
       
     }
 
