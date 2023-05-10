@@ -274,19 +274,7 @@ const revisarCreditoExistente = () => {
           </td>
           <th scope="row">
             <div class="align-items-center">
-              <!-- <button
-                class="btn btn-primary mx-1"
-                type="submit"
-                style="background-color: #59c01a; border-color: #59c01a; height: 37px"
-                @click="consultarPermisosDeRol(rol.idRoles)"
-              >
-                <img
-                  class="img-fluid mb-1"
-                  style="width: 28.5px; height: 18.75px; margin-top: 0% !important"
-                  src="../assets/eyeWhite.png"
-                />
-              </button> -->
-
+           
               <button
                 :id="credito.idTipos_De_Creditos"
                 :class="[

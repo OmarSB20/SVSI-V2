@@ -10,7 +10,7 @@ export const asesoresStore = defineStore("asesores",{
 
     async obtenerAsesoresActivos(){
         try {
-            const res = await axios.get('http://localhost:4000/api/asesoresBAZ')
+            const res = await axios.get('http://localhost:4000/api/asesoresbaz')
             console.log(res)
             return res;
             
@@ -22,7 +22,7 @@ export const asesoresStore = defineStore("asesores",{
 
     async obtenerTodos(){
         try {
-            const res = await axios.get('http://localhost:4000/api/asesoresBAZ/history')
+            const res = await axios.get('http://localhost:4000/api/asesoresbaz/history')
             console.log(res)
             return res;
             
@@ -34,10 +34,10 @@ export const asesoresStore = defineStore("asesores",{
 
     async agregarAsesor(asesor){
         try {
-            const res = await axios.post('http://localhost:4000/api/asesoresBAZ',asesor)
+            const res = await axios.post('http://localhost:4000/api/asesoresbaz',asesor)
 
            console.log(res)
-            return ;
+            return res;
             
         } catch (error) {
             console.log(error)
@@ -45,9 +45,10 @@ export const asesoresStore = defineStore("asesores",{
             
         }
     },
+    
     async actualizarAsesor(asesor){
         try {
-            const res = await axios.post('http://localhost:4000/api/asesoresBAZ',asesor)
+            const res = await axios.post('http://localhost:4000/api/asesoresbaz',asesor)
 
            console.log(res)
             return ;
@@ -61,7 +62,7 @@ export const asesoresStore = defineStore("asesores",{
 
     async eliminarAsesor(idAsesor){
         try {
-            const res = await axios.put('http://localhost:4000/api/asesoresBAZ',{
+            const res = await axios.put('http://localhost:4000/api/asesoresbaz',{
                 "idAsesoresBAZ":idAsesor
         });
 
