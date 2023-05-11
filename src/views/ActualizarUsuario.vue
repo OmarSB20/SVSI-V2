@@ -635,7 +635,7 @@ function modificarC() {
         <div class="modal-header">
           <h5 class="modal-title" id="staticBackdropLabel">Error al cargar los datos</h5>
         </div>
-        <div class="modal-body">Vuelva a carga el usuario</div>
+        <div class="modal-body">Vuelva a cargar el usuario</div>
         <div class="modal-footer">
           <button type="button" class="btn btn-success" @click="verUsuarios()">
             Volver a usuarios

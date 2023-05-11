@@ -24,12 +24,12 @@ const {
   obtenerCliente,
   actualizarCliente,
 } = clientesStore();
-const { consultarMotocicletasActivas } = catalogoStore();
+const { consultarMotocicletasActivas, obtenerUnModelo } = catalogoStore();
 const { obtenerIdPorUser } = usuariosStore();
 const { getUser } = loginStore();
 
-const { prospectoExiste, agregarProspecto } = prospectosStore();
-const { obtenerMedios } = mediosContactoStore();
+const { prospectoExiste, agregarProspecto, getIdProspecto, obtenerProspecto } = prospectosStore();
+const { obtenerMedios, obtenerMediosN } = mediosContactoStore();
 
 //variables reactivas
 const nombre = ref("");
@@ -56,8 +56,10 @@ const expermnt = ref(true);
 
 const idCliente = ref(null);
 const idUser = ref(null);
+const idProspecto = ref(null);
+const idMoto = ref(null);
+const idMedio = ref(null);
 
-const btnSeguirCreando = ref(null);
 const tagNombre = ref(null);
 const tagPaterno = ref(null);
 const tagMaterno = ref(null);
@@ -70,10 +72,6 @@ const tagBordeMoto = ref(null);
 
 const motoValida = ref("");
 const medioValido = ref("");
-const exists = ref(false);
-const existeIgual = ref(false);
-
-const clientesRepetidos = ref([]);
 
 const today = new Date();
 const year = today.getFullYear();
@@ -81,25 +79,29 @@ const month = String(today.getMonth() + 1).padStart(2, "0"); // El mes se indexa
 const day = String(today.getDate()).padStart(2, "0");
 
 const formattedDate = `${year}-${month}-${day}`;
-console.log(formattedDate);
 
 //variable asociada al modal
 var modal;
-var tried = false;
+var motoSelected;
+var medioSelected;
 const validado = ref(true);
 const alertaLlenado = ref(false);
-const esNuevo = ref();
+const bloqueado = ref(false);
 const canActualizar = ref(false);
+
 
 //al cargar la pagina se consultan los permisos y roles que hay en la BD y se define el objeto relacionado al modal
 onMounted(async () => {
   idUser.value = await obtenerIdPorUser({ Usuario: getUser() });
-  idCliente.value = getIdCliente();
-  if (idCliente.value == null) {
+  idProspecto.value = getIdProspecto();  
+  idProspecto.value = 66;
+
+  if (idProspecto.value==null) {
     //////router.push({name:"home"})
   } else {
-    esNuevo.value = false;
-    cargarDatosCliente();
+    bloqueado.value = true;
+    await cargarDatosProspecto();
+    await cargarDatosCliente();
   }
 
   await obtenerMotos();
@@ -107,44 +109,20 @@ onMounted(async () => {
   llenarCombos();
 });
 
-async function obtenerMotos() {
-  catalogo.value = (await consultarMotocicletasActivas()).data.body;
-}
+async function cargarDatosProspecto(){
+  let prospecto = await obtenerProspecto(idProspecto.value);
+  prospecto = prospecto.data.body[0];
 
-async function obtenerMediosF() {
-  mediosContacto.value = (await obtenerMedios()).data.body;
-}
-
-function llenarCombos() {
-  console.log("llenando combos")
-  const config = {
-    search: true,
-    clearable: true
-  };
-  let select = document.getElementById("select1");
-  mediosContacto.value.forEach((option) => {
-    const optionElement = document.createElement("option");
-    optionElement.text = option.Descripcion;
-    optionElement.value = option.idMedioDeContacto;
-    select.add(optionElement);
-  });
-
-  dselect(tagMedio.value, config); //si jala, no mover xd
-
-  select = document.getElementById("select2");
-  catalogo.value.forEach((option) => {
-    const optionElement = document.createElement("option");
-    optionElement.text = option.Modelo;
-    optionElement.value = option.idMoto;
-    select.add(optionElement);
-  });
-
-  dselect(tagMoto.value, config); //si jala, no mover xd
-  console.log("acabando Llenar combos")
+  idCliente.value = prospecto.Clientes_idClientes;
+  idMedio.value = prospecto.MedioDeContacto_idMedioDeContacto;
+  idMoto.value = prospecto.Moto_idMoto;
+  comentario.value = prospecto.Comentario;  
 }
 
 async function cargarDatosCliente() {
-  const cliente = (await obtenerCliente(idCliente.value)).data.body[0];
+  let cliente = (await obtenerCliente(idCliente.value));
+  console.log(cliente)
+  cliente = cliente.data.body[0]
   nombre.value = cliente.Nombre;
   paterno.value = cliente.Apellido_Paterno;
   materno.value = cliente.Apellido_Materno;
@@ -162,8 +140,59 @@ async function cargarDatosCliente() {
   });
 }
 
+async function obtenerMotos() {
+  catalogo.value = (await consultarMotocicletasActivas()).data.body;
+  motoSelected = await obtenerUnModelo(idMoto.value)
+  motoSelected = motoSelected.data.body[0].Modelo;
+}
+
+async function obtenerMediosF() {
+  mediosContacto.value = (await obtenerMedios()).data.body;
+  medioSelected = await obtenerMediosN(idMedio.value)
+  medioSelected = medioSelected.data.body[0].Descripcion;
+}
+
+function llenarCombos() {
+  console.log("llenando combos")
+  const config = {
+    search: true,
+    clearable: true
+  };
+  let select = document.getElementById("select1");
+  mediosContacto.value.forEach((option) => {
+    const optionElement = document.createElement("option");
+    optionElement.text = option.Descripcion;
+    optionElement.value = option.idMedioDeContacto;
+    if (medioSelected==option.Descripcion) {
+      console.log("si")
+      optionElement.selected =true;
+    }
+    select.add(optionElement);
+  });
+
+  dselect(tagMedio.value, config); //si jala, no mover xd
+
+  select = document.getElementById("select2");
+  catalogo.value.forEach((option) => {
+    const optionElement = document.createElement("option");
+    optionElement.text = option.Modelo;
+    optionElement.value = option.idMoto;
+    console.log(motoSelected==option.Modelo)
+    if (motoSelected==option.Modelo) {
+      
+      optionElement.selected =true;
+    }
+    select.add(optionElement);
+  });
+
+  dselect(tagMoto.value, config); //si jala, no mover xd
+  console.log("acabando Llenar combos")
+}
+
+
+
 async function seleccionCliente() {
-  setInterfazOrigen("crearProspecto");
+  setInterfazOrigen("actualizarProspecto");
   //await modal.hide();
 
   router.push({ name: "seleccionCliente" });
@@ -255,60 +284,27 @@ function validarMedio() {
   }
 }
 
-async function actCliente(idClient) {
-  try {
-    modal.hide();
-    const cliente = {
-      idClientes: idClient,
-      Nombre: nombre.value,
-      EstatusActividad_idEstatusActividad: 1,
-      Apellido_Paterno: paterno.value,
-      Apellido_Materno: materno.value,
-      Telefono: telefono.value,
-      NoClienteBAZ: noBAZ.value,
-      Correo: email.value,
-    };
-
-    await actualizarCliente(cliente);
-    canActualizar.value = true;
-    modal = new bootstrap.Modal(document.getElementById("modalActualizado"), {
-      keyboard: false,
-    });
-    await modal.show();
-
-    var myModalEl = document.getElementById("modalActualizado");
-    myModalEl.addEventListener("hidden.bs.modal", async function (event) {
-      // do something...
-      await revisarProspecto();
-    });
-  } catch (error) {
-    console.log(error);
-  }
-}
-
 async function revisarProspecto() {
-  console.log(exists.value || !esNuevo.value);
-  if (exists.value || !esNuevo.value) {
+  
     const prospecto = {
-      Moto_idMoto: tagMoto.value.value,
-      Clientes_idClientes: idCliente.value,
-      Fecha_registro: formattedDate,
+        Moto_idMoto: tagMoto.value.value,
+		Clientes_idClientes: idCliente.value,
+		Fecha_registro: formattedDate,
     };
     console.log(await prospectoExiste(prospecto));
     if (await prospectoExiste(prospecto)) {
       repetido.value = true;
       return false;
     }
-  }
+  await actualizarProspecto()
   repetido.value = false;
-  await crearProspecto();
   return true;
 }
 
-async function crearProspecto() {
+async function actualizarProspecto() {
   try {
     const prospecto = {
-      idProspectos: 0,
+      idProspectos: idProspecto.value,
       Moto_idMoto: tagMoto.value.value,
       MedioDeContacto_idMedioDeContacto: tagMedio.value.value,
       Empleados_idEmpleados: idUser.value,
@@ -317,9 +313,9 @@ async function crearProspecto() {
       Fecha_registro: formattedDate,
     };
 
-    await agregarProspecto(prospecto);
+    await agregarProspecto(prospecto);//tambien actualiza
     repetido.value = false;
-    modal = new bootstrap.Modal(document.getElementById("modal"), {
+    modal = new bootstrap.Modal(document.getElementById("modalActualizado"), {
       keyboard: false,
     });
     await modal.show(); //al ser todo exitoso, mostramos el modal notificando el exito
@@ -333,19 +329,11 @@ async function crearProspecto() {
 
 async function sbmtUsuario() {
   repetido.value = false;
-  const validado =
-    validarEmail() &&
-    validarTlfn() &&
-    validarTexto(tagNombre.value) &&
-    validarTexto(tagPaterno.value) &&
-    validarTexto(tagMaterno.value) &&
-    validarNumBAZ() &&
-    validarMoto() &&
-    validarMedio();
+  const validado =validarMoto() && validarMedio();
 
   if (validado) {
     alertaLlenado.value = false;
-    await revisarCliente();
+    await revisarProspecto();
   } else {
     validarEmail();
     validarTlfn();
@@ -383,7 +371,7 @@ async function verProspectos() {
         </div>
         <div class="col ms-4">
           <p class="italika d-flex justify-content-start" style="font-size: 50px">
-            Crear Prospecto
+            Actualizar Prospecto
           </p>
         </div>
       </div>
@@ -391,16 +379,11 @@ async function verProspectos() {
         <div class="col-3"></div>
         <div class="col">
           <!-----------------------    Row BOTONES   --------------------------->
-          <div class="row mb-1 d-flex align-items-center justify-content-end">
+          <div class="row mb-1 d-flex align-items-center justify-content-end" v-if="false">
             <div class="col-5"></div>
             <div class="col d-flex align-items-center justify-content-end">
               <button type="button" class="btn btn-success" @click="seleccionCliente()">
                 Seleccionar cliente
-              </button>
-            </div>
-            <div class="col d-flex align-items-center justify-content-end">
-              <button type="button" class="btn btn-primary" @click="resetCampos()">
-                Limpiar campos
               </button>
             </div>
           </div>
@@ -416,7 +399,7 @@ async function verProspectos() {
               v-model.trim="nombre"
               @input="validarTexto(tagNombre)"
               ref="tagNombre"
-              :disabled="!esNuevo"
+              :disabled="bloqueado"
               
               required
             />
@@ -436,7 +419,7 @@ async function verProspectos() {
                   @input="validarTexto(tagPaterno)"
                   ref="tagPaterno"
                   required
-                  :disabled="!esNuevo"
+                  :disabled="bloqueado"
                   v-model.trim="paterno"
                 />
               </div>
@@ -453,7 +436,7 @@ async function verProspectos() {
                   @input="validarTexto(tagMaterno)"
                   ref="tagMaterno"
                   v-model.trim="materno"
-                  :disabled="!esNuevo"
+                  :disabled="bloqueado"
                   required
                 />
               </div>
@@ -471,7 +454,7 @@ async function verProspectos() {
               class="form-control inptElement base"
               @input="validarEmail()"
               ref="tagEmail"
-              :disabled="!esNuevo"
+              :disabled="bloqueado"
               v-model.trim="email"
               required
             />
@@ -491,7 +474,7 @@ async function verProspectos() {
                   v-model.trim="telefono"
                   maxlength="10"
                   ref="tagTelefono"
-                  :disabled="!esNuevo"
+                  :disabled="bloqueado"
                   required
                 />
               </div>
@@ -508,7 +491,7 @@ async function verProspectos() {
                   class="form-control inptElement base"
                   @input="validarNumBAZ()"
                   v-model.trim="noBAZ"
-                  :disabled="!esNuevo"
+                  :disabled="bloqueado"
                   ref="tagBAZ"
                   maxlength="16"
                 />
@@ -665,11 +648,10 @@ async function verProspectos() {
           ></button>
         </div>
         <div class="modal-body">
-          Los datos del cliente {{ nombre }} {{ paterno }} {{ materno }} fueron
-          actualizados
+          ¡El prospecto fue actualizado!
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-success" data-bs-dismiss="modal">
+          <button type="button" class="btn btn-success" data-bs-dismiss="modal" @click="verProspectos()">
             Aceptar
           </button>
         </div>

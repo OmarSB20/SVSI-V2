@@ -13,6 +13,7 @@ import MediosContacto from '../views/MediosContacto.vue'
 import Creditos from '../views/Creditos.vue'
 import Asesores from '../views/Asesores.vue'
 import CrearCliente from '../views/CrearCliente.vue'
+import Clientes from '../views/Clientes.vue'
 import CrearProspecto from '../views/CrearProspecto.vue';
 import ActualizarProspecto from '../views/ActualizarProspecto.vue';
 import SeleccionCliente from '../views/SeleccionCliente.vue'
@@ -38,6 +39,7 @@ const interfaces = {
   usuarios: '9',
   actualizarUsuario: '9',
   crearCliente: '10',
+  clientes: '10',
   catalogo:'11',
   crearRol: '14',
   actualizarRol: '14',
@@ -131,6 +133,12 @@ const router = createRouter({
       path: '/crearCliente',
       name: 'crearCliente',
       component: CrearCliente
+      
+    },
+    {
+      path: '/clientes',
+      name: 'clientes',
+      component: Clientes
       
     },
     {

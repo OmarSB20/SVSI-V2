@@ -14,6 +14,8 @@ const busqCliente = ref();
 onMounted(async () => {
   getInterfazOrigen()==null? router.push({name:"home"}):
   await consultarClientes();
+
+  setInterfazOrigen(null);
 });
 
 const consultarClientes = async () => {
@@ -118,7 +120,7 @@ function seleccionCliente(id){
               <div class="container">
                 <div class="d-inline-flex">
                   <button
-                    class="btn btn-primary d-inline-block mr-3 btn-spacer"
+                    class="btn btn-primary d-inline-block mr-3 btn-spacerSelect"
                     type="submit"
                     style="
                       background-color: #61e450;
@@ -146,10 +148,10 @@ body {
   background-image: linear-gradient(113.96deg, #000103 2.35%, #164193 100%);
   min-height: 100vh;
 }
-.btn-spacer {
+.btn-spacerSelect {
   margin-right: 10px;
 }
-.btn-spacer:hover {
+.btn-spacerSelect:hover {
   margin-right: 10px;
   background-color: #affaa5 !important;
 }

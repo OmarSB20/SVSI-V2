@@ -292,7 +292,7 @@ const revisarCreditoExistente = () => {
                 :class="[
                   botonActualizar && idBotonActualizar == credito.idTipos_De_Creditos
                     ? 'btn btn-primary mx-1'
-                    : 'btn btn-warning mx-1',
+                    : 'btn btn-warning btn-spacer mx-1',
                 ]"
                 type="submit"
                 style="border-color: #ffbe16; height: 37px"
@@ -313,7 +313,7 @@ const revisarCreditoExistente = () => {
               </button>
 
               <button
-                class="btn btn-primary mx-1"
+                class="btn btn-primary mx-1 btn-delete"
                 type="submit"
                 style="background-color: #c01a1a; border-color: #c01a1a; height: 37px"
                 @click="

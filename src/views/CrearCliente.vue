@@ -212,31 +212,6 @@ async function sbmtUsuario() {
     alertaLlenado.value = true;
   }
 
-
-
-
-  /*
-  tried = true;
-  validado.value = true;
-  colorCampos();
-  validarEmail();
-  validarPsw();
-  compararPsw();
-  validarTlfn();
-  if (
-    colorCampos() &&
-    validarEmail() &&
-    validarTlfn() &&
-    validarTexto(tagNombre.value) &&
-    validarTexto(tagPaterno.value) &&
-    validarTexto(tagMaterno.value) &&
-    validado.value
-  ) {
-    crearCliente();
-  } else {
-    alertaLlenado.value = true;
-  }
-  */
 }
 
 function verClientes() {

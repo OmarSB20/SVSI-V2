@@ -209,6 +209,7 @@ async function resetCampos() {
   existeIgual.value = false;
   esNuevo.value = true;
 
+  setIdCliente(null);
   var inputs = document.querySelectorAll(".base");
   Array.prototype.slice.call(inputs).forEach(function (input) {
     input.style.backgroundColor = "#FFFFFF";
@@ -516,7 +517,7 @@ async function verProspectos() {
             />
           </router-link>
         </div>
-        <div class="col ms-4">
+        <div class="col ms-5">
           <p class="italika d-flex justify-content-start" style="font-size: 50px">
             Crear Prospecto
           </p>

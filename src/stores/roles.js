@@ -4,7 +4,7 @@ import axios from "axios";
 export const rolesStore = defineStore("roles",{
   state: ()=>({
     roles: [],
-    idRolActual:44
+    idRolActual:null
   }), 
   actions:{
 

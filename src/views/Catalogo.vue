@@ -420,7 +420,7 @@ function volverAMotos() {
             <div class="align-items-center">
               <button
                 v-if="moto.idMoto != idModelo"
-                class="btn btn-primary mx-1"
+                class="btn btn-primary mx-1 btn-spacer"
                 id="modificar"
                 type="submit"
                 style="background-color: #ffbe16; border-color: #ffbe16; height: 37px"
@@ -433,7 +433,7 @@ function volverAMotos() {
               </button>
               <button
                 v-if="moto.idMoto == idModelo"
-                class="btn btn-primary mx-1"
+                class="btn btn-primary mx-1 "
                 id="regresar"
                 type="submit"
                 style="border-color: #ffbe16; height: 37px; border-width: 3px"
