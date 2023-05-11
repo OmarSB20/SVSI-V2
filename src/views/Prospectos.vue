@@ -26,6 +26,7 @@ const { setIdProspecto } = prospectosStore();
 const { eliminarProspecto } = prospectosStore();
 const { getUser } = loginStore();
 const { obtenerMedios } = mediosContactoStore();
+const { obtenerMediosN } = mediosContactoStore();
 
 //Variables reactivas
 const nivelUsuario = ref([]);
@@ -34,7 +35,7 @@ const nombreEmpleado = ref("");
 const prospectos = ref([]);
 const prospectosDesplegados = ref([]);
 const prospectosPrueba = ref([]);
-const usuarioActual = ref("Lupillo");
+const usuarioActual = ref("Gerente");
 const usuarios = ref([]);
 const idUsuario = ref("");
 const clientes = ref([]);
@@ -46,6 +47,7 @@ const arregloDeProspectos = ref([]);
 const nombreP = ref("");
 const apellidoP = ref("");
 const apellidoM = ref("");
+const id = ref("");
 
 var modal;
 
@@ -67,13 +69,17 @@ onMounted( async() => {
 });
 
 const montarProspectos = async () => {
-        console.log("llegue");
+
         prospectosDesplegados.value.forEach(element => {
             prospectosPrueba.value.push(element);
         });
         console.log(prospectosPrueba.value);
         prospectosPrueba.value.forEach(async element => {
+
+            let cliente = await obtenerCliente(element.Clientes_idClientes);
             element.Moto_idMoto = await obtenerUnModelo(element.Moto_idMoto).data.body.Modelo;
+            element.MedioDeContacto_idMedioDeContacto = await obtenerMediosN(element.MedioDeContacto_idMedioDeContacto).data.body[0].Descripcion;
+            element.Empleados_idEmpleados = await obtenerUnUser(element.Empleados_idEmpleados).data.body[0].Usuario;
             console.log(obtenerUnModelo(element.Moto_idMoto));
         });
         
@@ -87,9 +93,10 @@ const consultarUsuarioAct = async() => {
         console.log(usuarios.value);
         for(var i in usuarios.value){
             if (usuarioActual.value == usuarios.value[i].Usuario){
+                id.value = usuarios.value[i].idEmpleados;
                 idUsuario.value = usuarios.value[i].Roles_idRoles;
                 console.log(idUsuario.value);
-
+                console.log(id.value);
                 nivelUsuario.value = await obtenerRolesN(idUsuario.value);
                 nivelUsuario.value = nivelUsuario.value.data.body;
             }
@@ -133,7 +140,7 @@ const consultarProspectosLimitado = async() => {
         prospectos.value = await obtenerProspectos();
         prospectos.value = prospectos.value.data.body;
         for(var i in prospectos.value){
-            if(prospectos.value[i].Empleados_idEmpleados == idUsuario.value){
+            if(prospectos.value[i].Empleados_idEmpleados == id.value){
                 prospectosDesplegados.value.push(prospectos.value[i]);
             }
         }
