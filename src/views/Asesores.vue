@@ -194,6 +194,24 @@ const buscarAsesores = () => {
   }
 };
 
+function actualizarTabla() {
+    let busquedaValor;
+  if (busqueda.value.trim() == "") {
+    asesoresFiltrados.value = asesores.value;
+  } else {
+    busquedaValor = busqueda.value.replace(/ /g, "");
+    asesoresFiltrados.value = [];
+    let nomAsesor;
+    asesores.value.forEach((element) => {
+      nomAsesor = element.Nombre + element.Apellido_Paterno + element.Apellido_Materno;
+
+      if (nomAsesor.toLowerCase().includes(busquedaValor.toLowerCase())) {
+        asesoresFiltrados.value.push(element);
+      }
+    });
+  }
+}
+
 //Obtiene todos los asesores
 async function traerTodos (){
   todos.value =  (await obtenerTodos()).data.body;
@@ -264,7 +282,7 @@ const revisarAsesorExistente = () => {
             class="form-control rounded-pill mt-4"
             style="width: 250px; height: 50px; border-color: #5e5e5e"
             placeholder="Buscar"
-            v-model="busqueda" @input="buscarAsesores"
+            v-model.trim="busqueda" @input="actualizarTabla()"
             
            
           />

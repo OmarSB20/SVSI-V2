@@ -22,7 +22,7 @@ const {
   getIdCliente,
   setIdCliente,
   obtenerCliente,
-  actualizarCliente,
+  actualizarCliente, getInterfazOrigen
 } = clientesStore();
 const { consultarMotocicletasActivas } = catalogoStore();
 const { obtenerIdPorUser } = usuariosStore();
@@ -168,6 +168,7 @@ async function cargarDatosCliente() {
 
 async function seleccionCliente() {
   setInterfazOrigen("crearProspecto");
+  console.log(getInterfazOrigen()) 
   //await modal.hide();
 
   router.push({ name: "seleccionCliente" });
@@ -454,6 +455,7 @@ async function crearProspecto() {
     };
 
     await agregarProspecto(prospecto);
+    setIdCliente(null);
     repetido.value = false;
     modal = new bootstrap.Modal(document.getElementById("modal"), {
       keyboard: false,
@@ -509,7 +511,7 @@ async function verProspectos() {
       <!-----------------------    Row de titulo  --------------------------->
       <div class="row mb-1 pt-5">
         <div class="col-1 d-flex justify-content-end">
-          <router-link to="/clientes">
+          <router-link to="/prospectos">
             <img
               class="img-fluid"
               style="margin-top: 20px; width: 31.23px; height: 35.5px"

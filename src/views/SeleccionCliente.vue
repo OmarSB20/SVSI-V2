@@ -52,8 +52,8 @@ function seleccionCliente(id){
      setIdCliente(id);
      console.log(id)
      const nameInterfaz =getInterfazOrigen(); 
-     setInterfazOrigen(null);
-     router.push({name:nameInterfaz})
+     //setInterfazOrigen(null);
+     router.back()
 } 
 
 </script>

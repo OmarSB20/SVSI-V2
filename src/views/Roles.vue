@@ -176,6 +176,7 @@ function confirmar(idRol) {
       <thead>
         <tr style="background-color: #2b4677; color: white">
           <th scope="col">Nombre</th>
+          <th scope="col">Super rol</th>
           <th scope="col" style="width: 17vw"></th>
         </tr>
       </thead>
@@ -184,6 +185,12 @@ function confirmar(idRol) {
           <td>
             {{ rol.Nombre }}
           </td> 
+          <td v-if="rol.SuperRol==1">
+            Si 
+          </td>
+          <td v-else>
+            No
+          </td>
           <th scope="row">
             <div class="align-items-center">
               <button

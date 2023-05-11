@@ -168,9 +168,9 @@ async function eliminarCliente() {
             <td>{{ cliente.Correo }}</td>
             <td scope="row" class="sticky" style="position: sticky">
               <div class="container">
-                <div class="d-inline-flex">
+                <div class="d-inline-flex ">
                   <button
-                    class="btn btn-primary d-inline-block mr-3 btn-spacer"
+                    class="btn btn-primary d-flex justify-content-center align-items-center mr-3 btn-spacer"
                     type="submit"
                     style="
                       background-color: #ffbe16;
@@ -180,11 +180,10 @@ async function eliminarCliente() {
                     "
                     @click="modificarCliente(cliente.idClientes)"
                   >
-                    <img
-                      class="img-fluid mb-3"
-                      style="width: 100; height: 20px; margin-top: 0% !important"
-                      src="../assets/lapiz.png"
-                    />
+                  <i
+                  class="fa-solid fa-pen-to-square"
+                  style="color: black;width: 28.5px; height: 18.75px;"
+                ></i>
                   </button>
                   <button
                     class="btn btn-primary d-inline-block btn-delete"

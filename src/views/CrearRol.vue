@@ -1,5 +1,4 @@
 <script setup>
-
 import { ref } from "vue"; //para usar variables reactivas
 
 import { permisosStore } from "../stores/permisos"; //para poder usar store de permisos
@@ -15,7 +14,7 @@ import CompHeader from "../components/Header.vue";
 import { loginStore } from "../stores/login";
 
 const { reanudarSesion } = loginStore();
-const {verificarPermisos} = loginStore();
+const { verificarPermisos } = loginStore();
 const { obtenerPermisos } = permisosStore();
 const { agregarRol } = rolesStore();
 const { obtenerRoles } = rolesStore();
@@ -33,13 +32,15 @@ const deshabilitado = ref(false);
 const checksVacios = ref(false); //es true si no se ha seleccionado ningun checkbox
 const btnSeguirCreando = ref(null);
 const inputRol = ref(null);
+
+const superRol = ref(false);
+const permisoSuperRol = ref(2);
 //variable asociada al modal
 var modal;
 
 //al cargar la pagina se consultan los permisos y roles que hay en la BD y se define el objeto relacionado al modal
-onMounted(async() => {
-  
-    consultarPermisos();
+onMounted(async () => {
+  consultarPermisos();
   consultarRoles();
   if (rolNuevo.value.trim() == "") {
     deshabilitado.value = true;
@@ -48,9 +49,6 @@ onMounted(async() => {
     keyboard: false,
   });
   inputRol.value.focus();
-  
-
-  
 });
 
 //función que vacía el textbox, el arreglo de permisos arreglados y deselecciona los checkbox
@@ -64,7 +62,6 @@ function resetCampos() {
     checksDir.value[j] = false;
   }
 }
-
 
 //consulta los roles usando el metodo de la store, los almacena en rolesArray
 const consultarRoles = async () => {
@@ -125,7 +122,7 @@ const crearRol = async (nombreRol) => {
       return;
     }
     var idRolCreado = 0; //aquí se va a guardar el idRoles del rol que se acaba de insertar
-    await agregarRol(nombreRol.trim()); //creamos el rol
+    await agregarRol(nombreRol.trim(),permisoSuperRol.value); //creamos el rol
     await consultarRoles(); //consultamos los roles, ya que ahora hay uno nuevo con id desonocido por nosotros
 
     for (var j in rolesArray.value) {
@@ -147,12 +144,21 @@ const crearRol = async (nombreRol) => {
     myModal.addEventListener("shown.bs.modal", function () {
       btnSeguirCreando.value.focus();
       btnSeguirCreando.value.style.borderColor = "#90aee5";
-      btnSeguirCreando.value.style.borderWidth="4px"
+      btnSeguirCreando.value.style.borderWidth = "4px";
     });
   } catch (error) {
     console.log(error);
   }
 };
+
+function marcarSR(){
+  console.log(superRol.value)
+  if (superRol.value) {
+    permisoSuperRol.value=1;
+  }else{
+    permisoSuperRol.value=2;
+  }
+}
 
 //metodo que segun el estado de un checkbox, agrega o saca al permiso que le corresponde del arreglo de permisosAgregados
 function moverPermiso(id) {
@@ -167,7 +173,7 @@ function moverPermiso(id) {
 function verRoles() {
   modal.hide();
   router.push({ name: "roles" });
-//http://localhost:5173/modificarRol";
+  //http://localhost:5173/modificarRol";
 }
 </script>
 
@@ -195,7 +201,7 @@ function verRoles() {
         <div class="col-2 mt-2 ms-5">
           <h5 class="italika d-flex justify-content-end">Nombre del Rol:</h5>
         </div>
-        <div class="col-6">
+        <div class="col-4">
           <input
             type="text"
             ref="inputRol"
@@ -220,7 +226,19 @@ function verRoles() {
             Por favor, seleccione los permisos para el rol
           </div>
         </div>
-        <div class="col">
+        <div class="mt-2 " style="width: 10vw;">
+          <h5 class="italika d-flex justify-content-end">Super rol:</h5>
+        </div>
+        <div style="width: 2vw;">
+          <input
+            class="form-check-input"
+            type="checkbox"
+            v-model="superRol"
+            style="width: 25px; height: 25px; border-color: #5e5e5e"
+            @click="marcarSR()"
+          />
+        </div>
+        <div class="col" style="padding-left: 2vw;">
           <button class="btn btn-primary" type="submit" :disabled="deshabilitado">
             Guardar
           </button>

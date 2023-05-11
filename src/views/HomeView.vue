@@ -148,7 +148,7 @@ function redirigir(interfaz){
                 data-bs-parent="#accordionFlushExample"
               >
                 <div class="">
-                  <button v-if="estadoBotones[0]" class="noAccordionBtn w-100 ps-5 d-flex justify-content-start align-items-center" type="button" :style="{ height:altoBtn+'px',borderTopWidth:'5px'}">Prospectos</button>
+                  <button v-if="estadoBotones[0]" class="noAccordionBtn w-100 ps-5 d-flex justify-content-start align-items-center" type="button" @click="redirigir('prospectos')" :style="{ height:altoBtn+'px',borderTopWidth:'5px'}">Prospectos</button>
                   <button v-if="estadoBotones[1]" class="noAccordionBtn w-100 ps-5 d-flex justify-content-start align-items-center" type="button" :style="{ height:altoBtn+'px'}">Cotizaciones</button>
                   <button v-if="estadoBotones[2]" class="noAccordionBtn w-100 ps-5 d-flex justify-content-start align-items-center" type="button" @click="redirigir('mediosContacto')" :style="{ height:altoBtn+'px'}">Medios de contacto</button>
                   <button v-if="estadoBotones[3]" class="noAccordionBtn w-100 ps-5 d-flex justify-content-start align-items-center" type="button" :style="{ height:altoBtn+'px',borderBottomWidth:'5px'}">Meta de ventas</button>
