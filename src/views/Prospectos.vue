@@ -7,6 +7,7 @@ import { clientesStore } from '../stores/clientes';
 import { prospectosStore } from '../stores/prospectos'
 import { loginStore } from '../stores/login';
 import { rolesStore } from '../stores/roles';
+import { mediosContactoStore } from '../stores/mediosContacto';
 import CompHeader from "../components/Header.vue";
 import router from "../router";
 
@@ -14,6 +15,7 @@ const { obtenerRolesN } = rolesStore();
 const { obtenerUnUser } = usuariosStore();
 const { obtenerUsuarios } = usuariosStore();
 const { consultarMotocicletas } = catalogoStore();
+const { obtenerUnModelo } = catalogoStore();
 const { obtenerCliente } = clientesStore();
 const { obtenerTodosClientes } = clientesStore();
 const { getIdCliente } = prospectosStore();
@@ -23,6 +25,7 @@ const { getIdProspecto } = prospectosStore();
 const { setIdProspecto } = prospectosStore();
 const { eliminarProspecto } = prospectosStore();
 const { getUser } = loginStore();
+const { obtenerMedios } = mediosContactoStore();
 
 //Variables reactivas
 const nivelUsuario = ref([]);
@@ -30,13 +33,19 @@ const idEmpleado = ref("");
 const nombreEmpleado = ref("");
 const prospectos = ref([]);
 const prospectosDesplegados = ref([]);
-const usuarioActual = ref("Gerente");
+const prospectosPrueba = ref([]);
+const usuarioActual = ref("Lupillo");
 const usuarios = ref([]);
 const idUsuario = ref("");
 const clientes = ref([]);
 const motos = ref([]);
-const superUsuario = ref();
+const mediosContacto = ref([]);
+const superUsuario = ref(false);
 const nombre = ref("");
+const arregloDeProspectos = ref([]);
+const nombreP = ref("");
+const apellidoP = ref("");
+const apellidoM = ref("");
 
 var modal;
 
@@ -45,24 +54,46 @@ onMounted( async() => {
     motos.value = motos.value.data.body;
     clientes.value = await obtenerTodosClientes();
     clientes.value = clientes.value.data.body;
+    mediosContacto.value = await obtenerMedios();
+    mediosContacto.value = mediosContacto.value.data.body;
     await consultarUsuarioAct();
     await consultarAcceso();
+    montarProspectos();
+
+    modal = new bootstrap.Modal(document.getElementById("modal"), {
+      keyboard: false,
+  });
+
 });
 
+const montarProspectos = async () => {
+        console.log("llegue");
+        prospectosDesplegados.value.forEach(element => {
+            prospectosPrueba.value.push(element);
+        });
+        console.log(prospectosPrueba.value);
+        prospectosPrueba.value.forEach(async element => {
+            element.Moto_idMoto = await obtenerUnModelo(element.Moto_idMoto).data.body.Modelo;
+            console.log(obtenerUnModelo(element.Moto_idMoto));
+        });
+        
+};
 //Consultar el id de el empleado que accede a prospectos
 const consultarUsuarioAct = async() => {
     try{
         //usuarioActual.value = await getUser();
         usuarios.value = await obtenerUsuarios();
         usuarios.value = usuarios.value.data.body;
+        console.log(usuarios.value);
         for(var i in usuarios.value){
             if (usuarioActual.value == usuarios.value[i].Usuario){
                 idUsuario.value = usuarios.value[i].Roles_idRoles;
                 console.log(idUsuario.value);
+
+                nivelUsuario.value = await obtenerRolesN(idUsuario.value);
+                nivelUsuario.value = nivelUsuario.value.data.body;
             }
         }
-        nivelUsuario.value = await obtenerRolesN(idUsuario.value);
-        nivelUsuario.value = nivelUsuario.value.data.body;
         console.log(nivelUsuario.value);
     }catch(error){
         console.log(error);
@@ -72,11 +103,10 @@ const consultarUsuarioAct = async() => {
 //Ver que tanto acceso tiene a la informacion este empleado
 const consultarAcceso = async() => {
     try{
-        console.log(nivelUsuario.value[0].SuperRol);
         if(nivelUsuario.value[0].SuperRol == 1){
             await consultarProspectos();
             superUsuario.value = true;
-                console.log(superUsuario.value);
+            console.log(superUsuario.value);
         }else{
             await consultarProspectosLimitado();
             superUsuario.value = false;
@@ -114,7 +144,25 @@ const consultarProspectosLimitado = async() => {
 };
 
 const actualizarTabla = (nombre) => {
+    if (nombre == "") {
+        if(superUsuario){
+            prospectosDesplegados.value = prospectos.value;
+        }else{
+            consultarProspectosLimitado();
+        }
+    } else {
+        nombre=nombre.replace(/ /g, "")
+        prospectosDesplegados.value = [];
+        let nomCliente;
+        console.log(prospectos.value)
+        prospectos.value.forEach((element) => {
+        nomCliente = element.Nombre + element.Apellido_Paterno + element.Apellido_Materno;
 
+        if (nomCliente.toLowerCase().includes(busqueda.toLowerCase())) {
+            clientesMostrados.value.push(element);
+        }
+        });
+    }
 };
 
 const modificarProspecto = (idProspecto) => {
@@ -129,15 +177,14 @@ const agregarProspecto = () => {
 const eliminar = async (idProspecto) => {
     try{
         await eliminarProspecto(idProspecto);
+        consultarAcceso();
     }catch(error){
         console.log(error);
     }
-    consultarAcceso();
 };
 
 const consultarClienteBAZ = (idCliente) => {
         const clienteBAZ = clientes.value.find((cliente) => cliente.idClientes == idCliente);
-        console.log(clienteBAZ.NoClienteBAZ);
         return clienteBAZ.NoClienteBAZ;
 };
 
@@ -154,16 +201,12 @@ const consultarMaterno = (idCliente) => {
     return clienteM.Apellido_Materno;
 };
 const consultarModelo = (idMoto) => {
-    console.log(motos.value);
     const modeloM = motos.value.find((moto) => moto.idMoto == idMoto);
     return modeloM.Modelo;
 };
-const consultarContacto = async(idContacto) => {
-    try{
-
-    }catch(error){
-
-    }
+const consultarContacto = (idContacto) => {
+    const mediosC = mediosContacto.value.find((medios) => medios.idMedioDeContacto == idContacto);
+    return mediosC.Descripcion;
 };
 ///Si no es gerente solo se deben mostrar sus prospectos
 const consultarEmpleado = (idEmpleado) => {
@@ -178,6 +221,15 @@ const consultarCorreo = (idCliente) => {
         const clienteC = clientes.value.find((cliente) => cliente.idClientes == idCliente);
         return clienteC.Correo;
 };
+
+const mostrarModal = (idCliente, idProspecto) => {
+    idEmpleado.value = idProspecto;
+    nombreP.value = consultarNombre(idCliente);
+    apellidoP.value = consultarPaterno(idCliente);
+    apellidoM.value = consultarMaterno(idCliente);
+    modal.show();
+};
+
 </script>
 
 <template>
@@ -209,7 +261,7 @@ const consultarCorreo = (idCliente) => {
                         style="width: 300px; height: 50px; border-color: #5e5e5e"
                         placeholder="Buscar"
                         v-model.trim="nombre"
-                        @input="actualizarTabla(nombre)"
+                        @input=""
                     />
                 </div>
                 <div class="row pt-3">
@@ -305,7 +357,7 @@ const consultarCorreo = (idCliente) => {
                                 width: 45px;
                                 margin-top: 0% !important;
                                 "
-                                @click="eliminar(prospecto.idProspectos)"
+                                @click="mostrarModal(prospecto.Clientes_idClientes, prospecto.idProspectos)"
                             >
                                 <img
                                 class="img-fluid mb-1"
@@ -319,6 +371,42 @@ const consultarCorreo = (idCliente) => {
                     </tr>
                 </tbody>
             </table>
+        </div>
+    </div>
+    <div
+        class="modal fade"
+        id="modal"
+        tabindex="-1"
+        aria-labelledby="exampleModalLabel"
+        aria-hidden="true"
+    >
+        <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLabel">Eliminar Prospecto</h5>
+            <button
+                type="button"
+                class="btn-close"
+                data-bs-dismiss="modal"
+                aria-label="Close"
+            ></button>
+            </div>
+            <div class="modal-body">
+            <span
+                >¿Está seguro de que quiere eliminar al Prospecto {{ nombreP }}{{ apellidoP }}{{ apellidoM }}?</span
+            >
+            </div>
+            <div class="modal-footer">
+            <button
+                type="button"
+                class="btn btn-danger"
+                data-bs-dismiss="modal"
+                @click="eliminar(idProspecto)"
+            >
+                Confirmar
+            </button>
+            </div>
+        </div>
         </div>
     </div>
 </template>
