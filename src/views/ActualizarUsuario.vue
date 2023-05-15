@@ -17,13 +17,13 @@ const { getIdUsuario } = usuariosStore();
 const { obtenerNicknames } = usuariosStore();
 const { obtenerUnUser } = usuariosStore();
 const { actualizarUsuario } = usuariosStore();
-const {reanudarSesion} = loginStore();
-const {verificarPermisos} = loginStore();
+const { reanudarSesion } = loginStore();
+const { verificarPermisos } = loginStore();
 
 //variables reactivas
-const texto1=ref(false);
-const texto2=ref(false);
-const texto3=ref(false);
+const texto1 = ref(false);
+const texto2 = ref(false);
+const texto3 = ref(false);
 const nombreRol = ref("");
 const nombre = ref("");
 const paterno = ref("");
@@ -57,19 +57,17 @@ const alertaLlenado = ref(false);
 
 //al cargar la pagina se consultan los permisos y roles que hay en la BD y se define el objeto relacionado al modal
 onMounted(async () => {
-  
-    console.log(getIdUsuario());
-    await consultarRoles();
-    await obtenerDatosUsr();
-    await consultarUsuarios();
-    nicknameActual = nickname.value;
-    console.log(nicknameActual);
-  
+  console.log(getIdUsuario());
+  await consultarRoles();
+  await obtenerDatosUsr();
+  await consultarUsuarios();
+  nicknameActual = nickname.value;
+  console.log(nicknameActual);
 });
 
 //consulta los roles usando el metodo de la store, los almacena en rolesArray
 const consultarRoles = async () => {
-    try {
+  try {
     roles.value = await obtenerRoles();
     roles.value = roles.value.data.body;
     console.log(roles.value);
@@ -248,8 +246,8 @@ function validarTexto(input) {
   console.log("validandoTexto");
   console.log(input.value);
   //input.value = input.value.trim();
-  var re =  /^[a-zA-Z ]+$/;
- // var pswd = document.getElementById("emailInpt");
+  var re = /^[a-zA-Z ]+$/;
+  // var pswd = document.getElementById("emailInpt");
   if (!re.test(input.value)) {
     input.style.borderColor = "red";
     input.style.borderWidth = "4px";
@@ -333,8 +331,18 @@ function sbmtUsuario() {
   if (checkbox.checked) {
     tried = true;
     //validado.value = true;
-   
-    if(validarPsw()&&compararPsw()&&colorCampos()&&validarEmail()&&validarTlfn()&&validarTexto(tagNombre.value)&&validarTexto(tagPaterno.value)&&validarTexto(tagMaterno.value)&&validado.value){
+
+    if (
+      validarPsw() &&
+      compararPsw() &&
+      colorCampos() &&
+      validarEmail() &&
+      validarTlfn() &&
+      validarTexto(tagNombre.value) &&
+      validarTexto(tagPaterno.value) &&
+      validarTexto(tagMaterno.value) &&
+      validado.value
+    ) {
       actUsuario();
     } else {
       alertaLlenado.value = true;
@@ -342,7 +350,15 @@ function sbmtUsuario() {
   } else {
     tried = true;
     //validado.value = true;
-    if(colorCampos()&&validarEmail()&&validarTlfn()&&validarTexto(tagNombre.value)&&validarTexto(tagPaterno.value)&&validarTexto(tagMaterno.value)&&validado.value){
+    if (
+      colorCampos() &&
+      validarEmail() &&
+      validarTlfn() &&
+      validarTexto(tagNombre.value) &&
+      validarTexto(tagPaterno.value) &&
+      validarTexto(tagMaterno.value) &&
+      validado.value
+    ) {
       actUsuarioSC();
     } else {
       alertaLlenado.value = true;
@@ -376,7 +392,7 @@ function modificarC() {
       <!-----------------------    Row de titulo  --------------------------->
       <div class="row mb-3 pt-5">
         <div class="col-1 d-flex justify-content-end">
-          <router-link to="usuarios"> 
+          <router-link to="usuarios">
             <img
               class="img-fluid"
               style="margin-top: 20px; width: 31.23px; height: 35.5px"

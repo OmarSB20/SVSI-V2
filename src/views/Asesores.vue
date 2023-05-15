@@ -1,42 +1,42 @@
 <script setup>
-import { ref } from "vue"; 
-import { asesoresStore } from "../stores/asesores"; 
-import { onMounted } from "vue"; 
+import { ref } from "vue";
+import { asesoresStore } from "../stores/asesores";
+import { onMounted } from "vue";
 import router from "../router";
 import CompHeader from "../components/Header.vue";
 
 const { agregarAsesor } = asesoresStore();
-const {actualizarAsesor}=asesoresStore();
+const { actualizarAsesor } = asesoresStore();
 const { obtenerAsesoresActivos } = asesoresStore();
 const { obtenerTodos } = asesoresStore();
 const { eliminarAsesor } = asesoresStore();
 
-const asesores= ref({});
-const nombre= ref("");
-const apellidoMaterno= ref("");
-const apellidoPaterno= ref("");
-const asesoresFiltrados=ref({});
-const asesoresTabla=ref([]);
+const asesores = ref({});
+const nombre = ref("");
+const apellidoMaterno = ref("");
+const apellidoPaterno = ref("");
+const asesoresFiltrados = ref({});
+const asesoresTabla = ref([]);
 
-const nombreNuevo= ref("");
-const paternoNuevo= ref("");
-const maternoNuevo= ref("");
-const nombreAntiguo= ref("");
-const paternoAntiguo= ref("");
-const maternoAntiguo= ref("");
-const nombreActualizado=ref("");
-const paternoActualizado=ref("");
-const maternoActualizado=ref("");
+const nombreNuevo = ref("");
+const paternoNuevo = ref("");
+const maternoNuevo = ref("");
+const nombreAntiguo = ref("");
+const paternoAntiguo = ref("");
+const maternoAntiguo = ref("");
+const nombreActualizado = ref("");
+const paternoActualizado = ref("");
+const maternoActualizado = ref("");
 const busqueda = ref("");
-const asesorEliminar=ref(null);
-const todos=ref("");
+const asesorEliminar = ref(null);
+const todos = ref("");
 
 const repetido = ref(false);
 const deshabilitado = ref(false);
 const botonActualizar = ref(false);
 const idBotonActualizar = ref(-1);
 
-const asesor=ref(null);
+const asesor = ref(null);
 
 var modal1;
 var modal;
@@ -54,19 +54,19 @@ const crearAsesor = async () => {
       EstatusActividad_idEstatusActividad: 1,
       Nombre: nombre.value,
       Apellido_Paterno: apellidoPaterno.value,
-      Apellido_Materno: apellidoMaterno.value
+      Apellido_Materno: apellidoMaterno.value,
     };
     await agregarAsesor(asesorNuevo);
-   // await consultarAsesores();
+    // await consultarAsesores();
     asesoresTabla.value = asesores.value;
     modal1 = new bootstrap.Modal(document.getElementById("modal1"), {
       keyboard: false,
     });
     modal1.show();
     console.log(asesoresTabla.value);
-    nombre.value="";
-    apellidoMaterno.value="";
-    apellidoPaterno.value="";
+    nombre.value = "";
+    apellidoMaterno.value = "";
+    apellidoPaterno.value = "";
     consultarAsesores();
   } catch (error) {
     console.log(error);
@@ -85,7 +85,7 @@ const consultarAsesores = async () => {
   }
 };
 
-  function seleccionarAsesor( idAsesoresBAZ,Nombre,Apellido_Materno,Apellido_Paterno) {
+function seleccionarAsesor(idAsesoresBAZ, Nombre, Apellido_Materno, Apellido_Paterno) {
   nombreNuevo.value = Nombre;
   paternoNuevo.value = Apellido_Paterno;
   maternoNuevo.value = Apellido_Materno;
@@ -96,8 +96,8 @@ const consultarAsesores = async () => {
   idBotonActualizar.value = idAsesoresBAZ;
   if (!botonActualizar.value) {
     nombre.value = Nombre;
-    apellidoPaterno.value=Apellido_Paterno;
-    apellidoMaterno.value=Apellido_Materno;
+    apellidoPaterno.value = Apellido_Paterno;
+    apellidoMaterno.value = Apellido_Materno;
     botonActualizar.value = true;
   } else {
     botonActualizar.value = false;
@@ -105,27 +105,31 @@ const consultarAsesores = async () => {
     nombre.value = "";
     apellidoPaterno.value = "";
     apellidoMaterno.value = "";
-
   }
   repetido.value = false;
   revisarAsesorExistente();
 }
 
-
-async function modificarAsesor(idAsesoresBAZ, Nombre, Apellido_Materno, Apellido_Paterno) {
+async function modificarAsesor(
+  idAsesoresBAZ,
+  Nombre,
+  Apellido_Materno,
+  Apellido_Paterno
+) {
   try {
     nombreAntiguo.value = nombreNuevo.value;
     paternoAntiguo.value = paternoNuevo.value;
     maternoAntiguo.value = maternoNuevo.value;
-    nombreActualizado.value=Nombre;
-    paternoActualizado.value=Apellido_Paterno;
-    maternoActualizado.value=Apellido_Materno;
-    asesor.value={ "idAsesoresBAZ": idAsesoresBAZ,
-      "EstatusActividad_idEstatusActividad": 1,
-      "Nombre": Nombre,
-      "Apellido_Paterno": Apellido_Paterno,
-      "Apellido_Materno": Apellido_Materno
-    }
+    nombreActualizado.value = Nombre;
+    paternoActualizado.value = Apellido_Paterno;
+    maternoActualizado.value = Apellido_Materno;
+    asesor.value = {
+      idAsesoresBAZ: idAsesoresBAZ,
+      EstatusActividad_idEstatusActividad: 1,
+      Nombre: Nombre,
+      Apellido_Paterno: Apellido_Paterno,
+      Apellido_Materno: Apellido_Materno,
+    };
     modal1 = new bootstrap.Modal(document.getElementById("modal1"), {
       keyboard: false,
     });
@@ -146,24 +150,23 @@ async function modificarAsesor(idAsesoresBAZ, Nombre, Apellido_Materno, Apellido
   }
 }
 
-
 async function borrarAsesor(idAsesoresBAZ) {
   console.log(idAsesoresBAZ);
-  asesorEliminar.value= {
+  asesorEliminar.value = {
     idAsesoresBAZ: idAsesoresBAZ,
-    EstatusActividad_idEstatusActividad: 2
+    EstatusActividad_idEstatusActividad: 2,
   };
-try {
-mostrarModalEliminar();
-nombre.value="";
-apellidoPaterno.value="";
-apellidoMaterno.value="";
-botonActualizar.value = false;
-idBotonActualizar.value = -1;
-repetido=false;
-} catch (error) {
-console.log(error);
-}
+  try {
+    mostrarModalEliminar();
+    nombre.value = "";
+    apellidoPaterno.value = "";
+    apellidoMaterno.value = "";
+    botonActualizar.value = false;
+    idBotonActualizar.value = -1;
+    repetido = false;
+  } catch (error) {
+    console.log(error);
+  }
 }
 
 function mostrarModalEliminar() {
@@ -173,11 +176,10 @@ function mostrarModalEliminar() {
   modal1.show();
 }
 
-async function confirmarEliminar(){
+async function confirmarEliminar() {
   await actualizarAsesor(asesorEliminar.value);
   await consultarAsesores();
 }
-
 
 const buscarAsesores = () => {
   const busquedaValor = busqueda.value.toLowerCase();
@@ -195,7 +197,7 @@ const buscarAsesores = () => {
 };
 
 function actualizarTabla() {
-    let busquedaValor;
+  let busquedaValor;
   if (busqueda.value.trim() == "") {
     asesoresFiltrados.value = asesores.value;
   } else {
@@ -213,25 +215,32 @@ function actualizarTabla() {
 }
 
 //Obtiene todos los asesores
-async function traerTodos (){
-  todos.value =  (await obtenerTodos()).data.body;
+async function traerTodos() {
+  todos.value = (await obtenerTodos()).data.body;
   console.log("Aarón camarón");
 }
 
 const revisarAsesorExistente = () => {
-  if ((nombre.value.trim() == "" || nombre.value.trim() == nombreNuevo) || (apellidoPaterno.value.trim() == "" || apellidoPaterno.value.trim() == paternoNuevo) || (apellidoMaterno.value.trim() == "" || apellidoMaterno.value.trim() == maternoNuevo)) {
+  if (
+    nombre.value.trim() == "" ||
+    nombre.value.trim() == nombreNuevo ||
+    apellidoPaterno.value.trim() == "" ||
+    apellidoPaterno.value.trim() == paternoNuevo ||
+    apellidoMaterno.value.trim() == "" ||
+    apellidoMaterno.value.trim() == maternoNuevo
+  ) {
     deshabilitado.value = true;
     return;
   }
   try {
-    for (var j in todos.value) { //checa en todos los asesores, ya sea activos o inactivos de la funcion traerTodos
+    for (var j in todos.value) {
+      //checa en todos los asesores, ya sea activos o inactivos de la funcion traerTodos
       if (
-        (todos.value[j].Nombre.toLowerCase() ==
-        nombre.value.trim().toLowerCase()) &&
-        (todos.value[j].Apellido_Materno.toLowerCase() ==
-        apellidoMaterno.value.trim().toLowerCase()) &&
-        (todos.value[j].Apellido_Paterno.toLowerCase() ==
-        apellidoPaterno.value.trim().toLowerCase() )
+        todos.value[j].Nombre.toLowerCase() == nombre.value.trim().toLowerCase() &&
+        todos.value[j].Apellido_Materno.toLowerCase() ==
+          apellidoMaterno.value.trim().toLowerCase() &&
+        todos.value[j].Apellido_Paterno.toLowerCase() ==
+          apellidoPaterno.value.trim().toLowerCase()
       ) {
         repetido.value = true;
         deshabilitado.value = true;
@@ -253,10 +262,9 @@ const revisarAsesorExistente = () => {
     throw error;
   }
 };
-
 </script>
 <template>
-<div class="container-fluid">
+  <div class="container-fluid">
     <CompHeader />
     <!------------------------------------------------ROW Titulo y busqueda----------------------------------------------->
     <div class="row">
@@ -273,7 +281,6 @@ const revisarAsesorExistente = () => {
         <div class="row align-items-end">
           <p class="italika" style="font-size: 50px">Asesores BAZ</p>
         </div>
-
       </div>
       <div class="col-3 align-items-end ps-5 ms-5">
         <div class="row align-items-end pt-2">
@@ -282,9 +289,8 @@ const revisarAsesorExistente = () => {
             class="form-control rounded-pill mt-4"
             style="width: 250px; height: 50px; border-color: #5e5e5e"
             placeholder="Buscar"
-            v-model.trim="busqueda" @input="actualizarTabla()"
-            
-           
+            v-model.trim="busqueda"
+            @input="actualizarTabla()"
           />
         </div>
       </div>
@@ -292,7 +298,7 @@ const revisarAsesorExistente = () => {
     <!------------------------------------------------ROW Nombre ----------------------------------------------->
     <div class="row mb-3">
       <div class="col-2 mt-2 ms-5">
-        <h5 class="italika d-flex justify-content-end">Nombre:        </h5>
+        <h5 class="italika d-flex justify-content-end">Nombre:</h5>
       </div>
       <div class="col-7">
         <input
@@ -300,20 +306,18 @@ const revisarAsesorExistente = () => {
           ref="inputRol"
           class="form-control"
           @input="revisarAsesorExistente()"
-         v-model.trim="nombre"
+          v-model.trim="nombre"
         />
       </div>
-      <div class="col">
-      
-      </div>
+      <div class="col"></div>
     </div>
     <!------------------------------------------------ROW apellidos y boton ----------------------------------------------->
     <div class="row mb-1">
-    <div class="col-1"></div>
-      <div class="col-1 ms-5 ">
+      <div class="col-1"></div>
+      <div class="col-1 ms-5">
         <h5 class="italika d-flex justify-content-end">Apellido paterno:</h5>
       </div>
-      <div class="col-3  mt-1">
+      <div class="col-3 mt-1">
         <input
           type="text"
           ref="inputRol"
@@ -348,9 +352,7 @@ const revisarAsesorExistente = () => {
           class="btn btn-primary"
           type="submit"
           :disabled="deshabilitado"
-         
-         @click="crearAsesor()"
-        
+          @click="crearAsesor()"
         >
           Guardar
         </button>
@@ -360,8 +362,10 @@ const revisarAsesorExistente = () => {
           class="btn btn-success"
           type="submit"
           :disabled="deshabilitado"
-          
-         @click="modificarAsesor(idBotonActualizar, nombre, apellidoMaterno, apellidoPaterno)">
+          @click="
+            modificarAsesor(idBotonActualizar, nombre, apellidoMaterno, apellidoPaterno)
+          "
+        >
           Actualizar
         </button>
       </div>
@@ -388,7 +392,7 @@ const revisarAsesorExistente = () => {
           <th scope="col">Apellido paterno</th>
           <th scope="col">Apellido materno</th>
           <th scope="col" class="sticky" style="width: 200px: position: sticky; right: 0">
-              Opciones
+            Opciones
           </th>
         </tr>
       </thead>
@@ -398,7 +402,6 @@ const revisarAsesorExistente = () => {
           <td>{{ asesor.Apellido_Paterno }}</td>
           <td>{{ asesor.Apellido_Materno }}</td>
           <td scope="row" class="sticky" style="position: sticky">
-         
             <div class="align-items-center">
               <button
                 :id="asesor.idAsesoresBAZ"
@@ -409,31 +412,35 @@ const revisarAsesorExistente = () => {
                 ]"
                 type="submit"
                 style="border-color: #ffbe16; height: 37px"
-                
-                @click="seleccionarAsesor(asesor.idAsesoresBAZ, asesor.Nombre,asesor.Apellido_Materno,asesor.Apellido_Paterno )"
+                @click="
+                  seleccionarAsesor(
+                    asesor.idAsesoresBAZ,
+                    asesor.Nombre,
+                    asesor.Apellido_Materno,
+                    asesor.Apellido_Paterno
+                  )
+                "
               >
                 <i
-                :class="[
+                  :class="[
                     botonActualizar && idBotonActualizar == asesor.idTipos_De_Creditos
-                    ? 'fa-solid fa-clock-rotate-left'
+                      ? 'fa-solid fa-clock-rotate-left'
                       : 'fa-solid fa-pen-to-square',
                   ]"
-                ></i> 
+                ></i>
               </button>
 
               <button
                 class="btn btn-primary mx-1"
                 type="submit"
                 style="background-color: #c01a1a; border-color: #c01a1a; height: 37px"
-               
-              @click="borrarAsesor(asesor.idAsesoresBAZ)"
-                >
+                @click="borrarAsesor(asesor.idAsesoresBAZ)"
+              >
                 <img
                   class="img-fluid mb-1"
                   style="width: 24.5px; height: 22.75px"
                   src="../assets/basura.png"
                 />
-                
               </button>
             </div>
           </td>
@@ -461,7 +468,7 @@ const revisarAsesorExistente = () => {
           ></button>
         </div>
         <div class="modal-body">
-          <h5>¡Crédito  guardado exitosamente!</h5>
+          <h5>¡Crédito guardado exitosamente!</h5>
         </div>
 
         <div class="modal-footer">
@@ -473,8 +480,7 @@ const revisarAsesorExistente = () => {
     </div>
   </div>
 
-
-<div
+  <div
     class="modal fade"
     id="modal"
     tabindex="-1"
@@ -493,9 +499,7 @@ const revisarAsesorExistente = () => {
           ></button>
         </div>
         <div class="modal-body">
-          <span
-            >¿Está seguro de que quiere eliminar asesor?</span
-          >
+          <span>¿Está seguro de que quiere eliminar asesor?</span>
         </div>
         <div class="modal-footer">
           <button
@@ -509,7 +513,5 @@ const revisarAsesorExistente = () => {
         </div>
       </div>
     </div>
-  </div> 
-
-
+  </div>
 </template>

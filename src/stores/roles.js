@@ -44,7 +44,7 @@ export const rolesStore = defineStore("roles",{
     async agregarRol(nombreRol,superRol){
         try {
             const res = await axios.post('http://localhost:4000/api/roles',{"idRoles":0,
-            "Nombre":nombreRol, "SuperRol":superRol, "idEstatus":1
+            "Nombre":nombreRol, "SuperRol":superRol, "idEstatusActividad":1
            })
 
            console.log(res)
@@ -73,10 +73,10 @@ export const rolesStore = defineStore("roles",{
     },
 
     async eliminarRol(idRol){
-        try {
-            const res = await axios.put('http://localhost:4000/api/roles/',{
-                "idRoles":idRol
-        });
+        try{
+
+        const res = await axios.post('http://localhost:4000/api/roles',{"idRoles":idRol,"idEstatusActividad":2
+       })
 
            console.log(res)
             return ;

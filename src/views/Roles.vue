@@ -49,7 +49,8 @@ const consultarRoles = async () => {
     const body = roles.value.data.body;
     console.log(roles.value);
     for (var j in body) {
-      rolesArray.value.push(body[j]);
+      if(body[j].idEstatusActividad==1){
+      rolesArray.value.push(body[j]);}
       buscador.value.push(body[j].Nombre);
       rolDir.value.push(body[j].idRoles);
     }
