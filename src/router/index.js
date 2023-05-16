@@ -9,6 +9,8 @@ import usuarioRegistrado from '../views/usuariosRegistrados.vue'
 import ActualizarUsuario from '../views/ActualizarUsuario.vue'
 import MediosContacto from '../views/MediosContacto.vue'
 import Creditos from '../views/Creditos.vue'
+import CrearServicios from '../views/CrearServicios.vue'
+
 
 
 const router = createRouter({
@@ -72,6 +74,11 @@ const router = createRouter({
       path: '/creditos',
       name: 'creditos',
       component: Creditos
+    },
+    {
+      path: '/crearServicios',
+      name: 'crearServicios',
+      component: CrearServicios
     }
 
   ]
