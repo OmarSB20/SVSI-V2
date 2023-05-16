@@ -9,7 +9,7 @@ const { agregarAsesor } = asesoresStore();
 const {actualizarAsesor}=asesoresStore();
 const { obtenerAsesoresActivos } = asesoresStore();
 const { obtenerTodos } = asesoresStore();
-const { eliminarAsesor } = asesoresStore();
+
 
 const asesores= ref({});
 const nombre= ref("");
@@ -179,20 +179,18 @@ async function confirmarEliminar(){
 }
 
 
+
 const buscarAsesores = () => {
-  const busquedaValor = busqueda.value.toLowerCase();
-  if (busquedaValor === "") {
-    asesoresFiltrados.value = asesores.value;
-  } else {
-    asesoresFiltrados.value = asesores.value.filter((asesor) => {
-      return (
-        asesor.Nombre.toLowerCase().includes(busquedaValor) ||
-        asesor.Apellido_Paterno.toLowerCase().includes(busquedaValor) ||
-        asesor.Apellido_Materno.toLowerCase().includes(busquedaValor)
-      );
-    });
-  }
-};
+const busquedaValor = busqueda.value.trim().toLowerCase();
+if (busquedaValor === "") {
+asesoresFiltrados.value = asesores.value;
+} else {
+asesoresFiltrados.value = asesores.value.filter((asesor) => {
+const nombreCompleto = `${asesor.Nombre} ${asesor.Apellido_Paterno} ${asesor.Apellido_Materno}`.trim().toLowerCase();
+return nombreCompleto.includes(busquedaValor);
+});
+}
+}
 
 //Obtiene todos los asesores
 async function traerTodos (){
