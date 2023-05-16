@@ -21,6 +21,7 @@ import Prospectos from '../views/Prospectos.vue'
 //const reanudarSesion = loginStore();
 //const {verificarPermisos} = loginStore();
 import Catalogo from '../views/Catalogo.vue'
+import CrearCotizacion from '../views/CrearCotizacion.vue'
 
 const interfaces = {
   home: '0',
@@ -145,6 +146,11 @@ const router = createRouter({
       path: '/prospectos',
       name: 'prospectos',
       component: Prospectos
+    },
+    {
+      path: '/crearCotizacion',
+      name: 'crearCotizacion',
+      component: CrearCotizacion
     }
   ]
 })
