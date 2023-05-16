@@ -255,7 +255,7 @@ const eliminarMoto = (index) => {
             <div class="row d-flex align-items-center mb-3">
                 <div class="col-1"></div>
                 <div class="col-1 d-flex justify-content-end pt-2">
-                    <h5 class="italika d-flex justify-content-end pe-2">
+                    <h5 class="italika d-flex justify-content-end ps-3">
                         Pago inicial:
                     </h5>
                 </div>
@@ -271,7 +271,7 @@ const eliminarMoto = (index) => {
                 </div>
                 <div class="col-2"></div>
                 <div class="col-1 d-flex justify-content-end pt-2">
-                    <h5 class="italika d-flex justify-content-end pe-2">
+                    <h5 class="italika d-flex justify-content-end">
                         Capacidad:
                     </h5>
                 </div>
