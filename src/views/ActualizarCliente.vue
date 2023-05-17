@@ -8,7 +8,13 @@ import router from "../router";
 
 //declaramos como constantes los metodos exactos que vamos a usar de las stores y lo igualamos a la store de donde vienen
 //           metodo    =     store de la que viene
-const { clienteExiste, agregarCliente } = clientesStore();
+const {
+  clienteExiste,
+  agregarCliente,
+  getIdCliente,
+  setIdCliente,
+  obtenerCliente,
+} = clientesStore();
 
 //variables reactivas
 const nombre = ref("");
@@ -29,9 +35,12 @@ const tagTelefono = ref(null);
 const tagEmail = ref(null);
 const tagBAZ = ref(null);
 
-const clientesRepetidos=ref([]);
+const sinCambios = ref(false);
+const clientesRepetidos = ref([]);
+const idClienteAct = ref(null);
 
-var nombreRep,paternoRep,maternoRep;
+var nombreRep, paternoRep, maternoRep;
+var nombreIni, paternoIni, maternoIni, telefonoIni, correoIni, bazIni;
 //variable asociada al modal
 var modal;
 var tried = false;
@@ -40,46 +49,74 @@ const alertaLlenado = ref(false);
 
 //al cargar la pagina se consultan los permisos y roles que hay en la BD y se define el objeto relacionado al modal
 onMounted(async () => {
+  idClienteAct.value = getIdCliente();
+  if (idClienteAct.value == null) {
+    modal = new bootstrap.Modal(document.getElementById("modalError"), {
+      keyboard: false,
+    });
+    modal.show();
+  }
+
+  await cargarDatos();
   modal = new bootstrap.Modal(document.getElementById("modal"), {
     keyboard: false,
   });
 });
 
-//función que vacía el textbox, el arreglo de permisos arreglados y deselecciona los checkbox
-//se activará cuando se de click en "seguir creando roles" en el modal
-function resetCampos() {
-  nombre.value = "";
-  paterno.value = "";
-  materno.value = "";
-  email.value = "";
-  telefono.value = "";
-  noBAZ.value = "";
+async function cargarDatos() {
+  let cliente = await obtenerCliente(idClienteAct.value);
+  cliente = cliente.data.body[0];
+  nombre.value = cliente.Nombre;
+  paterno.value = cliente.Apellido_Paterno;
+  materno.value = cliente.Apellido_Materno;
+  email.value = cliente.Correo;
+  telefono.value = cliente.Telefono;
+  cliente.NoClienteBAZ==null? noBAZ.value="": noBAZ.value = cliente.NoClienteBAZ;
+  
 
-  alertaLlenado.value = false;
-  validado.value = true;
-
-  let elements = document.querySelectorAll(".inptElement");
-  Array.prototype.slice.call(elements).forEach(function (input) {
-    input.style.borderWidth = "0px";
-  });
+  nombreIni = nombre.value;
+  paternoIni = paterno.value;
+  maternoIni = materno.value;
+  correoIni = email.value;
+  telefonoIni = telefono.value;
+  bazIni = noBAZ.value;
 }
 
 async function revisarClienteExistente() {
   try {
+    if (
+      nombre.value == nombreIni &&
+      paterno.value == paternoIni &&
+      materno.value == maternoIni &&
+      email.value == correoIni &&
+      telefonoIni == telefono.value &&
+      bazIni == noBAZ.value
+    ) {
+      sinCambios.value = true;
+      return true;
+    }
+
+    if (nombre.value == nombreIni &&
+      paterno.value == paternoIni &&
+      materno.value == maternoIni) {
+      return false;
+    }
+
     const cliente = {
       Nombre: nombre.value,
       Apellido_Paterno: paterno.value,
       Apellido_Materno: materno.value,
     };
     const existe = await clienteExiste(cliente);
-    console.log("existe?")
-    console.log(existe)
+    console.log("existe?");
+    console.log(existe);
     if (existe) {
-      nombreRep=nombre.value;
-      paternoRep=paterno.value;
-      maternoRep=materno.value;
-    }
+      nombreRep = nombre.value;
+      paternoRep = paterno.value;
+      maternoRep = materno.value;
+      repetido.value=true;
 
+    }
 
     return existe;
   } catch (error) {
@@ -88,30 +125,24 @@ async function revisarClienteExistente() {
 }
 
 //metodo que crea el nuevo rol
-const crearCliente = async () => {
+const actualizarCliente = async () => {
   try {
     let baz;
     noBAZ.value == "" ? (baz = null) : (baz = noBAZ.value);
     const cliente = {
-      idClientes: 0,
+      idClientes: idClienteAct.value,
       EstatusActividad_idEstatusActividad: 1,
       Nombre: nombre.value,
       Apellido_Paterno: paterno.value,
       Apellido_Materno: materno.value,
       Telefono: telefono.value,
       NoClienteBAZ: baz,
-      Correo: email.value
+      Correo: email.value,
     };
-    await agregarCliente(cliente); //creamos el rol
-
+    await agregarCliente(cliente);
+    sinCambios.value = false;
     modal.show(); //al ser todo exitoso, mostramos el modal notificando el exito
-    var myModal = document.getElementById("modal");
-
-    myModal.addEventListener("shown.bs.modal", function () {
-      btnSeguirCreando.value.focus();
-      btnSeguirCreando.value.style.borderColor = "#90aee5";
-      btnSeguirCreando.value.style.borderWidth = "4px";
-    });
+   
   } catch (error) {
     console.log(error);
   }
@@ -149,7 +180,7 @@ function validarTlfn() {
 }
 
 function validarNumBAZ() {
-  console.log(noBAZ.value)
+  console.log(noBAZ.value);
   if (noBAZ.value == "") {
     tagBAZ.value.style.borderWidth = "0px";
     return true;
@@ -169,7 +200,7 @@ function validarNumBAZ() {
 }
 
 function validarTexto(input) {
-  console.log(input.value)
+  console.log(input.value);
   //input.value = input.value.trim();
   var re = /^[a-zA-Z ]+$/;
   // var pswd = document.getElementById("emailInpt");
@@ -186,32 +217,27 @@ function validarTexto(input) {
 }
 
 async function sbmtUsuario() {
-  const validado = (validarEmail() &&
+  const validado =
+    validarEmail() &&
     validarTlfn() &&
     validarTexto(tagNombre.value) &&
     validarTexto(tagPaterno.value) &&
     validarTexto(tagMaterno.value) &&
-    validarNumBAZ())
+    validarNumBAZ();
   if (validado) {
     alertaLlenado.value = false;
     if (!(await revisarClienteExistente())) {
-      repetido.value=false
-      crearCliente();
-
-    }else{
-      repetido.value=true
+      actualizarCliente();
     }
-    
   } else {
-    validarEmail() 
-    validarTlfn() 
-    validarTexto(tagNombre.value)
-    validarTexto(tagPaterno.value) 
-    validarTexto(tagMaterno.value) 
-    validarNumBAZ()
+    validarEmail();
+    validarTlfn();
+    validarTexto(tagNombre.value);
+    validarTexto(tagPaterno.value);
+    validarTexto(tagMaterno.value);
+    validarNumBAZ();
     alertaLlenado.value = true;
   }
-
 }
 
 function verClientes() {
@@ -237,7 +263,7 @@ function verClientes() {
         </div>
         <div class="col ms-4">
           <p class="italika d-flex justify-content-start" style="font-size: 50px">
-            Crear Cliente
+            Actualizar Cliente
           </p>
         </div>
       </div>
@@ -358,6 +384,14 @@ function verClientes() {
             >
               Por favor, llene correctamente todos los campos obligatorios
             </div>
+            <div
+              v-if="sinCambios"
+              class="alert alert-warning mt-2 d-flex align-items-center"
+              style="height: 38px"
+              role="alert"
+            >
+              No es posible actualizar sin realizar cambios al cliente
+            </div>
           </div>
           <div class="row">
             <div
@@ -372,12 +406,12 @@ function verClientes() {
           <div class="row mb-2 pb-2 mt-4">
             <div class="col d-flex justify-content-center">
               <button
-                class="btn btn-primary"
+                class="btn btn-success"
                 style="width: 25%"
                 type="submit"
                 :disabled="deshabilitado"
               >
-                Guardar
+                Actualizar
               </button>
             </div>
           </div>
@@ -400,7 +434,7 @@ function verClientes() {
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title" id="staticBackdropLabel">¡Cliente creado!</h5>
+          <h5 class="modal-title" id="staticBackdropLabel">¡Cliente actualizado!</h5>
           <button
             type="button"
             class="btn-close"
@@ -408,19 +442,41 @@ function verClientes() {
             aria-label="Close"
           ></button>
         </div>
-        <div class="modal-body">El cliente {{ nombre, paterno, materno }} fue creado exitosamente.</div>
+        <div class="modal-body">
+          El cliente {{ (nombre, paterno, materno) }} fue actualizado exitosamente.
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-success" @click="verClientes()">
+            Ver clientes
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div
+    class="modal fade"
+    id="modalError"
+    data-bs-backdrop="static"
+    data-bs-keyboard="false"
+    tabindex="-1"
+    aria-labelledby="staticBackdropLabel"
+    aria-hidden="true"
+  >
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="staticBackdropLabel">Error al cargar los datos</h5>
+        </div>
+        <div class="modal-body">Vuelva a cargar el rol</div>
         <div class="modal-footer">
           <button
             type="button"
-            class="btn btn-primary"
-            @click="resetCampos()"
+            class="btn btn-success"
             data-bs-dismiss="modal"
-            ref="btnSeguirCreando"
+            @click="verClientes()"
           >
-            Seguir creando clientes
-          </button>
-          <button type="button" class="btn btn-success" @click="verClientes()">
-            Ver clientes
+            Volver a roles
           </button>
         </div>
       </div>

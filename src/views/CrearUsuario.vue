@@ -5,7 +5,6 @@ import { usuariosStore } from "../stores/usuarios";
 import { rolesStore } from "../stores/roles";
 import { loginStore } from "../stores/login";
 
-
 import CompHeader from "../components/Header.vue";
 import router from "../router";
 
@@ -16,7 +15,7 @@ const { obtenerRoles } = rolesStore();
 const { obtenerNicknames } = usuariosStore();
 const { obtenerUsuarios } = usuariosStore();
 const { reanudarSesion } = loginStore();
-const {verificarPermisos} = loginStore();
+const { verificarPermisos } = loginStore();
 
 //variables reactivas
 const nombre = ref("");
@@ -45,16 +44,13 @@ const validado = ref(true);
 const alertaLlenado = ref(false);
 
 //al cargar la pagina se consultan los permisos y roles que hay en la BD y se define el objeto relacionado al modal
-onMounted(async() => {
-  
-    consultarRoles();
-    consultarUsuarios();
-    deshabilitado.value = true;
-    modal = new bootstrap.Modal(document.getElementById("modal"), {
-      keyboard: false,
+onMounted(async () => {
+  consultarRoles();
+  consultarUsuarios();
+  deshabilitado.value = true;
+  modal = new bootstrap.Modal(document.getElementById("modal"), {
+    keyboard: false,
   });
-  
-  
 });
 
 //función que vacía el textbox, el arreglo de permisos arreglados y deselecciona los checkbox
@@ -78,7 +74,7 @@ function resetCampos() {
 
   let elements = document.querySelectorAll(".inptElement");
   Array.prototype.slice.call(elements).forEach(function (input) {
-  input.style.borderWidth = "0px";
+    input.style.borderWidth = "0px";
   });
 }
 
@@ -113,7 +109,9 @@ function revisarUsuarioExistente() {
   }
 
   for (var j in arrayNicknames.value) {
-    if (arrayNicknames.value[j].Usuario.toLowerCase() == nickname.value.trim().toLowerCase()) {
+    if (
+      arrayNicknames.value[j].Usuario.toLowerCase() == nickname.value.trim().toLowerCase()
+    ) {
       repetido.value = true;
       deshabilitado.value = true;
       return true;
@@ -181,7 +179,7 @@ const crearUsuario = async () => {
     myModal.addEventListener("shown.bs.modal", function () {
       btnSeguirCreando.value.focus();
       btnSeguirCreando.value.style.borderColor = "#90aee5";
-      btnSeguirCreando.value.style.borderWidth="4px"
+      btnSeguirCreando.value.style.borderWidth = "4px";
     });
   } catch (error) {
     console.log(error);
@@ -257,8 +255,8 @@ function validarTexto(input) {
   console.log("validandoTexto");
   console.log(input.value);
   //input.value = input.value.trim();
-  var re =  /^[a-zA-Z ]+$/;
- // var pswd = document.getElementById("emailInpt");
+  var re = /^[a-zA-Z ]+$/;
+  // var pswd = document.getElementById("emailInpt");
   if (!re.test(input.value)) {
     input.style.borderColor = "red";
     input.style.borderWidth = "4px";
@@ -279,7 +277,15 @@ function sbmtUsuario() {
   validarPsw();
   compararPsw();
   validarTlfn();
-  if(colorCampos()&&validarEmail()&&validarTlfn()&&validarTexto(tagNombre.value)&&validarTexto(tagPaterno.value)&&validarTexto(tagMaterno.value)&&validado.value){
+  if (
+    colorCampos() &&
+    validarEmail() &&
+    validarTlfn() &&
+    validarTexto(tagNombre.value) &&
+    validarTexto(tagPaterno.value) &&
+    validarTexto(tagMaterno.value) &&validarPsw()&&compararPsw()
+    //validado.value
+  ) {
     crearUsuario();
   } else {
     alertaLlenado.value = true;
@@ -288,7 +294,7 @@ function sbmtUsuario() {
 
 function verUsuarios() {
   modal.hide();
-  router.push({name:"usuarios"});
+  router.push({ name: "usuarios" });
 }
 </script>
 

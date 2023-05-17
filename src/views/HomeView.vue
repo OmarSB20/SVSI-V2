@@ -20,7 +20,7 @@ const serviciosActivo = ref(false);
 const tablaServiciosActivo = ref(false);
 const tablaCitasActivo = ref(false);
 const mjrVendedorActivo = ref(false);
-const nickname = ref("Gerardo");
+const nickname = ref();
 const metaVentas = ref(15);
 const ventasPropias = ref(2);
 const totalVentas = ref(5);
@@ -30,7 +30,7 @@ const mostrarTodo = ref(false);
 
 onMounted(async () => {
 
-    mostrarTodo.value=true
+    
     await definirPermisos();
     contarPermisos();
   console.log(screen.height);
@@ -40,7 +40,8 @@ onMounted(async () => {
   definirBotones();
   console.log(ventasActivo.value)
   console.log(bancoActivo.value)
- 
+  
+  mostrarTodo.value=true
  
 });
 
@@ -107,7 +108,7 @@ function redirigir(interfaz){
 </script>
 
 <template>
-  <div v-if="mostrarTodo" class="container-fluid body2" ref="containerTag">
+  <div v-show="mostrarTodo" class="container-fluid body2" ref="containerTag">
     <div class="row">
     <!------------------------------------------------AREA IZQUIERDA MENU----------------------------------------------------------->
       <div class="col-3 ps-0 ">
@@ -147,7 +148,7 @@ function redirigir(interfaz){
                 data-bs-parent="#accordionFlushExample"
               >
                 <div class="">
-                  <button v-if="estadoBotones[0]" class="noAccordionBtn w-100 ps-5 d-flex justify-content-start align-items-center" type="button" :style="{ height:altoBtn+'px',borderTopWidth:'5px'}">Prospectos</button>
+                  <button v-if="estadoBotones[0]" class="noAccordionBtn w-100 ps-5 d-flex justify-content-start align-items-center" type="button" @click="redirigir('prospectos')" :style="{ height:altoBtn+'px',borderTopWidth:'5px'}">Prospectos</button>
                   <button v-if="estadoBotones[1]" class="noAccordionBtn w-100 ps-5 d-flex justify-content-start align-items-center" type="button" :style="{ height:altoBtn+'px'}">Cotizaciones</button>
                   <button v-if="estadoBotones[2]" class="noAccordionBtn w-100 ps-5 d-flex justify-content-start align-items-center" type="button" @click="redirigir('mediosContacto')" :style="{ height:altoBtn+'px'}">Medios de contacto</button>
                   <button v-if="estadoBotones[3]" class="noAccordionBtn w-100 ps-5 d-flex justify-content-start align-items-center" type="button" :style="{ height:altoBtn+'px',borderBottomWidth:'5px'}">Meta de ventas</button>

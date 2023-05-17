@@ -13,9 +13,14 @@ import MediosContacto from '../views/MediosContacto.vue'
 import Creditos from '../views/Creditos.vue'
 import Asesores from '../views/Asesores.vue'
 import CrearCliente from '../views/CrearCliente.vue'
+import Clientes from '../views/Clientes.vue'
+import ActualizarCliente from '../views/ActualizarCliente.vue'
 import CrearProspecto from '../views/CrearProspecto.vue';
+import Prospectos from '../views/Prospectos.vue';
+import ActualizarProspecto from '../views/ActualizarProspecto.vue';
 import SeleccionCliente from '../views/SeleccionCliente.vue'
-import Prospectos from '../views/Prospectos.vue'
+
+
 
 //const { reanudarSesion } = loginStore();
 //const reanudarSesion = loginStore();
@@ -28,6 +33,8 @@ const interfaces = {
   login: '0',
   seleccionCliente: '1',
   crearProspecto: '1',
+  prospectos:'1',
+  actualizarProspecto:'1',
   mediosContacto: '3',
   asesores: '5',
   creditos:'7',
@@ -35,6 +42,8 @@ const interfaces = {
   usuarios: '9',
   actualizarUsuario: '9',
   crearCliente: '10',
+  clientes: '10',
+  actualizarCliente:'10',
   catalogo:'11',
   crearRol: '14',
   actualizarRol: '14',
@@ -131,9 +140,33 @@ const router = createRouter({
       
     },
     {
+      path: '/clientes',
+      name: 'clientes',
+      component: Clientes
+      
+    },
+    {
+      path: '/actualizarCliente',
+      name: 'actualizarCliente',
+      component: ActualizarCliente
+      
+    },
+    {
       path: '/crearProspecto',
       name: 'crearProspecto',
       component: CrearProspecto
+      
+    },
+    {
+      path: '/prospectos',
+      name: 'prospectos',
+      component: Prospectos
+      
+    },
+    {
+      path: '/actualizarProspecto',
+      name: 'actualizarProspecto',
+      component: ActualizarProspecto
       
     },
     {
@@ -141,11 +174,6 @@ const router = createRouter({
       name: 'seleccionCliente',
       component: SeleccionCliente
       
-    },
-    {
-      path: '/prospectos',
-      name: 'prospectos',
-      component: Prospectos
     },
     {
       path: '/crearCotizacion',

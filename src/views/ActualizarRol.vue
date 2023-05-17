@@ -20,7 +20,7 @@ const { obtenerRoles } = rolesStore();
 const { agregarPermisosDelRol } = permisosRolesStore();
 const { eliminarPermisosDelRol } = permisosRolesStore();
 const { obtenerPermisosDelRol } = permisosRolesStore();
-const { getRol } = rolesStore();
+const { getRol, setRol } = rolesStore();
 
 //variables reactivas
 const permisos = ref([]); //guardara el objeto obtenido de obtener permisos
@@ -35,21 +35,29 @@ const idRolActualizar = ref();
 const permisosDelRol = ref([]);
 const deshabilitado = ref(false);
 const btnVolver = ref(null)
+
+const superRol = ref(false);
+const permisoSuperRol = ref(2);
 //variable asociada al modal
 var modal;
 
  
 onMounted(async() => {
-  
-  consultarPermisos();
-  consultarRoles();
+  if(getRol()==null){
+    modal = new bootstrap.Modal(document.getElementById("modalError"), {
+        keyboard: false,
+      });
+      modal.show();
+  }else{
+  await consultarPermisos();
+  await consultarRoles();
 
   //rolNuevo.value = permisosArray.value[idRolActualizar.value - 1].Nombre;
   modal = new bootstrap.Modal(document.getElementById("modal"), {
     keyboard: false,
   });
 
-  
+}
 });
 
 //función que vacía el textbox, el arreglo de permisos arreglados y deselecciona los checkbox
@@ -68,6 +76,7 @@ const consultarRoles = async () => {
     rolesArray.value.forEach((element) => {
       if (element.idRoles == idRolActualizar.value) {
         rolNuevo.value = element.Nombre;
+        element.SuperRol==1?superRol.value=true:superRol.value=false;
       }
     });
     //rolNuevo.value = rolesArray.value[idRolActualizar.value].Nombre
@@ -145,12 +154,14 @@ const actualizar = async (nombreRol) => {
 
     await eliminarPermisosDelRol(idRolActualizar.value);
 
-    await actualizarRol(idRolActualizar.value, rolNuevo.value.trim());
+    await actualizarRol(idRolActualizar.value, rolNuevo.value.trim(),permisoSuperRol.value);
 
     for (var j in permisosAgregados.value) {
       //por cada permiso seleccionado vamos a insertarlo a la tabla permisosRoles, aquí usamos el idRolCreado que conseguimos
       await agregarPermisosDelRol(idRolActualizar.value, permisosAgregados.value[j]);
     }
+    setRol(null);
+
     modal.show(); //al ser todo exitoso, mostramos el modal notificando el exito
     var myModal = document.getElementById("modal");
 
@@ -172,6 +183,16 @@ function moverPermiso(id) {
     permisosAgregados.value.push(id);
     checksVacios.value = false;
   }
+}
+
+function marcarSR(){
+  console.log(superRol.value)
+  if (!superRol.value) {
+    permisoSuperRol.value=1;
+  }else{
+    permisoSuperRol.value=2;
+  }
+  console.log(permisoSuperRol.value)
 }
 
 function irRoles(){
@@ -231,8 +252,20 @@ function irRoles(){
             Por favor, seleccione los permisos para el rol
           </div>
         </div>
+        <div class="mt-2 " style="width: 10vw;">
+          <h5 class="italika d-flex justify-content-end">Super rol:</h5>
+        </div>
+        <div style="width: 2vw;">
+          <input
+            class="form-check-input"
+            type="checkbox"
+            v-model="superRol"
+            style="width: 25px; height: 25px; border-color: #5e5e5e"
+            @click="marcarSR()"
+          />
+        </div>
         <div class="col">
-          <button class="btn btn-success" type="submit" :disabled="deshabilitado">
+          <button class="btn btn-success ps-2 ms-4" type="submit" :disabled="deshabilitado">
             Actualizar
           </button>
         </div>
@@ -294,6 +327,8 @@ function irRoles(){
   <div
     class="modal fade"
     id="modal"
+    data-bs-backdrop="static"
+    data-bs-keyboard="false"
     tabindex="-1"
     aria-labelledby="exampleModalLabel"
     aria-hidden="true"
@@ -306,6 +341,29 @@ function irRoles(){
         <div class="modal-body">El rol {{ rolNuevo }} fue actualizado exitosamente.</div>
         <div class="modal-footer">
             <button type="button" class="btn btn-success" ref="btnVolver" @click="irRoles()">Volver a Roles</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div
+    class="modal fade"
+    id="modalError"
+    data-bs-backdrop="static"
+    data-bs-keyboard="false"
+    tabindex="-1"
+    aria-labelledby="staticBackdropLabel"
+    aria-hidden="true"
+  >
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="staticBackdropLabel">Error al cargar los datos</h5>
+        </div>
+        <div class="modal-body">Vuelva a cargar el rol</div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-success" data-bs-dismiss="modal" @click="irRoles()">
+            Volver a roles
+          </button>
         </div>
       </div>
     </div>

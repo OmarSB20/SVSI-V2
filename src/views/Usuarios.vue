@@ -135,7 +135,7 @@ async function desactivarUsuario(idEmpleado) {
     <CompHeader />
 
     <div class="row">
-      <div class="col-1 mb-3 pt-5">
+      <div class="col-1 mb-3 pt-5 d-flex justify-content-end">
         <router-link to="/italika">
           <img
             class="img-fluid mt-3"
@@ -171,7 +171,7 @@ async function desactivarUsuario(idEmpleado) {
           <div class="col">
             <router-link to="../crearUsuario" style="text-decoration: none">
               <button
-                class="btn btn-primary mt-2 d-flex align-items-center justify-content-center"
+                class="btn btn-primary btn-create mt-2 d-flex align-items-center justify-content-center"
                 type="button"
                 style="
                   background-color: #66d054;
@@ -240,14 +240,13 @@ async function desactivarUsuario(idEmpleado) {
                     "
                     @click="modificaruser(usuario.idEmpleados)"
                   >
-                    <img
-                      class="img-fluid mb-3"
-                      style="width: 100; height: 20px; margin-top: 0% !important"
-                      src="../assets/lapiz.png"
-                    />
+                    <i
+                  class="fa-solid fa-pen-to-square"
+                  style="color: black;"
+                ></i>
                   </button>
                   <button
-                    class="btn btn-primary d-inline-block"
+                    class="btn btn-primary btn-delete d-inline-block"
                     type="submit"
                     style="
                       background-color: #c01a1a;
