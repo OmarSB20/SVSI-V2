@@ -20,7 +20,7 @@ import Prospectos from '../views/Prospectos.vue';
 import ActualizarProspecto from '../views/ActualizarProspecto.vue';
 import SeleccionCliente from '../views/SeleccionCliente.vue'
 import EstatusCotizacion from '../views/EstatusCotizacion.vue'
-
+import Citas from '../views/Citas.vue'
 
 
 //const { reanudarSesion } = loginStore();
@@ -46,6 +46,7 @@ const interfaces = {
   clientes: '10',
   actualizarCliente:'10',
   catalogo:'11',
+  citas:'13',
   crearRol: '14',
   actualizarRol: '14',
   roles: '14',
@@ -180,6 +181,12 @@ const router = createRouter({
       path: '/estatusCotizacion',
       name: 'estatusCotizacion',
       component: EstatusCotizacion
+      
+    },
+    {
+      path: '/citas',
+      name: 'citas',
+      component: Citas
       
     }
 
