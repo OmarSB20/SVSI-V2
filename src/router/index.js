@@ -1,39 +1,56 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { loginStore } from "../stores/login";
-
 import HomeView from '../views/HomeView.vue'
 import Roles from '../views/Roles.vue'
 import CrearRol from '../views/CrearRol.vue'
 import ActualizarRol from '../views/ActualizarRol.vue'
 import CrearUsuario from '../views/CrearUsuario.vue'
-import Login from '../views/Login.vue'
+import login from '../views/Login.vue'
 import Usuarios from '../views/Usuarios.vue'
 import ActualizarUsuario from '../views/ActualizarUsuario.vue'
 import MediosContacto from '../views/MediosContacto.vue'
 import Creditos from '../views/Creditos.vue'
-import CrearCredito from '../views/CrearCredito.vue'
 import Asesores from '../views/Asesores.vue'
+import CrearCliente from '../views/CrearCliente.vue'
+import Clientes from '../views/Clientes.vue'
+import ActualizarCliente from '../views/ActualizarCliente.vue'
+import CrearProspecto from '../views/CrearProspecto.vue';
+import Prospectos from '../views/Prospectos.vue';
+import ActualizarProspecto from '../views/ActualizarProspecto.vue';
+import SeleccionCliente from '../views/SeleccionCliente.vue'
 import EstatusCotizacion from '../views/EstatusCotizacion.vue'
-import CrearEstatusCotizacion from '../views/CrearEstatusCotizacion.vue'
-import ModificarUsuario from '../views/ModificarUsuario.vue'
-import usuariosRegistrados from '../views/usuariosRegistrados.vue'
-
+import CrearCotizacion from '../views/CrearCotizacion.vue'
+import CrearServicio from '../views/CrearServicio.vue'
+import EstatusServicio from '../views/EstatusServicio.vue'
+import Cotizacion from '../views/Cotizacion.vue'
+import Catalogo from '../views/Catalogo.vue'
 
 //const { reanudarSesion } = loginStore();
 //const reanudarSesion = loginStore();
 //const {verificarPermisos} = loginStore();
-import Catalogo from '../views/Catalogo.vue'
+
 
 const interfaces = {
   home: '0',
   login: '0',
+  seleccionCliente: '1',
+  crearProspecto: '1',
+  prospectos:'1',
+  actualizarProspecto:'1',
+  //crearCotizacion:'2',
+  cotizacion:'2',
   mediosContacto: '3',
   asesores: '5',
   estatusCotizacion:'6',
   creditos:'7',
+  crearServicio:'8',
+  estatusServicio:'8',
   crearUsuario: '9',
   usuarios: '9',
   actualizarUsuario: '9',
+  crearCliente: '10',
+  clientes: '10',
+  actualizarCliente:'10',
   catalogo:'11',
   crearRol: '14',
   actualizarRol: '14',
@@ -85,7 +102,7 @@ const router = createRouter({
     {
       path: '/login',
       name: 'login',
-      component: Login
+      component: login
       
     },
     {
@@ -124,10 +141,75 @@ const router = createRouter({
       
     },
     {
+      path: '/crearCliente',
+      name: 'crearCliente',
+      component: CrearCliente
+      
+    },
+    {
+      path: '/clientes',
+      name: 'clientes',
+      component: Clientes
+      
+    },
+    {
+      path: '/actualizarCliente',
+      name: 'actualizarCliente',
+      component: ActualizarCliente
+      
+    },
+    {
+      path: '/crearProspecto',
+      name: 'crearProspecto',
+      component: CrearProspecto
+      
+    },
+    {
+      path: '/prospectos',
+      name: 'prospectos',
+      component: Prospectos
+      
+    },
+    {
+      path: '/actualizarProspecto',
+      name: 'actualizarProspecto',
+      component: ActualizarProspecto
+      
+    },
+    {
+      path: '/seleccionCliente',
+      name: 'seleccionCliente',
+      component: SeleccionCliente
+      
+    },
+    {
       path: '/estatusCotizacion',
       name: 'estatusCotizacion',
       component: EstatusCotizacion
       
+    },
+    {
+      path: '/crearCotizacion',
+      name: 'crearCotizacion',
+      component: CrearCotizacion
+      
+    },
+    {
+      path: '/cotizacion',
+      name: 'cotizacion',
+      component: Cotizacion
+      
+    },
+    {
+      path: '/crearServicio',
+      name: 'crearServicio',
+      component: CrearServicio
+      
+    },
+    {
+      path: '/estatusServicio',
+      name: 'estatusServicio',
+      component: EstatusServicio
     }
 
   ]
@@ -174,5 +256,7 @@ export default router
 /*
  const nombreInterfaz = to.name;
     const idInterfaz = interfaces[nombreInterfaz];
+
     if (await store.verificarPermisos(idInterfaz)) {}
+
 */

@@ -4,9 +4,11 @@ import { onMounted } from "vue";
 import { onUpdated } from "vue";
 import { loginStore } from "../stores/login";
 import router from "../router/index";
+
 const {verificarPermisos} = loginStore();
 const {reanudarSesion} = loginStore();
 const {cerrarSesion} = loginStore();
+
 const altoPantalla = ref(0);
 const containerTag = ref(null);
 const cantPermisos = ref(9);
@@ -18,15 +20,17 @@ const serviciosActivo = ref(false);
 const tablaServiciosActivo = ref(false);
 const tablaCitasActivo = ref(false);
 const mjrVendedorActivo = ref(false);
-const nickname = ref("Gerardo");
+const nickname = ref();
 const metaVentas = ref(15);
 const ventasPropias = ref(2);
 const totalVentas = ref(5);
 const totalServicios = ref(3);
 const serviciosPropios = ref(2);
 const mostrarTodo = ref(false);
+
 onMounted(async () => {
-    mostrarTodo.value=true
+
+    
     await definirPermisos();
     contarPermisos();
   console.log(screen.height);
@@ -36,9 +40,11 @@ onMounted(async () => {
   definirBotones();
   console.log(ventasActivo.value)
   console.log(bancoActivo.value)
- 
+  
+  mostrarTodo.value=true
  
 });
+
 const definirPermisos= async ()=>{
   for (let i = 0; i < estadoBotones.value.length; i++) {
     try {
@@ -53,6 +59,7 @@ const definirPermisos= async ()=>{
     }
   }
 }
+
 function definirBotones(){
    altoBtn.value = (screen.height-190)/cantPermisos.value;
   console.log(altoBtn.value)
@@ -62,11 +69,14 @@ function definirBotones(){
   for (let i = 0; i <=3; i++) {
     if(estadoBotones.value[i]==true){ventasActivo.value=true}
   }
+
   for (let i = 4; i <=6; i++) {
     if(estadoBotones.value[i]==true){bancoActivo.value=true}
   }
+
   estadoBotones.value[7]==true ? serviciosActivo.value=true : serviciosActivo.value=false
   estadoBotones.value[12]==true ? tablaCitasActivo.value=true : tablaCitasActivo.value=false 
+
   if (!ventasActivo.value&&serviciosActivo) {
     mjrVendedorActivo.value=false;
     tablaServiciosActivo.value = true;  
@@ -74,7 +84,9 @@ function definirBotones(){
     mjrVendedorActivo.value=true;  
   }
    
+
 }
+
 function contarPermisos(){
   let cont=0;
   for (let i = 7; i <estadoBotones.value.length; i++) {
@@ -83,17 +95,20 @@ function contarPermisos(){
   console.log(cont)
   cantPermisos.value = cont;
 }
+
 async function logOut(){
   await cerrarSesion();
   redirigir("login");
 }
+
 function redirigir(interfaz){
   router.push({name:interfaz})
 }
+
 </script>
 
 <template>
-  <div v-if="mostrarTodo" class="container-fluid body2" ref="containerTag">
+  <div v-show="mostrarTodo" class="container-fluid body2" ref="containerTag">
     <div class="row">
     <!------------------------------------------------AREA IZQUIERDA MENU----------------------------------------------------------->
       <div class="col-3 ps-0 ">
@@ -133,9 +148,9 @@ function redirigir(interfaz){
                 data-bs-parent="#accordionFlushExample"
               >
                 <div class="">
-                  <button v-if="estadoBotones[0]" class="noAccordionBtn w-100 ps-5 d-flex justify-content-start align-items-center" type="button" :style="{ height:altoBtn+'px',borderTopWidth:'5px'}">Prospectos</button>
+                  <button v-if="estadoBotones[0]" class="noAccordionBtn w-100 ps-5 d-flex justify-content-start align-items-center" type="button" @click="redirigir('prospectos')" :style="{ height:altoBtn+'px',borderTopWidth:'5px'}">Prospectos</button>
                   <button v-if="estadoBotones[1]" class="noAccordionBtn w-100 ps-5 d-flex justify-content-start align-items-center" type="button" :style="{ height:altoBtn+'px'}">Cotizaciones</button>
-                  <button v-if="estadoBotones[2]" class="noAccordionBtn w-100 ps-5 d-flex justify-content-start align-items-center" type="button" :style="{ height:altoBtn+'px'}">Medios de contacto</button>
+                  <button v-if="estadoBotones[2]" class="noAccordionBtn w-100 ps-5 d-flex justify-content-start align-items-center" type="button" @click="redirigir('mediosContacto')" :style="{ height:altoBtn+'px'}">Medios de contacto</button>
                   <button v-if="estadoBotones[3]" class="noAccordionBtn w-100 ps-5 d-flex justify-content-start align-items-center" type="button" :style="{ height:altoBtn+'px',borderBottomWidth:'5px'}">Meta de ventas</button>
                 </div>
               </div>
@@ -302,6 +317,7 @@ function redirigir(interfaz){
     #164193 90.92%
   );
 }
+
 .noAccordionBtn{
   background-color: #000103 !important;
   color: white !important;
@@ -315,6 +331,7 @@ function redirigir(interfaz){
   letter-spacing: 0.04em;
   max-height: 100px;
 }
+
 .accordion-button {
   font-family: "Fjalla One";
   font-style: normal;
@@ -324,6 +341,7 @@ function redirigir(interfaz){
   font-size: 2.5vw;
   max-height: 100px;
 }
+
 .intern-accordion-button {
   font-family: "Fjalla One";
   font-style: normal;
@@ -333,31 +351,40 @@ function redirigir(interfaz){
   font-size: 2.5vw;
   max-height: 100px;
 }
+
 /* Estilos para motores Webkit y blink (Chrome, Safari, Opera... )*/
+
 .scrollPers::-webkit-scrollbar {
     -webkit-appearance: none;
 }
+
 .scrollPers::-webkit-scrollbar:vertical {
     width:10px;
 }
+
 .scrollPers::-webkit-scrollbar-button:increment,.scrollPers::-webkit-scrollbar-button {
     display: none;
 } 
+
 .scrollPers::-webkit-scrollbar:horizontal {
     height: 10px;
 }
+
 .scrollPers::-webkit-scrollbar-thumb {
     background-color: #5c5c5c;
     border-radius: 20px;
 }
+
 .scrollPers::-webkit-scrollbar-track {
     border-radius: 10px;  
 }
+
 .roundedPanel{
   background-color: rgba(91, 117, 137, 0.31);
   box-shadow: 4px 4px 4px 0px rgba(0, 0, 0, 0.7) inset;
   border-radius: 30px;
 }
+
 .pillCal{
   background-color: white;
   box-shadow: 4px 4px 4px 0px rgba(0, 0, 0, 0.59) inset;
@@ -365,6 +392,7 @@ function redirigir(interfaz){
   font-size: 1.7vw;
   margin-bottom: 2%;
 }
+
 .cita{
   background-color: white;
   font-family: "Fjalla One";
@@ -372,6 +400,7 @@ function redirigir(interfaz){
   border-radius: 0px 10px 10px 0px;
   margin-bottom: 2.5%;
 }
+
 .empleadoMesTitulo{
 margin-top: 7px;
 font-family: 'Fjalla One';
@@ -385,6 +414,7 @@ text-align: center;
 letter-spacing: 0.04em;
 color: #FFFFFF;
 }
+
 .empleadoMes{
   font-family: 'Fjalla One';
 font-style: normal;
@@ -397,6 +427,7 @@ text-align: center;
 letter-spacing: 0.04em;
 color: #6AFF79;
 }
+
 .saludo{
   font-family: 'Fjalla One';
 font-style: normal;
@@ -408,13 +439,17 @@ align-items: center;
 text-align: center;
 letter-spacing: 0.04em;
 color: #FFFFFF;
+
 }
+
 .seccionSm{
   font-family: "Fjalla One";
   font-size: 1.5vw;
   color: white;
 }
+
 .accordion-button:after {
   background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23ffffff'><path fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/></svg>") !important;
 }
+
 </style>

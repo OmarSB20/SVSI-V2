@@ -1,20 +1,25 @@
 <script setup>
 import { ref } from "vue"; //para usar variables reactivas
+
 import { permisosStore } from "../stores/permisos"; //para poder usar store de permisos
 import { rolesStore } from "../stores/roles"; //para poder usar store de roles
 import { permisosRolesStore } from "../stores/permisosRoles"; //para poder usar store de permisosRoles
 import { onMounted } from "vue"; //para poder usar el onMounted, que ejecuta todo lo que tenga adentro cada que cargue la pagina
 import router from "../router";
+
 import CompHeader from "../components/Header.vue";
+
 //declaramos como constantes los metodos exactos que vamos a usar de las stores y lo igualamos a la store de donde vienen
 //           metodo    =     store de la que viene
 import { loginStore } from "../stores/login";
+
 const { reanudarSesion } = loginStore();
-const {verificarPermisos} = loginStore();
+const { verificarPermisos } = loginStore();
 const { obtenerPermisos } = permisosStore();
 const { agregarRol } = rolesStore();
 const { obtenerRoles } = rolesStore();
 const { agregarPermisosDelRol } = permisosRolesStore();
+
 //variables reactivas
 const permisos = ref([]); //guardara el objeto obtenido de obtener permisos
 const permisosArray = ref([]); //guardara cada uno de los permisos (idPermisos y Descripcion)
@@ -27,12 +32,15 @@ const deshabilitado = ref(false);
 const checksVacios = ref(false); //es true si no se ha seleccionado ningun checkbox
 const btnSeguirCreando = ref(null);
 const inputRol = ref(null);
+
+const superRol = ref(false);
+const permisoSuperRol = ref(2);
 //variable asociada al modal
 var modal;
+
 //al cargar la pagina se consultan los permisos y roles que hay en la BD y se define el objeto relacionado al modal
-onMounted(async() => {
-  
-    consultarPermisos();
+onMounted(async () => {
+  consultarPermisos();
   consultarRoles();
   if (rolNuevo.value.trim() == "") {
     deshabilitado.value = true;
@@ -41,9 +49,8 @@ onMounted(async() => {
     keyboard: false,
   });
   inputRol.value.focus();
-  
-  
 });
+
 //función que vacía el textbox, el arreglo de permisos arreglados y deselecciona los checkbox
 //se activará cuando se de click en "seguir creando roles" en el modal
 function resetCampos() {
@@ -55,6 +62,7 @@ function resetCampos() {
     checksDir.value[j] = false;
   }
 }
+
 //consulta los roles usando el metodo de la store, los almacena en rolesArray
 const consultarRoles = async () => {
   try {
@@ -64,6 +72,7 @@ const consultarRoles = async () => {
     console.log(error);
   }
 };
+
 //consulta los permisos - misma logica que consuktar roles
 const consultarPermisos = async () => {
   try {
@@ -78,6 +87,7 @@ const consultarPermisos = async () => {
     console.log(error);
   }
 };
+
 //revisa si el rol a crear ya existe, el reusltado se guarda en "repetido"
 const revisarRolExistente = async () => {
   if (rolNuevo.value.trim() == "") {
@@ -102,6 +112,7 @@ const revisarRolExistente = async () => {
     throw error;
   }
 };
+
 //metodo que crea el nuevo rol
 const crearRol = async (nombreRol) => {
   try {
@@ -111,8 +122,9 @@ const crearRol = async (nombreRol) => {
       return;
     }
     var idRolCreado = 0; //aquí se va a guardar el idRoles del rol que se acaba de insertar
-    await agregarRol(nombreRol.trim()); //creamos el rol
+    await agregarRol(nombreRol.trim(),permisoSuperRol.value); //creamos el rol
     await consultarRoles(); //consultamos los roles, ya que ahora hay uno nuevo con id desonocido por nosotros
+
     for (var j in rolesArray.value) {
       //buscamos el rol en el arreglo que coincide con el que acabamos de crear
       if (
@@ -128,15 +140,26 @@ const crearRol = async (nombreRol) => {
     }
     modal.show(); //al ser todo exitoso, mostramos el modal notificando el exito
     var myModal = document.getElementById("modal");
+
     myModal.addEventListener("shown.bs.modal", function () {
       btnSeguirCreando.value.focus();
       btnSeguirCreando.value.style.borderColor = "#90aee5";
-      btnSeguirCreando.value.style.borderWidth="4px"
+      btnSeguirCreando.value.style.borderWidth = "4px";
     });
   } catch (error) {
     console.log(error);
   }
 };
+
+function marcarSR(){
+  console.log(superRol.value)
+  if (superRol.value) {
+    permisoSuperRol.value=1;
+  }else{
+    permisoSuperRol.value=2;
+  }
+}
+
 //metodo que segun el estado de un checkbox, agrega o saca al permiso que le corresponde del arreglo de permisosAgregados
 function moverPermiso(id) {
   if (checksDir.value[id]) {
@@ -146,10 +169,11 @@ function moverPermiso(id) {
     checksVacios.value = false;
   }
 }
+
 function verRoles() {
   modal.hide();
   router.push({ name: "roles" });
-//http://localhost:5173/modificarRol";
+  //http://localhost:5173/modificarRol";
 }
 </script>
 
@@ -177,7 +201,7 @@ function verRoles() {
         <div class="col-2 mt-2 ms-5">
           <h5 class="italika d-flex justify-content-end">Nombre del Rol:</h5>
         </div>
-        <div class="col-6">
+        <div class="col-4">
           <input
             type="text"
             ref="inputRol"
@@ -202,7 +226,19 @@ function verRoles() {
             Por favor, seleccione los permisos para el rol
           </div>
         </div>
-        <div class="col">
+        <div class="mt-2 " style="width: 10vw;">
+          <h5 class="italika d-flex justify-content-end">Super rol:</h5>
+        </div>
+        <div style="width: 2vw;">
+          <input
+            class="form-check-input"
+            type="checkbox"
+            v-model="superRol"
+            style="width: 25px; height: 25px; border-color: #5e5e5e"
+            @click="marcarSR()"
+          />
+        </div>
+        <div class="col" style="padding-left: 2vw;">
           <button class="btn btn-primary" type="submit" :disabled="deshabilitado">
             Guardar
           </button>
@@ -310,6 +346,7 @@ body {
   background-image: linear-gradient(113.96deg, #000103 2.35%, #164193 100%);
   min-height: 100vh;
 }
+
 .italika {
   font-family: "Fjalla One";
   font-style: normal;
@@ -317,9 +354,11 @@ body {
   letter-spacing: 0.04em;
   color: #ffffff;
 }
+
 .table-striped tbody tr:nth-of-type(even) {
   background-color: #ccc9c9;
 }
+
 .table-striped tbody tr:nth-of-type(odd) {
   background-color: #ffffff;
 }

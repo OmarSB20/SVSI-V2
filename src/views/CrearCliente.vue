@@ -1,21 +1,14 @@
 <script setup>
 import { ref } from "vue"; //para usar variables reactivas
 import { onMounted } from "vue"; //para poder usar el onMounted, que ejecuta todo lo que tenga adentro cada que cargue la pagina
-import { usuariosStore } from "../stores/usuarios";
-import { rolesStore } from "../stores/roles";
-import { loginStore } from "../stores/login";
+import { clientesStore } from "../stores/clientes";
 
 import CompHeader from "../components/Header.vue";
 import router from "../router";
 
 //declaramos como constantes los metodos exactos que vamos a usar de las stores y lo igualamos a la store de donde vienen
 //           metodo    =     store de la que viene
-const { agregarUsuario } = usuariosStore();
-const { obtenerRoles } = rolesStore();
-const { obtenerNicknames } = usuariosStore();
-const { obtenerUsuarios } = usuariosStore();
-const { reanudarSesion } = loginStore();
-const { verificarPermisos } = loginStore();
+const { clienteExiste, agregarCliente } = clientesStore();
 
 //variables reactivas
 const nombre = ref("");
@@ -23,20 +16,22 @@ const paterno = ref("");
 const materno = ref("");
 const email = ref("");
 const telefono = ref("");
-const nickname = ref("");
-const roles = ref([]);
-const arrayNicknames = ref([]);
-const contrasena = ref("");
-const confContrasena = ref("");
-const deshabilitado = ref(true);
+const noBAZ = ref("");
+
+const deshabilitado = ref(false);
 const repetido = ref(false);
-const tipoConfPass = ref("password");
-const tipoPass = ref("password");
-const rolSeleccionado = ref("Seleccionar rol");
+
 const btnSeguirCreando = ref(null);
 const tagNombre = ref(null);
 const tagPaterno = ref(null);
 const tagMaterno = ref(null);
+const tagTelefono = ref(null);
+const tagEmail = ref(null);
+const tagBAZ = ref(null);
+
+const clientesRepetidos=ref([]);
+
+var nombreRep,paternoRep,maternoRep;
 //variable asociada al modal
 var modal;
 var tried = false;
@@ -45,9 +40,6 @@ const alertaLlenado = ref(false);
 
 //al cargar la pagina se consultan los permisos y roles que hay en la BD y se define el objeto relacionado al modal
 onMounted(async () => {
-  consultarRoles();
-  consultarUsuarios();
-  deshabilitado.value = true;
   modal = new bootstrap.Modal(document.getElementById("modal"), {
     keyboard: false,
   });
@@ -61,14 +53,8 @@ function resetCampos() {
   materno.value = "";
   email.value = "";
   telefono.value = "";
-  nickname.value = "";
-  contrasena.value = "";
-  confContrasena.value = "";
-  rolSeleccionado.value = "";
-  consultarRoles();
-  consultarUsuarios();
-  deshabilitado.value = true;
-  tried = false;
+  noBAZ.value = "";
+
   alertaLlenado.value = false;
   validado.value = true;
 
@@ -78,100 +64,45 @@ function resetCampos() {
   });
 }
 
-//consulta los roles usando el metodo de la store, los almacena en rolesArray
-const consultarRoles = async () => {
+async function revisarClienteExistente() {
   try {
-    roles.value = await obtenerRoles();
-    roles.value = roles.value.data.body;
-    console.log(roles.value);
+    const cliente = {
+      Nombre: nombre.value,
+      Apellido_Paterno: paterno.value,
+      Apellido_Materno: materno.value,
+    };
+    const existe = await clienteExiste(cliente);
+    console.log("existe?")
+    console.log(existe)
+    if (existe) {
+      nombreRep=nombre.value;
+      paternoRep=paterno.value;
+      maternoRep=materno.value;
+    }
+
+
+    return existe;
   } catch (error) {
     console.log(error);
   }
-};
-
-const consultarUsuarios = async () => {
-  try {
-    arrayNicknames.value = [];
-    let usuarios = await obtenerNicknames();
-    usuarios = usuarios.data.body;
-    usuarios.forEach((element) => {
-      arrayNicknames.value.push(element);
-    });
-  } catch (error) {
-    console.log(error);
-  }
-};
-
-function revisarUsuarioExistente() {
-  if (nickname.value.trim() == "") {
-    deshabilitado.value = true;
-    return;
-  }
-
-  for (var j in arrayNicknames.value) {
-    if (
-      arrayNicknames.value[j].Usuario.toLowerCase() == nickname.value.trim().toLowerCase()
-    ) {
-      repetido.value = true;
-      deshabilitado.value = true;
-      return true;
-    }
-  }
-  repetido.value = false;
-  deshabilitado.value = false;
-  return false;
-}
-
-function colorCampos() {
-  if (tried) {
-    let aprobado = true;
-    validado.value = true;
-    // Fetch all the forms we want to apply custom Bootstrap validation styles to
-    var inputs = document.querySelectorAll(".input-f");
-    // Loop over them and prevent submission
-    Array.prototype.slice.call(inputs).forEach(function (input) {
-      if (input.value == "") {
-        input.style.borderColor = "red";
-        input.style.borderWidth = "4px";
-        aprobado = false;
-        validado.value = false;
-      } else {
-        input.style.borderColor = "#3ac74d";
-        input.style.borderWidth = "4px";
-      }
-    });
-    return aprobado;
-  }
-}
-
-function obtenerIdRol(rol) {
-  let idRol = -1;
-  roles.value.forEach((element) => {
-    if (element.Nombre == rol) {
-      idRol = element.idRoles;
-      return;
-    }
-  });
-  return idRol;
 }
 
 //metodo que crea el nuevo rol
-const crearUsuario = async () => {
+const crearCliente = async () => {
   try {
-    const idRol = obtenerIdRol(rolSeleccionado.value);
-    const usuarioNuevo = {
-      idEmpleados: 0,
-      Roles_idRoles: idRol,
+    let baz;
+    noBAZ.value == "" ? (baz = null) : (baz = noBAZ.value);
+    const cliente = {
+      idClientes: 0,
       EstatusActividad_idEstatusActividad: 1,
       Nombre: nombre.value,
       Apellido_Paterno: paterno.value,
       Apellido_Materno: materno.value,
       Telefono: telefono.value,
-      Contrasena: contrasena.value,
-      Usuario: nickname.value,
-      Correo: email.value,
+      NoClienteBAZ: baz,
+      Correo: email.value
     };
-    await agregarUsuario(usuarioNuevo); //creamos el rol
+    await agregarCliente(cliente); //creamos el rol
 
     modal.show(); //al ser todo exitoso, mostramos el modal notificando el exito
     var myModal = document.getElementById("modal");
@@ -187,8 +118,7 @@ const crearUsuario = async () => {
 };
 
 function validarEmail() {
-  console.log("validandomeail");
-  email.value = email.value.trim();
+  //email.value = email.value.trim();
   var re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   var pswd = document.getElementById("emailInpt");
   if (!re.test(email.value)) {
@@ -198,7 +128,7 @@ function validarEmail() {
     return false;
   } else {
     pswd.style.borderColor = "#3ac74d";
-    pswd.style.borderWidth = "4px";
+    pswd.style.borderWidth = "0px";
     return true;
   }
 }
@@ -213,47 +143,33 @@ function validarTlfn() {
     return false;
   } else {
     tlfnInpt.style.borderColor = "#3ac74d";
-    tlfnInpt.style.borderWidth = "4px";
+    tlfnInpt.style.borderWidth = "0px";
     return true;
   }
 }
 
-function validarPsw() {
-  contrasena.value = contrasena.value.trim();
-  compararPsw();
-  let pswd = document.getElementById("pswd");
-
-  if (contrasena.value.length < 8) {
-    pswd.style.borderColor = "red";
-    pswd.style.borderWidth = "4px";
-    validado.value = false;
-    return false;
-  } else {
-    pswd.style.borderColor = "#3ac74d";
-    pswd.style.borderWidth = "4px";
+function validarNumBAZ() {
+  console.log(noBAZ.value)
+  if (noBAZ.value == "") {
+    tagBAZ.value.style.borderWidth = "0px";
     return true;
-  }
-}
-
-function compararPsw() {
-  confContrasena.value = confContrasena.value.trim();
-  let pswd = document.getElementById("pswdC");
-  if (!(confContrasena.value == contrasena.value && confContrasena.value != "")) {
-    pswd.style.borderColor = "red";
-    pswd.style.borderWidth = "4px";
-    validado.value = false;
-    return false;
   } else {
-    pswd.style.borderColor = "#3ac74d";
-    pswd.style.borderWidth = "4px";
-
-    return true;
+    var re = /^[0-9- ]+$/;
+    if (!(noBAZ.value.length <= 16 && noBAZ.value.match(re))) {
+      tagBAZ.value.style.borderColor = "red";
+      tagBAZ.value.style.borderWidth = "4px";
+      validado.value = false;
+      return false;
+    } else {
+      tagBAZ.value.style.borderColor = "#3ac74d";
+      tagBAZ.value.style.borderWidth = "0px";
+      return true;
+    }
   }
 }
 
 function validarTexto(input) {
-  console.log("validandoTexto");
-  console.log(input.value);
+  console.log(input.value)
   //input.value = input.value.trim();
   var re = /^[a-zA-Z ]+$/;
   // var pswd = document.getElementById("emailInpt");
@@ -264,37 +180,43 @@ function validarTexto(input) {
     return false;
   } else {
     input.style.borderColor = "#3ac74d";
-    input.style.borderWidth = "4px";
+    input.style.borderWidth = "0px";
     return true;
   }
 }
 
-function sbmtUsuario() {
-  tried = true;
-  validado.value = true;
-  colorCampos();
-  validarEmail();
-  validarPsw();
-  compararPsw();
-  validarTlfn();
-  if (
-    colorCampos() &&
-    validarEmail() &&
+async function sbmtUsuario() {
+  const validado = (validarEmail() &&
     validarTlfn() &&
     validarTexto(tagNombre.value) &&
     validarTexto(tagPaterno.value) &&
-    validarTexto(tagMaterno.value) &&validarPsw()&&compararPsw()
-    //validado.value
-  ) {
-    crearUsuario();
+    validarTexto(tagMaterno.value) &&
+    validarNumBAZ())
+  if (validado) {
+    alertaLlenado.value = false;
+    if (!(await revisarClienteExistente())) {
+      repetido.value=false
+      crearCliente();
+
+    }else{
+      repetido.value=true
+    }
+    
   } else {
+    validarEmail() 
+    validarTlfn() 
+    validarTexto(tagNombre.value)
+    validarTexto(tagPaterno.value) 
+    validarTexto(tagMaterno.value) 
+    validarNumBAZ()
     alertaLlenado.value = true;
   }
+
 }
 
-function verUsuarios() {
+function verClientes() {
   modal.hide();
-  router.push({ name: "usuarios" });
+  router.push({ name: "clientes" });
 }
 </script>
 
@@ -303,9 +225,9 @@ function verUsuarios() {
     <div class="container-fluid">
       <CompHeader />
       <!-----------------------    Row de titulo  --------------------------->
-      <div class="row mb-3 pt-5">
+      <div class="row mb-1 pt-5">
         <div class="col-1 d-flex justify-content-end">
-          <router-link to="usuarios">
+          <router-link to="/clientes">
             <img
               class="img-fluid"
               style="margin-top: 20px; width: 31.23px; height: 35.5px"
@@ -315,7 +237,7 @@ function verUsuarios() {
         </div>
         <div class="col ms-4">
           <p class="italika d-flex justify-content-start" style="font-size: 50px">
-            Crear Usuario
+            Crear Cliente
           </p>
         </div>
       </div>
@@ -325,7 +247,7 @@ function verUsuarios() {
           <!-----------------------    Row 1 Formulario   --------------------------->
           <div class="row mb-2 pb-2 d-flex align-items-center">
             <div class="col mt-2">
-              <h5 class="italika">Nombre</h5>
+              <h5 class="italika">Nombre *</h5>
             </div>
             <input
               type="text"
@@ -344,7 +266,7 @@ function verUsuarios() {
             <div class="col">
               <div class="row d-flex align-items-center">
                 <div class="col mt-2 me-5 pe-5">
-                  <h5 class="italika">Apellido paterno</h5>
+                  <h5 class="italika">Apellido paterno *</h5>
                 </div>
                 <input
                   type="text"
@@ -360,7 +282,7 @@ function verUsuarios() {
             <div class="col">
               <div class="row d-flex align-items-center">
                 <div class="col mt-2 me-5 pe-5">
-                  <h5 class="italika">Apellido materno</h5>
+                  <h5 class="italika">Apellido materno *</h5>
                 </div>
                 <input
                   type="text"
@@ -377,13 +299,14 @@ function verUsuarios() {
 
           <div class="row mb-2 pb-2 d-flex align-items-center">
             <div class="col mt-2">
-              <h5 class="italika">Correo electrónico</h5>
+              <h5 class="italika">Correo electrónico *</h5>
             </div>
             <input
               id="emailInpt"
               type="email"
               class="form-control inptElement"
               @input="validarEmail()"
+              ref="tagEmail"
               v-model.trim="email"
               required
             />
@@ -393,7 +316,7 @@ function verUsuarios() {
             <div class="col">
               <div class="row d-flex align-items-center">
                 <div class="col mt-2 me-5 pe-5">
-                  <h5 class="italika">Teléfono</h5>
+                  <h5 class="italika">Teléfono *</h5>
                 </div>
                 <input
                   id="tlfn"
@@ -402,6 +325,7 @@ function verUsuarios() {
                   @input="validarTlfn()"
                   v-model.trim="telefono"
                   maxlength="10"
+                  ref="tagTelefono"
                   required
                 />
               </div>
@@ -410,73 +334,19 @@ function verUsuarios() {
             <div class="col">
               <div class="row d-flex align-items-center">
                 <div class="col mt-2 me-5 pe-5">
-                  <h5 class="italika">Rol</h5>
+                  <h5 class="italika">No. Cliente BAZ</h5>
                 </div>
-                <select
-                  class="form-select input-f inptElement"
-                  aria-label="Default select example"
-                  v-model="rolSeleccionado"
-                  @change="colorCampos()"
-                  required
-                >
-                  <option v-for="rol in roles">{{ rol.Nombre }}</option>
-                </select>
+                <input
+                  id="tlfn"
+                  type="text"
+                  class="form-control inptElement"
+                  @input="validarNumBAZ()"
+                  v-model.trim="noBAZ"
+                  ref="tagBAZ"
+                  maxlength="16"
+                />
               </div>
             </div>
-          </div>
-
-          <!-----------------------    Row 5 Formulario  --------------------------->
-
-          <div class="row mb-2 pb-2 d-flex align-items-center">
-            <div class="col mt-2">
-              <h5 class="italika">Nombre de usuario</h5>
-            </div>
-            <input
-              type="text"
-              class="form-control input-f inptElement"
-              @input="revisarUsuarioExistente()"
-              v-model.trim="nickname"
-              maxlength="23"
-              required
-            />
-          </div>
-          <div
-            v-if="repetido"
-            class="alert alert-danger mt-2 d-flex align-items-center"
-            style="height: 38px"
-            role="alert"
-          >
-            "{{ nickname }}" ya existe
-          </div>
-          <!-----------------------    Row 6 Formulario  --------------------------->
-
-          <div class="row mb-2 pb-2 d-flex align-items-center">
-            <div class="col mt-2">
-              <h5 class="italika">Constraseña</h5>
-            </div>
-            <input
-              id="pswd"
-              :type="tipoPass"
-              class="form-control inptElement"
-              @input="validarPsw()"
-              v-model="contrasena"
-              required
-            />
-          </div>
-          <!-----------------------    Row 7 Formulario  --------------------------->
-
-          <div class="row mb-2 pb-2 d-flex align-items-center">
-            <div class="col mt-2">
-              <h5 class="italika">Confirmar constraseña</h5>
-            </div>
-            <input
-              id="pswdC"
-              :type="tipoConfPass"
-              class="form-control inptElement"
-              @input="compararPsw()"
-              v-model="confContrasena"
-              required
-            />
           </div>
           <!-----------------------    Row 8 Formulario  --------------------------->
           <div class="row">
@@ -486,10 +356,20 @@ function verUsuarios() {
               style="height: 38px"
               role="alert"
             >
-              Por favor, llene correctamente todos los campos
+              Por favor, llene correctamente todos los campos obligatorios
             </div>
           </div>
-          <div class="row mb-2 pb-2">
+          <div class="row">
+            <div
+              v-if="repetido"
+              class="alert alert-danger mt-2 d-flex align-items-center"
+              style="height: 38px"
+              role="alert"
+            >
+              El cliente "{{ nombreRep }} {{ paternoRep }} {{ maternoRep }}" ya existe
+            </div>
+          </div>
+          <div class="row mb-2 pb-2 mt-4">
             <div class="col d-flex justify-content-center">
               <button
                 class="btn btn-primary"
@@ -520,7 +400,7 @@ function verUsuarios() {
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title" id="staticBackdropLabel">¡Usuario creado!</h5>
+          <h5 class="modal-title" id="staticBackdropLabel">¡Cliente creado!</h5>
           <button
             type="button"
             class="btn-close"
@@ -528,7 +408,7 @@ function verUsuarios() {
             aria-label="Close"
           ></button>
         </div>
-        <div class="modal-body">El usuario {{ nickname }} fue creado exitosamente.</div>
+        <div class="modal-body">El cliente {{ nombre, paterno, materno }} fue creado exitosamente.</div>
         <div class="modal-footer">
           <button
             type="button"
@@ -537,10 +417,10 @@ function verUsuarios() {
             data-bs-dismiss="modal"
             ref="btnSeguirCreando"
           >
-            Seguir creando usuarios
+            Seguir creando clientes
           </button>
-          <button type="button" class="btn btn-success" @click="verUsuarios()">
-            Ver usuarios
+          <button type="button" class="btn btn-success" @click="verClientes()">
+            Ver clientes
           </button>
         </div>
       </div>
