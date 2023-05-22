@@ -41,6 +41,16 @@ export const usuariosStore = defineStore("usuarios",{
             console.log(error)
         }
     },
+
+    async obtenerIdPorUser(user){
+        try {
+            const res = await axios.post('http://localhost:4000/api/usuarios/userid',user)
+            console.log(res.data.body)
+            return res.data.body;
+        } catch (error) {
+            console.log(error)
+        }
+    },
 //Trae los datos solo del usuario especificado, hay que mandarle el idEmpleados
     async obtenerUnUser(idEmpleados){
         try {

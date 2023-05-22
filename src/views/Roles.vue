@@ -6,7 +6,10 @@ import { onMounted } from "vue";
 import router  from '../router/index'
 
 import CompHeader from '../components/Header.vue'
+import { loginStore } from "../stores/login";
 
+const { reanudarSesion } = loginStore();
+const {verificarPermisos} = loginStore();
 const { obtenerPermisosDelRol } = permisosRolesStore();
 const { eliminarPermisosDelRol } = permisosRolesStore();
 const { obtenerRoles } = rolesStore();
@@ -24,8 +27,9 @@ var modal;
 var modalConfirmacion;
 var nombre;
 
-onMounted(() => {
-  consultarRoles();
+onMounted(async() => {
+  
+    consultarRoles();
   modal = new bootstrap.Modal(document.getElementById("modal"), {
     keyboard: false,
   });
@@ -33,6 +37,7 @@ onMounted(() => {
   modalConfirmacion = new bootstrap.Modal(document.getElementById("modalCon"), {
     keyboard: false,
   });
+
 });
 
 const consultarRoles = async () => {
@@ -44,7 +49,8 @@ const consultarRoles = async () => {
     const body = roles.value.data.body;
     console.log(roles.value);
     for (var j in body) {
-      rolesArray.value.push(body[j]);
+      if(body[j].idEstatusActividad==1){
+      rolesArray.value.push(body[j]);}
       buscador.value.push(body[j].Nombre);
       rolDir.value.push(body[j].idRoles);
     }
@@ -81,7 +87,7 @@ const eliminarRoles = async (idEmpleados) => {
 const modificarRol = async (idRol) => {
   try {
     setRol(idRol);
-    router.push({ name: 'registroRol', params: { idRolAct: idRol }});
+    router.push({ name: 'actualizarRol', params: { idRolAct: idRol }});
 
     //window.location.href = "http://localhost:5173/registroRol";
     //this.$router.push("http://localhost:5173/crearRol");
@@ -113,8 +119,8 @@ function confirmar(idRol) {
   <div class="container-fluid">
     <CompHeader/>
     <div class="row ">
-      <div class="col-1 mb-3 pt-5">
-        <router-link to="http://localhost:5173">
+      <div class="col-1 mb-3 pt-5 d-flex justify-content-end">
+        <router-link to="/italika">
           <img
             class="img-fluid mt-3"
             style="margin-top: 20px; width: 31.23px; height: 35.5px"
@@ -143,12 +149,12 @@ function confirmar(idRol) {
         </div>
         <div class="row">
           <div class="col-6">
-            <h5 class="italika mt-3">Agregar Roles</h5>
+            <h5 class="italika mt-3 d-flex justify-content-end">Agregar Roles</h5>
           </div>
           <div class="col-1">
-            <router-link to="../crearRol" style="text-decoration: none;">
+            <router-link to="crearRol" style="text-decoration: none;">
               <button
-                class="btn btn-primary mt-2 d-flex align-items-center justify-content-center"
+                class="btn btn-primary btn-create mt-2 d-flex align-items-center justify-content-center"
                 type="submit"
                 style="
                   background-color: #66d054;
@@ -171,7 +177,8 @@ function confirmar(idRol) {
       <thead>
         <tr style="background-color: #2b4677; color: white">
           <th scope="col">Nombre</th>
-          <th scope="col" style="width: 200px"></th>
+          <th scope="col">Super rol</th>
+          <th scope="col" style="width: 17vw"></th>
         </tr>
       </thead>
       <tbody>
@@ -179,10 +186,16 @@ function confirmar(idRol) {
           <td>
             {{ rol.Nombre }}
           </td> 
+          <td v-if="rol.SuperRol==1">
+            Si 
+          </td>
+          <td v-else>
+            No
+          </td>
           <th scope="row">
             <div class="align-items-center">
               <button
-                class="btn btn-primary mx-1"
+                class="btn btn-primary mx-1 btn-create"
                 type="submit"
                 style="background-color: #59c01a; border-color: #59c01a; height: 37px"
                 @click="consultarPermisosDeRol(rol.idRoles)"
@@ -194,19 +207,18 @@ function confirmar(idRol) {
                 />
               </button>
               <button
-                class="btn btn-primary mx-1"
+                class="btn btn-primary mx-1 btn-spacer"
                 type="submit"
                 style="background-color: #ffbe16; border-color: #ffbe16; height: 37px"
                 @click="modificarRol(rol.idRoles)"
               >
-                <img
-                  class="img-fluid mb-3"
-                  style="width: 24.5px; height: 25.75px; margin-top: 0% !important"
-                  src="../assets/lapiz.png"
-                />
+              <i
+                  class="fa-solid fa-pen-to-square"
+                  style="color: black;width: 28.5px; height: 18.75px;"
+                ></i>
               </button>
               <button
-                class="btn btn-primary mx-1"
+                class="btn btn-primary mx-1 btn-delete"
                 type="submit"
                 style="background-color: #c01a1a; border-color: #c01a1a; height: 37px"
                 @click="confirmar(rol.idRoles)"
@@ -300,6 +312,23 @@ body {
   background-image: linear-gradient(113.96deg, #000103 2.35%, #164193 100%);
   min-height: 100vh;
 }
+
+.btn-delete:hover{
+  background-color: #fc4d4d !important;
+}
+
+.btn-create:hover{
+  background-color: #6fe923 !important;
+}
+
+.btn-spacer {
+  margin-right: 10px;
+}
+.btn-spacer:hover {
+  margin-right: 10px;
+  background-color: #ffef16 !important;
+}
+
 .italika {
   font-family: "Fjalla One";
   font-style: normal;
