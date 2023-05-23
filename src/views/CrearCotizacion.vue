@@ -10,33 +10,37 @@ import { asesoresStore } from "../stores/asesores";
 import { creditosStore } from "../stores/creditos";
 import { estatusCotizacionStore } from "../stores/estatusCotizacion";
 import { cotizacionesStore } from "../stores/cotizaciones";
+import { usuariosStore } from "../stores/usuarios";
 import router from '../router';
 import CompHeader from '../components/Header.vue';
 
 const { obtenerNombresCreditos } = creditosStore();
-const { obtenerNombresEstatusCotizacion } = estatusCotizacionStore();
+const { obtenerNombresEstatusCotizacion, obtenerEstatusCotizacion } = estatusCotizacionStore();
 const { consultarMotocicletasActivas } = catalogoStore();
 const { obtenerAsesoresActivos } = asesoresStore();
-const { obtenerProspectos } = prospectosStore();
+const { obtenerProspectos, setIdProspecto } = prospectosStore();
+const { obtenerIdPorUser, getIdUsuario } = usuariosStore();
+const { setInterfazOrigen, getIdCliente, obtenerCliente } = clientesStore();
+const { getUser } = loginStore();
+const { agregarCotizacion } = cotizacionesStore();
 
 //Variables
 const visita = ref(true);
 const divs = ref([]);
-const nombre = ("");
-const aPaterno = ("");
-const aMaterno = ("");
-const tCredito = ("");
-const estatus = ("");
-const motos = ([]);
-const assrBaz = ("");
-const telefono = ("");
-const correo = ("");
-const pagoInicial = ("");
-const capacidad = ("");
-const nBaz = ("");
-const hInicial = ("");
-const hFinal = ("");
-const comentario = ("");
+const nombre = ref("");
+const aPaterno = ref("");
+const aMaterno = ref("");
+const tCredito = ref("");
+const estatus = ref("");
+const assrBaz = ref("");
+const telefono = ref("");
+const correo = ref("");
+const pagoInicial = ref("");
+const capacidad = ref("");
+const nBaz = ref("");
+const hInicial = ref("");
+const hFinal = ref("");
+const comentario = ref("");
 
 const catalogo = ref();
 const estatusCotizaciones = ref();
@@ -44,49 +48,500 @@ const tiposCreditos = ref();
 const asesores = ref();
 const deshabilitado = ref(false);
 const repetido = ref(false);
-const idProspecto = ref(null);
 const idUser = ref(null);
+const idCliente = ref(null);
+
+const motoValida1 = ref("");
+const motoValida2 = ref("");
+const creditoValido = ref("");
+const estatusValido = ref("");
+const asesorValido = ref("");
+const horaIValida = ref("");
+const horaFValida = ref("");
 
 var modal;
 var tried = false;
 const validado = ref(true);
 const alertaLlenado = ref(false);
-const esNuevo = ref();
+const nuevo = ref(false);
 const canActualizar = ref(false);
 
-onMounted(async () => {
-    llenarCombos();
+const tagMoto1 = ref(null);
+const tagMoto2 = ref([]);
+const tagCreditos = ref(null);
+const tagEstatus = ref(null);
+const tagAsesores = ref(null);
+const tagInicio = ref(null);
+const tagFin = ref(null);
+const tagAM = ref(null);
+const tagAP = ref(null);
+const tagNombre = ref(null);
+const tagBaz = ref(null);
+const tagC = ref(null);
+const tagPi = ref(null);
+const tagCorreo = ref(null);
+const tagTlfn = ref(null);
 
+onMounted(async () => {
+    idUser.value = await obtenerIdPorUser({ Usuario: getUser() });
+    idCliente.value = getIdCliente();
+    if (idCliente.value == null) {
+        console.log("idC vacio");
+        nuevo.value = true;
+    } else {
+        console.log(idCliente.value);
+        cargarCliente();
+        nuevo.value = false;
+    }
     await obtenerCreditos();
     await obtenerMotos();
     await obtenerCotizaciones();
     await obtenerAsesores();
+
+    llenarCombos();
 });
 
 const obtenerCreditos = async () => {
-    tiposCreditos.value = (await obtenerNombresCreditos()).data.body;
+    try {
+        tiposCreditos.value = (await obtenerNombresCreditos()).data.body;
+        console.log(tiposCreditos.value);
+    } catch (error) {
+        console.log(error);
+    }
+    
 };
 
 const obtenerMotos = async () => {
-    catalogo.value = (await consultarMotocicletasActivas()).data.body;
+    try {
+        catalogo.value = (await consultarMotocicletasActivas()).data.body;
+        console.log(catalogo.value);    
+    } catch (error) {
+        console.log(error);   
+    }
 };
 
 const obtenerCotizaciones = async () => {
-    estatusCotizaciones.value = (await obtenerNombresEstatusCotizacion()).data.body;
+    try{
+        estatusCotizaciones.value = (await obtenerEstatusCotizacion()).data.body;
+        console.log(estatusCotizaciones.value);
+    }catch(error){
+        console.log(error);
+    }
 };
 
 const obtenerAsesores = async () => {
-    asesores.value = (await obtenerAsesoresActivos()).data.body;
+    try {
+        asesores.value = (await obtenerAsesoresActivos()).data.body;
+        console.log(asesores.value);   
+    } catch (error) {
+        console.log(error);
+    }
 };
 
-const agregarMoto = () => {
-    divs.value.push({});
+const agregarMoto = async() => {
+    await divs.value.push({});
+    await llenarmotos();
 };
 
 const eliminarMoto = (index) => {
     console.log(index);
     divs.value.splice(index,1);
 };
+
+function validarEmail() {
+    var pswd = document.getElementById("emailInpt");
+    if (correo.value == "") {
+        pswd.style.borderWidth = "0px";
+        validado.value = false;
+        return false;
+    } else {
+        var re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!re.test(correo.value)) {
+            pswd.style.borderColor = "red";
+            pswd.style.borderWidth = "4px";
+            validado.value = false;
+            return false;
+        } else {
+            pswd.style.borderWidth = "0px";
+            return true;
+        }   
+    }
+};
+
+function validarTlfn() {
+  let tlfnInpt = document.getElementById("tlfn");
+  if (telefono.value == "") {
+    tlfnInpt.style.borderWidth = "0px";
+    validado.value = false;
+    return false;
+  } else {
+    var re = /^[0-9]+$/;
+    if (!(telefono.value.length == 10 && telefono.value.match(re))) {
+        tlfnInpt.style.borderColor = "red";
+        tlfnInpt.style.borderWidth = "4px";
+        validado.value = false;
+        return false;
+    } else {
+        tlfnInpt.style.borderWidth = "0px";
+        return true;
+    } 
+  }
+};
+
+function validarNumBAZ() {
+  if (nBaz.value == "") {
+    tagBaz.value.style.borderWidth = "0px";
+    validado.value = false;
+    return true;
+  } else {
+    var re = /^[0-9-]+$/;
+    if (!(nBaz.value.length <= 16 && nBaz.value.match(re))) {
+        tagBaz.value.style.borderColor = "red";
+        tagBaz.value.style.borderWidth = "4px";
+      validado.value = false;
+      return false;
+    } else {
+        tagBaz.value.style.borderWidth = "0px";
+      return true;
+    }
+  }
+};
+
+function validarTexto(input) {
+  //input.value = input.value.trim();
+  var re = /^[a-zA-Z ]+$/;
+  if (input.value == "") {
+    input.style.borderWidth = "0px";
+    validado.value = false;
+    return false;
+  } else {
+    // var pswd = document.getElementById("emailInpt");
+    if (!re.test(input.value)) {
+        input.style.borderColor = "red";
+        input.style.borderWidth = "4px";
+        validado.value = false;
+        return false;
+    } else {
+        input.style.borderWidth = "0px";
+        return true;
+    }
+  }
+};
+
+const validarPagos = (input) => {
+    var re = /^[0-9]+$/;
+    if (input.value == "") {
+        input.style.borderWidth = "0px";
+        validado.value = false;
+        return false;
+    } else {
+        if (!re.test(input.value)) {
+            input.style.borderColor = "red";
+            input.style.borderWidth = "4px";
+            validado.value = false;
+            return false;
+        } else {
+            input.style.borderWidth = "0px";
+            return true;
+        }
+    }
+};
+
+function validarMoto1() {
+  console.log(tagMoto1.value.value);
+  console.log(tagMoto1.value.value == -1);
+  if (tagMoto1.value.value == -1) {
+    motoValida1.value = "comboMoto";
+
+    return false;
+  } else {
+    motoValida1.value = "";
+    return true;
+  }
+};
+
+function validarMoto2() {
+  console.log(tagMoto2.value.value);
+  console.log(tagMoto2.value.value == -1);
+  if (tagMoto1.value.value == -1) {
+    motoValida2.value = "comboMoto";
+
+    return false;
+  } else {
+    motoValida2.value = "";
+    return true;
+  }
+};
+
+const validarCredito = () => {
+    if (tagCreditos.value.value == -1){
+        creditoValido.value = "comboCredito";
+
+        return false;
+    }else{
+        creditoValido.value = "";
+        return true;
+    }
+};
+
+const validarEstatus = () => {
+    if (tagEstatus.value.value == -1) {
+        estatusValido.value = "comboEstatus";
+
+        return false;
+    }else{
+        estatusValido.value = "";
+        return true;
+    }
+};
+
+const validarAsesor = () => {
+    if (tagEstatus.value.value == -1) {
+        estatusValido.value = "comboEstatus";
+
+        return false;
+    }else{
+        estatusValido.value = "";
+        return true;
+    }
+};
+
+const validarHoraI = () => {
+    if (tagInicio.value.value == -1) {
+        horaIValida.value = "comboHInicio";
+
+        return false;
+    }else{
+        horaIValida.value = "";
+        return true;
+    }
+};
+
+const validarHoraF = () => {
+    if (tagFin.value.value == -1) {
+        horaFValida.value = "comboHFin";
+
+        return false;
+    }else{
+        horaFValida.value = "";
+        return true;
+    }
+};
+
+const crearCliente = async() => {
+    try {
+        await crearCotizacion();
+    } catch (error) {
+        console.log(error);
+    }
+};
+
+const validarGeneral = () => {
+        const validado = validarTexto(tagNombre.value) &&
+        validarTexto(tagAP.value) &&
+        validarTexto(tagAM.value) &&
+        validarCredito() &&
+        validarEstatus() &&
+        validarMoto1() &&
+        validarAsesor() &&
+        validarTlfn() &&
+        validarEmail() &&
+        validarPagos(tagPi.value) &&
+        validarPagos(tagC.value) &&
+        validarNumBAZ();
+
+    return validado;
+};
+
+const validarVisita = () => {
+        const validado = validarTexto(tagNombre.value) &&
+        validarTexto(tagAP.value) &&
+        validarTexto(tagAM.value) &&
+        validarCredito() &&
+        validarEstatus() &&
+        validarMoto1() &&
+        validarAsesor() &&
+        validarTlfn() &&
+        validarEmail() &&
+        validarPagos(tagPi.value) &&
+        validarPagos(tagC.value) &&
+        validarNumBAZ() &&
+        validarHoraI() &&
+        validarHoraF();
+    
+    return validado;
+};
+
+const submt = async() => {
+    try {
+        repetido.value = false;
+        const validado = false;
+
+        if (visita){
+            validado = validarVisita();
+        }else{
+            validado = validarGeneral();
+        } 
+
+        if(validado){
+            if (nuevo) {
+                await crearCliente();
+            } else {
+                alertaLlenado.value = false;
+                await crearCotizacion();
+            }
+        }else{
+            alertaLlenado.value = true;
+        }
+    } catch (error) {
+        console.log(error);
+    }
+};
+
+const crearCotizacion = async() => {
+    try {
+        const cotizacion = {
+        idCotizaciones: 0,
+        Empleados_idEmpleados: idUser.value,
+        Tipos_De_Creditos_idTipos_De_Creditos: tagCreditos.value.value,
+        Clientes_idClientes: s,
+        Moto_idMoto: tagMoto1,
+        AsesoresBAZ_idAsesoresBAZ: tagAsesores.value.value,
+        EstatusCotizacion_idEstatusCotizacion: tagEstatus.value.value,
+        FechaRegistro: s,
+        PagoInicial: tagPi.value,
+        Capacidad: tagC.value,
+        FechaVisita: s,
+        HoraInicial: n,
+        HoraFinal: n,
+        FechaVenta: n,
+        Comentario: comentario.value,
+        };
+
+        await agregarCotizacion(cotizacion);
+        setIdCliente(null);
+        repetido.value = false;
+        
+    } catch (error) {
+        console.log(error);
+    }
+};
+
+const reset = async() => {
+
+    //modal = new bootstrap.Modal(document.getElementById("modal"), {
+      //keyboard: false,
+    //});
+    //await modal.hide();
+    //await modal.dispose();
+
+    const botones = document.getElementsByClassName('dselect-clear');
+    var elementosArray = Array.from(botones);
+    elementosArray.forEach(elemento=>{
+        elemento.click()
+    })
+
+ motoValida1.value = "";
+ creditoValido.value = "";
+ estatusValido.value = "";
+ asesorValido.value = "";
+ horaIValida.value = "";
+ horaFValida.value = "";
+
+ visita.value = true;
+ divs.value = ([]);
+ nombre.value = "";
+ aPaterno.value = "";
+ aMaterno.value = "";
+ telefono.value = "";
+ correo.value = "";
+ pagoInicial.value = "";
+ capacidad.value = "";
+ nBaz.value = "";
+ comentario.value = "";
+
+ tagMoto1.value.value = -1;
+ tagCreditos.value.value = -1;
+ tagEstatus.value.value = -1;
+ tagAsesores.value.value = -1;
+ tagInicio.value.value = -1;
+ tagFin.value.value = -1;
+ tagAM.value.value = -1;
+ tagAP.value.value = -1;
+ tagNombre.value.value = -1;
+ tagBaz.value.value = -1;
+ tagC.value.value = -1;
+ tagPi.value.value = -1;
+
+ validado.value = true;
+
+ setIdProspecto(null);
+  var inputs = document.querySelectorAll(".base");
+  Array.prototype.slice.call(inputs).forEach(function (input) {
+    input.style.backgroundColor = "#FFFFFF";
+  });
+
+  //idUser.value = await obtenerIdPorUser({ Usuario: getUser() });
+ 
+
+  console.log("antes")
+    await obtenerCreditos();
+    await obtenerMotos();
+    await obtenerCotizaciones();
+    await obtenerAsesores();
+  //llenarCombos();
+  console.log("despues")
+};
+
+const mandarACrear = () => {
+  router.push({name:"prospectos"});
+};
+
+const cargarCliente = async () => {
+    const cliente = (await obtenerCliente(idCliente.value)).data.body[0];
+    nombre.value = cliente.Nombre;
+    aPaterno.value = cliente.Apellido_Paterno;
+    aMaterno.value = cliente.Apellido_Materno;
+    correo.value = cliente.Correo;
+    telefono.value = cliente.Telefono;
+    let numBAZ;
+    cliente.NoClienteBAZ == null ? (numBAZ = "") : (numBAZ = cliente.NoClienteBAZ);
+    nBaz.value = numBAZ;
+    console.log(cliente);
+
+    var inputs = document.querySelectorAll(".base");
+    Array.prototype.slice.call(inputs).forEach(function (input) {
+        input.style.backgroundColor = "#aaaaaa";
+    });
+};
+
+const seleccionarCliente = async () => {
+    setInterfazOrigen("crearCotizacion");
+    //console.log(getInterfazOrigen()) 
+    //await modal.hide();
+
+    router.push({ name: "seleccionCliente" });
+};
+
+function llenarmotos(){
+    console.log("llenando motos");
+    const config = {
+        search: true,
+        clearable: true
+    };
+    console.log(tagMoto2);
+    tagMoto2.value.forEach((optionM)=>{
+        console.log(optionM);
+        //let select = document.getElementById("option");
+        catalogo.value.forEach((option) => {
+        const optionElement = document.createElement("option");
+        optionElement.text = option.Modelo;
+        optionElement.value = option.idMoto;
+        select.add(optionElement);
+        });
+        dselect(optionM, config); //si jala, no mover xd
+    });
+}
 
 function llenarCombos() {
   console.log("llenando combos")
@@ -95,24 +550,24 @@ function llenarCombos() {
     clearable: true
   };
   let select = document.getElementById("select1");
-  mediosContacto.value.forEach((option) => {
+  tiposCreditos.value.forEach((option) => {
     const optionElement = document.createElement("option");
     optionElement.text = option.Descripcion;
-    optionElement.value = option.idMedioDeContacto;
+    optionElement.value = option.idTipos_De_Creditos;
     select.add(optionElement);
   });
 
-  dselect(tagMedio.value, config); //si jala, no mover xd
+  dselect(tagCreditos.value, config); //si jala, no mover xd
 
   select = document.getElementById("select2");
-  catalogo.value.forEach((option) => {
+  estatusCotizaciones.value.forEach((option) => {
     const optionElement = document.createElement("option");
-    optionElement.text = option.Modelo;
-    optionElement.value = option.idMoto;
+    optionElement.text = option.Descripcion;
+    optionElement.value = option.idEstatusCotizacion;
     select.add(optionElement);
   });
 
-  dselect(tagMoto.value, config); //si jala, no mover xd
+  dselect(tagEstatus.value, config); //si jala, no mover xd
 
   select = document.getElementById("select3");
   catalogo.value.forEach((option) => {
@@ -122,33 +577,46 @@ function llenarCombos() {
     select.add(optionElement);
   });
 
-  dselect(tagMoto.value, config); //si jala, no mover xd
+  dselect(tagMoto1.value, config); //si jala, no mover xd
 
   select = document.getElementById("select4");
-  catalogo.value.forEach((option) => {
+  asesores.value.forEach((option) => {
     const optionElement = document.createElement("option");
-    optionElement.text = option.Modelo;
-    optionElement.value = option.idMoto;
+    //Juntar el nombre completo
+    optionElement.text = option.Nombre;
+    optionElement.value = option.idAsesoresBAZ;
     select.add(optionElement);
   });
 
-  dselect(tagMoto.value, config); //si jala, no mover xd
+  dselect(tagAsesores.value, config); //si jala, no mover xd
 
-  select = document.getElementById("select5");
-  catalogo.value.forEach((option) => {
+  select = document.getElementById("select6");
+  for(let i = 0; i < 24; i++) {
     const optionElement = document.createElement("option");
-    optionElement.text = option.Modelo;
-    optionElement.value = option.idMoto;
+    //Juntar el nombre completo
+    optionElement.text = i.toString().padStart(2, '0') + ':00';
+    optionElement.value = i;
     select.add(optionElement);
-  });
+  };
 
-  dselect(tagMoto.value, config); //si jala, no mover xd
+  dselect(tagInicio.value, config); //si jala, no mover xd
+
+  select = document.getElementById("select7");
+  for(let i = 0; i < 24; i++) {
+    const optionElement = document.createElement("option");
+    //Juntar el nombre completo
+    optionElement.text = i.toString().padStart(2, '0') + ':00';
+    optionElement.value = i;
+    select.add(optionElement);
+  };
+
+  dselect(tagFin.value, config); //si jala, no mover xd
   console.log("acabando Llenar combos")
 };
 
 </script>
 <template>
-    <form @submit.prevent="crearRol(rolNuevo)">
+    <form @submit.prevent="submt()" class="needs-validation" novalidate>
         <div class="container-fluid">
             <CompHeader/>
             
@@ -175,19 +643,19 @@ function llenarCombos() {
             <div class="row d-flex align-items-center mb-5">
                 <div class="col-2"></div>
                 <div class="col-2 d-flex align-items-center justify-content-center">
-                    <button type="button" class="btn btn-success" @click="seleccionCliente()" style="height: 50px; width: 180px">
+                    <button type="button" class="btn btn-success" @click="seleccionarCliente()" style="height: 50px; width: 180px">
                         Seleccionar cliente
                     </button>
                 </div>
                 <div class="col-1"></div>
                 <div class="col-2 d-flex align-items-center justify-content-center">
-                    <button type="button" class="btn btn-success" @click="seleccionCliente()" style="height: 50px; width: 180px">
+                    <button type="button" class="btn btn-success" @click="mandarACrear()" style="height: 50px; width: 180px">
                         Crear cliente
                     </button>
                 </div>
                 <div class="col-1"></div>
                 <div class="col-2 d-flex align-items-center justify-content-center">
-                    <button type="button" class="btn btn-success" @click="seleccionCliente()" style="height: 50px; width: 180px">
+                    <button type="button" class="btn btn-success" @click="reset()" style="height: 50px; width: 180px">
                         Limpiar
                     </button>
                 </div>
@@ -202,7 +670,7 @@ function llenarCombos() {
                         type="text"
                         class="form-control input-f inptElement"
                         v-model.trim="nombre"
-                        @input="validarTexto(nombre)"
+                        @input="validarTexto(tagNombre)"
                         ref="tagNombre"
                         
                     />
@@ -221,8 +689,8 @@ function llenarCombos() {
                         type="text"
                         class="form-control input-f inptElement"
                         v-model.trim="aPaterno"
-                        @input="validarTexto(aPaterno)"
-                        ref="tagNombre"
+                        @input="validarTexto(tagAP)"
+                        ref="tagAP"
                         
                     />
                 </div>
@@ -237,8 +705,8 @@ function llenarCombos() {
                         type="text"
                         class="form-control input-f inptElement"
                         v-model.trim="aMaterno"
-                        @input="validarTexto(aMaterno)"
-                        ref="tagNombre"
+                        @input="validarTexto(tagAM)"
+                        ref="tagAM"
                         
                     />
                 </div>
@@ -253,10 +721,10 @@ function llenarCombos() {
                 </div>
                 <div class="col-3" ref="tagBordeMoto">
                   <select
-                    :class="motoValida"
+                    :class="creditoValido"
                     id="select1"
-                    @change="validarMoto()"
-                    ref="tagMoto"
+                    @change="validarCredito()"
+                    ref="tagCreditos"
                     style="height: 40px; width: 310px;"
                   >
                     <option value="-1">Seleccionar</option>
@@ -270,10 +738,10 @@ function llenarCombos() {
                 </div>
                 <div class="col-3" ref="tagBordeMoto">
                   <select
-                    :class="motoValida"
+                    :class="estatusValido"
                     id="select2"
-                    @change="validarMoto()"
-                    ref="tagMoto"
+                    @change="validarEstatus()"
+                    ref="tagEstatus"
                     style="height: 40px; width: 430px;"
                   >
                     <option value="-1">Seleccionar</option>
@@ -290,10 +758,10 @@ function llenarCombos() {
                 </div>
                 <div class="col-3" ref="tagBordeMoto">
                   <select
-                    :class="motoValida"
+                    :class="motoValida1"
                     id="select3"
-                    @change="validarMoto()"
-                    ref="tagMoto"
+                    @change="validarMoto1()"
+                    ref="tagMoto1"
                     style="height: 40px; width: 310px;"
                   >
                     <option value="-1">Seleccionar</option>
@@ -318,10 +786,10 @@ function llenarCombos() {
                 </div>
                 <div class="col-3" ref="tagBordeMoto">
                   <select
-                    :class="motoValida"
+                    :class="asesorValido"
                     id="select4"
-                    @change="validarMoto()"
-                    ref="tagMoto"
+                    @change="validarAsesor()"
+                    ref="tagAsesores"
                     style="height: 40px; width: 430px;"
                   >
                     <option value="-1">Seleccionar</option>
@@ -338,10 +806,10 @@ function llenarCombos() {
                 </div>
                 <div class="col-3" ref="tagBordeMoto" id="motos">
                   <select
-                    :class="motoValida"
+                    :class="motoValida2"
                     id="select5"
-                    @change="validarMoto()"
-                    ref="tagMoto"
+                    @change="validarMoto2()"
+                    :ref="tagMoto2[index]"
                     style="height: 40px; width: 310px;"
                   >
                     <option value="-1">Seleccionar</option>
@@ -373,9 +841,9 @@ function llenarCombos() {
                         type="text"
                         class="form-control input-f inptElement"
                         v-model.trim="telefono"
-                        @input="validarTexto(telefono)"
-                        ref="tagNombre"
-                        
+                        @input="validarTlfn()"
+                        ref="tagTlfn"
+                        id="tlfn"
                     />
                 </div>
                 <div class="col-1"></div>
@@ -389,9 +857,9 @@ function llenarCombos() {
                         type="text"
                         class="form-control input-f inptElement"
                         v-model.trim="correo"
-                        @input="validarTexto(correo)"
-                        ref="tagNombre"
-                        
+                        @input="validarEmail()"
+                        ref="tagCorreo"
+                        id="emailInpt"
                     />
                 </div>
             </div>
@@ -408,8 +876,8 @@ function llenarCombos() {
                         type="text"
                         class="form-control input-f inptElement"
                         v-model.trim="pagoInicial"
-                        @input="validarTexto(pagoInicial)"
-                        ref="tagNombre"
+                        @input="validarPagos(tagPi)"
+                        ref="tagPi"
                         
                     />
                 </div>
@@ -423,8 +891,8 @@ function llenarCombos() {
                         type="text"
                         class="form-control input-f inptElement"
                         v-model.trim="capacidad"
-                        @input="validarTexto(capacidad)"
-                        ref="tagNombre"
+                        @input="validarPagos(tagC)"
+                        ref="tagC"
                         
                     />
                 </div>
@@ -436,8 +904,8 @@ function llenarCombos() {
                         type="text"
                         class="form-control input-f inptElement"
                         v-model.trim="nBaz"
-                        @input="validarTexto(nBaz)"
-                        ref="tagNombre"
+                        @input="validarNumBAZ()"
+                        ref="tagBaz"
                         
                     />
                 </div>
@@ -452,16 +920,16 @@ function llenarCombos() {
                 </div>
                 <div class="col-3" ref="tagBordeMoto" id="motos">
                   <select
-                    :class="motoValida"
-                    id="select5"
-                    @change="validarMoto()"
-                    ref="tagMoto"
+                    :class="horaIValida"
+                    id="select6"
+                    @change="validarHoraI()"
+                    ref="tagInicio"
                     style="height: 40px; width: 200px;"
                   >
                     <option value="-1">Seleccionar</option>
                   </select>
                 </div>
-                <div class="col-1"></div>
+                
                 <div class="col-2 d-flex justify-content-end pt-2">
                     <h5 class="italika d-flex justify-content-end pe-2">
                         Hora Final de visita:
@@ -469,10 +937,10 @@ function llenarCombos() {
                 </div>
                 <div class="col-3" ref="tagBordeMoto" id="motos">
                   <select
-                    :class="motoValida"
-                    id="select5"
-                    @change="validarMoto()"
-                    ref="tagMoto"
+                    :class="horaFValida"
+                    id="select7"
+                    @change="validarHoraF()"
+                    ref="tagFin"
                     style="height: 40px; width: 200px;"
                   >
                     <option value="-1">Seleccionar</option>
@@ -493,8 +961,8 @@ function llenarCombos() {
                         type="text"
                         class="form-control input-f inptElement"
                         v-model.trim="comentario"
-                        @input="validarTexto(comentario)"
-                        ref="tagNombre"
+                        @input=""
+                        ref="tagComentario"
                         style="height: 100px;"
                     />
                 </div>
@@ -515,3 +983,41 @@ function llenarCombos() {
         </div>
     </form>
 </template>
+
+<style>
+select.comboMoto + div > button {
+  border-color: red;
+  border-width: 5px;
+  border-style: solid;
+}
+
+select.comboCredito + div > button {
+  border-color: red;
+  border-width: 5px;
+  border-style: solid;
+}
+
+select.comboEstatus + div > button {
+  border-color: red;
+  border-width: 5px;
+  border-style: solid;
+}
+
+select.comboAsesor + div > button {
+  border-color: red;
+  border-width: 5px;
+  border-style: solid;
+}
+
+select.comboHInicio + div > button {
+  border-color: red;
+  border-width: 5px;
+  border-style: solid;
+}
+
+select.comboHFin + div > button {
+  border-color: red;
+  border-width: 5px;
+  border-style: solid;
+}
+</style>

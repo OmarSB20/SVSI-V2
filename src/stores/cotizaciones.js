@@ -4,7 +4,7 @@ import axios from "axios";
 export const cotizacionesStore = defineStore("cotizaciones",{
   state: ()=>({
     idCotizaciones:null,
-   
+    interfazOrigen:null
   }), 
   actions:{
     setIdCotizacion(id){
@@ -87,6 +87,10 @@ export const cotizacionesStore = defineStore("cotizaciones",{
             return ;
             
         }
+    },
+    setInterfazOrigen(interfaz){
+        this.interfazOrigen = interfaz;
+        console.log(this.interfazOrigen)
     },
   } 
 })

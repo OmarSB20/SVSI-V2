@@ -4,9 +4,18 @@ import axios from "axios";
 export const clientesStore = defineStore("clientes",{
   state: ()=>({
     idClientes:null,
-    interfazOrigen:null
+    interfazOrigen:null,
+    accionPas:null
   }), 
   actions:{
+    setAccionPas(accion){
+        this.accionPas = accion;
+    },
+
+    getAccionPas(){
+        return this.accionPas;
+    },
+
     setIdCliente(id){
         this.idClientes = id;
         console.log(this.idClientes)
