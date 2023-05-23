@@ -20,12 +20,14 @@ const { consultarMotocicletasActivas } = catalogoStore();
 const { obtenerAsesoresActivos } = asesoresStore();
 const { obtenerProspectos, setIdProspecto } = prospectosStore();
 const { obtenerIdPorUser, getIdUsuario } = usuariosStore();
-const { setInterfazOrigen, getIdCliente, obtenerCliente } = clientesStore();
+const { setInterfazOrigen, getIdCliente, obtenerCliente, setIdCliente, clienteExiste, agregarCliente } = clientesStore();
 const { getUser } = loginStore();
 const { agregarCotizacion } = cotizacionesStore();
 
 //Variables
-const visita = ref(true);
+const exists = ref(false);
+const idVisita = ref("");
+const visita = ref(false);
 const divs = ref([]);
 const nombre = ref("");
 const aPaterno = ref("");
@@ -47,7 +49,6 @@ const estatusCotizaciones = ref();
 const tiposCreditos = ref();
 const asesores = ref();
 const deshabilitado = ref(false);
-const repetido = ref(false);
 const idUser = ref(null);
 const idCliente = ref(null);
 
@@ -99,6 +100,8 @@ onMounted(async () => {
     await obtenerAsesores();
 
     llenarCombos();
+    //cargarComboVisita();
+    console.log(visita);
 });
 
 const obtenerCreditos = async () => {
@@ -124,9 +127,19 @@ const obtenerCotizaciones = async () => {
     try{
         estatusCotizaciones.value = (await obtenerEstatusCotizacion()).data.body;
         console.log(estatusCotizaciones.value);
+        validarEVisita();
     }catch(error){
         console.log(error);
     }
+};
+
+const validarEVisita = () => {
+    console.log("llegue a validar");
+    estatusCotizaciones.value.forEach((option) => {
+        if (option.Descripcion.toLowerCase() == "visita"){
+            idVisita.value = option.idEstatusCotizacion
+        } 
+    });
 };
 
 const obtenerAsesores = async () => {
@@ -284,11 +297,17 @@ const validarCredito = () => {
     }
 };
 
-const validarEstatus = () => {
+const validarEstatus = async () => {
     if (tagEstatus.value.value == -1) {
         estatusValido.value = "comboEstatus";
-
+        visita.value = false;
         return false;
+    
+    }
+    else if (tagEstatus.value.value == idVisita.value){
+        visita.value = true;
+        estatusValido.value = "";
+        return true;
     }else{
         estatusValido.value = "";
         return true;
@@ -330,7 +349,36 @@ const validarHoraF = () => {
 
 const crearCliente = async() => {
     try {
+        const cliente = {
+          idClientes: 0,
+          Nombre: nombre.value,
+          EstatusActividad_idEstatusActividad: 1,
+          Apellido_Paterno: aPaterno.value,
+          Apellido_Materno: aMaterno.value,
+          Telefono: telefono.value,
+          NoClienteBAZ: nBaz.value,
+          Correo: correo.value,
+        };
+        idCliente.value = await agregarCliente(cliente);
         await crearCotizacion();
+    } catch (error) {
+        console.log(error);
+    }
+};
+
+const revisarCliente = async() => {
+    try {
+        exists.value = await clienteExiste({
+            Nombre: nombre.value,
+            Apellido_Paterno: aPaterno.value,
+            Apellido_Materno: aMaterno.value 
+        });
+
+        if (exists.value) {
+            //Llamar modal 
+        } else {
+            await crearCliente();
+        }
     } catch (error) {
         console.log(error);
     }
@@ -374,7 +422,6 @@ const validarVisita = () => {
 
 const submt = async() => {
     try {
-        repetido.value = false;
         const validado = false;
 
         if (visita){
@@ -385,7 +432,7 @@ const submt = async() => {
 
         if(validado){
             if (nuevo) {
-                await crearCliente();
+                await revisarCliente();
             } else {
                 alertaLlenado.value = false;
                 await crearCotizacion();
@@ -420,7 +467,6 @@ const crearCotizacion = async() => {
 
         await agregarCotizacion(cotizacion);
         setIdCliente(null);
-        repetido.value = false;
         
     } catch (error) {
         console.log(error);
@@ -448,7 +494,8 @@ const reset = async() => {
  horaIValida.value = "";
  horaFValida.value = "";
 
- visita.value = true;
+ exists.value = false;
+ visita.value = false;
  divs.value = ([]);
  nombre.value = "";
  aPaterno.value = "";
@@ -472,10 +519,15 @@ const reset = async() => {
  tagBaz.value.value = -1;
  tagC.value.value = -1;
  tagPi.value.value = -1;
+ tagCorreo.value.value = -1;
+ tagTlfn.value.value = -1;
 
  validado.value = true;
+idCliente.value = null;
+nuevo.value = true;
+alertaLlenado.value = false;
 
- setIdProspecto(null);
+setIdCliente(null);
   var inputs = document.querySelectorAll(".base");
   Array.prototype.slice.call(inputs).forEach(function (input) {
     input.style.backgroundColor = "#FFFFFF";
@@ -543,6 +595,35 @@ function llenarmotos(){
     });
 }
 
+function cargarComboVisita(){
+    console.log("llenando motos");
+    const config = {
+        search: true,
+        clearable: true
+    };
+    select = document.getElementById("select6");
+    for(let i = 0; i < 24; i++) {
+        const optionElement = document.createElement("option");
+        //Juntar el nombre completo
+        optionElement.text = i.toString().padStart(2, '0') + ':00';
+        optionElement.value = i;
+        select.add(optionElement);
+    };
+
+    dselect(tagInicio.value, config); //si jala, no mover xd
+
+    select = document.getElementById("select7");
+    for(let i = 0; i < 24; i++) {
+        const optionElement = document.createElement("option");
+        //Juntar el nombre completo
+        optionElement.text = i.toString().padStart(2, '0') + ':00';
+        optionElement.value = i;
+        select.add(optionElement);
+    };
+
+    dselect(tagFin.value, config); //si jala, no mover xd
+};
+
 function llenarCombos() {
   console.log("llenando combos")
   const config = {
@@ -589,28 +670,6 @@ function llenarCombos() {
   });
 
   dselect(tagAsesores.value, config); //si jala, no mover xd
-
-  select = document.getElementById("select6");
-  for(let i = 0; i < 24; i++) {
-    const optionElement = document.createElement("option");
-    //Juntar el nombre completo
-    optionElement.text = i.toString().padStart(2, '0') + ':00';
-    optionElement.value = i;
-    select.add(optionElement);
-  };
-
-  dselect(tagInicio.value, config); //si jala, no mover xd
-
-  select = document.getElementById("select7");
-  for(let i = 0; i < 24; i++) {
-    const optionElement = document.createElement("option");
-    //Juntar el nombre completo
-    optionElement.text = i.toString().padStart(2, '0') + ':00';
-    optionElement.value = i;
-    select.add(optionElement);
-  };
-
-  dselect(tagFin.value, config); //si jala, no mover xd
   console.log("acabando Llenar combos")
 };
 
