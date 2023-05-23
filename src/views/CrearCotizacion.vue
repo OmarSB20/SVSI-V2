@@ -385,7 +385,7 @@ const revisarCliente = async() => {
 };
 
 const validarGeneral = () => {
-        const validado = validarTexto(tagNombre.value) &&
+        validado.value = validarTexto(tagNombre.value) &&
         validarTexto(tagAP.value) &&
         validarTexto(tagAM.value) &&
         validarCredito() &&
@@ -398,11 +398,11 @@ const validarGeneral = () => {
         validarPagos(tagC.value) &&
         validarNumBAZ();
 
-    return validado;
+    return validado.value;
 };
 
 const validarVisita = () => {
-        const validado = validarTexto(tagNombre.value) &&
+        validado.value = validarTexto(tagNombre.value) &&
         validarTexto(tagAP.value) &&
         validarTexto(tagAM.value) &&
         validarCredito() &&
@@ -417,12 +417,12 @@ const validarVisita = () => {
         validarHoraI() &&
         validarHoraF();
     
-    return validado;
+    return validado.value;
 };
 
 const submt = async() => {
     try {
-        const validado = false;
+        validado.value = false;
 
         if (visita){
             validado = validarVisita();
@@ -451,8 +451,8 @@ const crearCotizacion = async() => {
         idCotizaciones: 0,
         Empleados_idEmpleados: idUser.value,
         Tipos_De_Creditos_idTipos_De_Creditos: tagCreditos.value.value,
-        Clientes_idClientes: s,
-        Moto_idMoto: tagMoto1,
+        Clientes_idClientes: idCliente.value,
+        Moto_idMoto: tagMoto1.value.value,
         AsesoresBAZ_idAsesoresBAZ: tagAsesores.value.value,
         EstatusCotizacion_idEstatusCotizacion: tagEstatus.value.value,
         FechaRegistro: s,
