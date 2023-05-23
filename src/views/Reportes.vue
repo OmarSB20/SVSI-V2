@@ -120,24 +120,24 @@ async function iniciarCotizacion() {
   await consultarUsuarioAct();
 
   await consultarTodo();
-
- 
 }
 
 const consultarTodo = async () => {
   try {
+    cotizacionArray.value = [];
+    cotizacionesMostradas.value = [];
+    arregloCotizacionesAux.value = [];
     let todas = await obtenerCotizaciones();
     todas = todas.data.body;
     console.log(todas);
     for (let item of todas) {
-      let motos=[];
+      let motos = [];
       var cotizacionesMotos = await traerCotizacionMotos();
-    
-      cotizacionesMotos.forEach(element => {
-        if (element.Cotizaciones_idCotizaciones==item.idCotizaciones) {
-          motos.push(element.Moto_idMoto)
+
+      cotizacionesMotos.forEach((element) => {
+        if (element.Cotizaciones_idCotizaciones == item.idCotizaciones) {
+          motos.push(element.Moto_idMoto);
         }
-        
       });
       item.motos = motos;
       arregloCotizacionesAux.value.push(item);
@@ -146,7 +146,7 @@ const consultarTodo = async () => {
 
     console.log(arregloCotizacionesAux.value);
 
-    for(let element of arregloCotizacionesAux.value) {
+    for (let element of arregloCotizacionesAux.value) {
       console.log("Hola");
       var cotizacion = await obtenerCotizacion(element.idCotizaciones); //asigna cada elememento a cada cotizacion
       cotizacion = cotizacion.data.body[0];
@@ -155,8 +155,8 @@ const consultarTodo = async () => {
       cotizacion.usuario = await obtenerUnUser(cotizacion.Empleados_idEmpleados);
       cotizacion.usuario = cotizacion.usuario.data.body[0].Usuario;
 
-      console.log(cotizacion.usuario)
-      console.log(nickActual.value)
+      console.log(cotizacion.usuario);
+      console.log(nickActual.value);
       if (!(superUsuario.value || cotizacion.usuario.trim() == nickActual.value.trim())) {
         return;
       }
@@ -216,8 +216,7 @@ const consultarTodo = async () => {
     console.log(cotizacionArray.value);
     cotizacionesMostradas.value = cotizacionArray.value;
     tablaLista.value = true;
-    console.log(cotizacionArray.value.length)
-
+    console.log(cotizacionArray.value.length);
 
     console.log(
       "-------------------------------------------------------------------------"
@@ -226,8 +225,7 @@ const consultarTodo = async () => {
   } catch (error) {
     console.log(error);
   }
-}
-
+};
 
 //Metodos de reportes                ------------------------------------
 onMounted(async () => {
@@ -311,6 +309,10 @@ async function asignarHTML() {
   if (tipoReporte.value == 2) {
     tagHTML.value = tagCotizaciones.value;
     await iniciarCotizacion();
+    console.log("qwqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq");
+    console.log(tagCotizaciones.value);
+    tagHTML.value = tagCotizaciones.value;
+
   } else if (tipoReporte.value == 1) {
     tagHTML.value = tagProspectos.value;
     await iniciarProspecto();
@@ -318,33 +320,65 @@ async function asignarHTML() {
     tagHTML.value = tagCitas.value;
     await iniciarCita();
   }
-  await generarPDF();
+  setTimeout(async () => {
+    await generarPDF();
+  }, 2000);
 }
 
 async function generarPDF() {
   sinDatos.value = false;
   cargando.value = true;
-  var doc = new jsPDF("p", "px");
+  var doc = new jsPDF("l", "px");
   tagHTML.value.style.display = "inline-block";
-  
+  console.log("kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk");
+  console.log(tagHTML.value);
+  let pdfData2;
   await doc.html(tagHTML.value, {
     callback: function (doc) {
-      // setTimeout(() => {
+       setTimeout(() => {
       var pageCount = doc.internal.getNumberOfPages();
       doc.deletePage(pageCount);
       doc.deletePage(pageCount - 1);
       doc.deletePage(pageCount - 2);
       doc.deletePage(pageCount - 3);
       doc.deletePage(pageCount - 4);
-      const pdfData = doc.output("datauristring");
-      tagIframe.value.src = pdfData;
+      pdfData2 = doc.output("datauristring");
       cargando.value = false;
-      //doc.save()
-      //}, 1000);
+      doc.save();
+
+      tagIframe.value.src = pdfData2;
+
+      }, 1000);
+
+
     },
     x: 0,
     y: 0,
-    html2canvas: { scale: 0.35, x: -55, y: 0 },
+    html2canvas: { scale: 0.30, x: -55, y: 0 },
+  });
+
+  await doc.html(tagHTML.value, {
+    callback: function (doc) {
+       setTimeout(() => {
+      var pageCount = doc.internal.getNumberOfPages();
+      doc.deletePage(pageCount);
+      doc.deletePage(pageCount - 1);
+      doc.deletePage(pageCount - 2);
+      doc.deletePage(pageCount - 3);
+      doc.deletePage(pageCount - 4);
+      pdfData2 = doc.output("datauristring");
+      cargando.value = false;
+      doc.save();
+
+      tagIframe.value.src = pdfData2;
+
+      }, 1000);
+
+
+    },
+    x: 0,
+    y: 0,
+    html2canvas: { scale: 0.30, x: -55, y: 0 },
   });
 
   //tagHTML.value.style.display = "none";
@@ -500,8 +534,6 @@ const montarProspectos = async () => {
       prospectosFiltrados.value.push(element);
     }
     prospectosDesplegados.value = prospectosFiltrados.value;
-
-    
   }
 
   tablaLista.value = true;
@@ -595,7 +627,7 @@ const montarProspectos = async () => {
   </div>
 
   <!------------------------------------------------------- DIV QUE OCULTA LOS REPORTES --------------------------------------------------------->
-  <div style="display: ">
+  <div style="display: none">
     <!------------------------------------------------------- Cotizaciones  --------------------------------------------------------->
     <div class="temp-target" ref="tagCotizaciones">
       <div class="container mt-5 ms-0" style="text-align: center">
@@ -627,8 +659,12 @@ const montarProspectos = async () => {
           <h5>Periodo: {{ fechaInicialFormatted }} - {{ fechaFinalFormatted }}</h5>
         </div>
       </div>
-      <table id="myTable" class="table-striped text-center mt-4 mx-auto" style="width: 850px; overflow-x: auto"
-          v-if="tablaLista">
+      <table
+        id="myTable"
+        class="table-striped text-center mt-4 mx-auto"
+        style="width: 850px; overflow-x: auto"
+        v-if="tablaLista"
+      >
         <thead>
           <tr style="background-color: #2b4677; color: white; vertical-align: middle">
             <th scope="col">No. Cliente BAZ</th>
@@ -644,10 +680,6 @@ const montarProspectos = async () => {
             <th scope="col">Pago inicial:</th>
             <th scope="col">Capacidad</th>
             <th scope="col">Fecha de Registro</th>
-            <th scope="col">Fecha de Visita</th>
-            <th scope="col">Hora inicial</th>
-            <th scope="col">Hora final</th>
-            <th scope="col">Fecha de venta</th>
             <!-- <th scope="col" style="width: 200px"></th> -->
             <!-- Establecemos "position:sticky" en la columna de "Opciones" -->
           </tr>
@@ -661,13 +693,7 @@ const montarProspectos = async () => {
             <td>{{ cotizacion.DescripcionCredito }}</td>
             <td>{{ cotizacion.DescripcionEstatus }}</td>
             <td>
-              <div v-for="(moto,index) in cotizacion.Motos">
-                <h2 v-if="moto[index]">
-                  
-                     {{ moto[index].Modelo}}
-                  
-                </h2>
-              </div>
+              <p v-for="moto in cotizacion.Motos">{{ moto[0].Modelo }}</p>
             </td>
             <td>{{ cotizacion.NombreAsesorBAZ }}</td>
             <td>{{ cotizacion.Telefono }}</td>
@@ -675,10 +701,6 @@ const montarProspectos = async () => {
             <td>{{ cotizacion.PagoInicial }}</td>
             <td>{{ cotizacion.Capacidad }}</td>
             <td>{{ cotizacion.FechaRegistro }}</td>
-            <td>{{ cotizacion.FechaVisita }}</td>
-            <td>{{ cotizacion.HoraInicial }}</td>
-            <td>{{ cotizacion.HoraFinal }}</td>
-            <td>{{ cotizacion.FechaVenta }}</td>
           </tr>
         </tbody>
       </table>
