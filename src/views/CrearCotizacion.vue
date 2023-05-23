@@ -84,7 +84,7 @@ const tagCorreo = ref(null);
 const tagTlfn = ref(null);
 
 onMounted(async () => {
-    idUser.value = await obtenerIdPorUser({ Usuario: getUser() });
+    idUser.value = await obtenerIdPorUser({ Usuario: "gerente" });
     idCliente.value = getIdCliente();
     if (idCliente.value == null) {
         console.log("idC vacio");
@@ -100,8 +100,8 @@ onMounted(async () => {
     await obtenerAsesores();
 
     llenarCombos();
-    //cargarComboVisita();
-    console.log(visita);
+    cargarComboVisita();
+    console.log(visita.value);
 });
 
 const obtenerCreditos = async () => {
@@ -152,6 +152,8 @@ const obtenerAsesores = async () => {
 };
 
 const agregarMoto = async() => {
+    console.log("......................................................")
+    console.log(tagMoto2.value)
     await divs.value.push({});
     await llenarmotos();
 };
@@ -274,6 +276,8 @@ function validarMoto1() {
 };
 
 function validarMoto2() {
+    console.log("-----------------------------------------------------------")
+    console.log(tagMoto2.value)
   console.log(tagMoto2.value.value);
   console.log(tagMoto2.value.value == -1);
   if (tagMoto1.value.value == -1) {
@@ -385,7 +389,7 @@ const revisarCliente = async() => {
 };
 
 const validarGeneral = () => {
-        const validado = validarTexto(tagNombre.value) &&
+        validado.value = validarTexto(tagNombre.value) &&
         validarTexto(tagAP.value) &&
         validarTexto(tagAM.value) &&
         validarCredito() &&
@@ -398,11 +402,11 @@ const validarGeneral = () => {
         validarPagos(tagC.value) &&
         validarNumBAZ();
 
-    return validado;
+    return validado.value;
 };
 
 const validarVisita = () => {
-        const validado = validarTexto(tagNombre.value) &&
+        validado.value = validarTexto(tagNombre.value) &&
         validarTexto(tagAP.value) &&
         validarTexto(tagAM.value) &&
         validarCredito() &&
@@ -417,20 +421,20 @@ const validarVisita = () => {
         validarHoraI() &&
         validarHoraF();
     
-    return validado;
+    return validado.value;
 };
 
 const submt = async() => {
     try {
-        const validado = false;
+         validado.value = false;
 
         if (visita){
-            validado = validarVisita();
+            validado.value = validarVisita();
         }else{
-            validado = validarGeneral();
+            validado.value = validarGeneral();
         } 
 
-        if(validado){
+        if(validado.value){
             if (nuevo) {
                 await revisarCliente();
             } else {
@@ -601,24 +605,24 @@ function cargarComboVisita(){
         search: true,
         clearable: true
     };
-    select = document.getElementById("select6");
+    let select6 = document.getElementById("select6");
     for(let i = 0; i < 24; i++) {
         const optionElement = document.createElement("option");
         //Juntar el nombre completo
         optionElement.text = i.toString().padStart(2, '0') + ':00';
         optionElement.value = i;
-        select.add(optionElement);
+        select6.add(optionElement);
     };
 
     dselect(tagInicio.value, config); //si jala, no mover xd
 
-    select = document.getElementById("select7");
+    let select7 = document.getElementById("select7");
     for(let i = 0; i < 24; i++) {
         const optionElement = document.createElement("option");
         //Juntar el nombre completo
         optionElement.text = i.toString().padStart(2, '0') + ':00';
         optionElement.value = i;
-        select.add(optionElement);
+        select7.add(optionElement);
     };
 
     dselect(tagFin.value, config); //si jala, no mover xd
@@ -970,7 +974,7 @@ function llenarCombos() {
                 </div>
             </div>
             <!-- Div Visita-->
-            <div class="row d-flex align-items-center mb-4" v-if="visita">
+            <div class="row d-flex align-items-center mb-4" v-show="visita">
                 <div class="col-1"></div>
                 <div class="col-2 d-flex justify-content-end pt-2">
                     <h5 class="italika d-flex justify-content-end pe-2">
