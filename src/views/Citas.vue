@@ -17,7 +17,7 @@ const {
   getDia,
   setCita,
   getCita,
-  actualizarCita,
+  actualizarCita,eliminarCita
 } = CitasStore();
 const {
   obtenerCliente,
@@ -55,6 +55,8 @@ const nickActual = ref("");
 const superUsuario = ref(false);
 const tagSelect = ref(null);
 const citaActualizar = ref(null);
+
+const idCitaEliminar = ref();
 
 const tituloFecha = ref("");
 
@@ -342,7 +344,8 @@ async function guardarCita() {
   }
 }
 //----------------Metodos para proceso de actualizar ------------
-async function preActualizar(cita, pos) {
+async function preActualizar(cita, pos,idEliminar) {
+  idCitaEliminar.value = idEliminar; 
   console.log(cita);
   console.log("ubicateeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee");
   console.log(pos);
@@ -474,6 +477,12 @@ function printDate(indice) {
     "/" +
     diasMostrados.value[posDiaActivo].ano;
 }
+
+async function eliminar(){
+  await eliminarCita(idCitaEliminar.value);
+  await initCalendar();
+  printDate(posDiaActivo)
+}
 </script>
 
 <template>
@@ -528,7 +537,7 @@ function printDate(indice) {
       <div class="events" v-for="(evento, index3) in eventosMostrados">
         <div
           class="event d-flex align-items-center"
-          @click="preActualizar(evento, index3)"
+          @click="preActualizar(evento, index3,evento.idCitas)"
         >
           <div>
             <i class="fa-solid fa-motorcycle" style="font-size: 50px"></i>
@@ -726,6 +735,9 @@ function printDate(indice) {
           </div>
         </div>
         <div class="modal-footer">
+          <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#elimModal">
+            Eliminar cita
+          </button>
           <button type="button" class="btn btn-primary" @click="actualizarCitas()">
             Guardar
           </button>
@@ -733,6 +745,26 @@ function printDate(indice) {
       </div>
     </div>
   </div>
+  
+<!-- elimModal -->
+<div class="modal fade" id="elimModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Eliminar cita</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        ¿Está seguro de eliminar esta cita?
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button type="button" class="btn btn-danger" @click="eliminar()" data-bs-dismiss="modal">Confirmar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 </template>
 <style scoped>
 .calendar {

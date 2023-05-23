@@ -12,13 +12,32 @@ import { loginStore } from "../stores/login";
 import { rolesStore } from "../stores/roles";
 import { mediosContactoStore } from "../stores/mediosContacto";
 import { CitasStore } from "../stores/citas";
-// import { cotizacionesStore } from "../stores/cotizaciones";
-// import { asesoresStore } from "../stores/asesores";
-// import { creditosStore } from "../stores/creditos";
-// import { estatusCotizacionStore } from "../stores/estatusCotizacion";
-// import { cotizacionMotoStore } from "../stores/cotizacionMoto";
+import { cotizacionesStore } from "../stores/cotizaciones";
+import { asesoresStore } from "../stores/asesores";
+import { creditosStore } from "../stores/creditos";
+import { estatusCotizacionStore } from "../stores/estatusCotizacion";
+import { cotizacionMotoStore } from "../stores/cotizacionMoto";
 
-//Metodos para cotizaciones
+//declaramos como constantes los metodos exactos que vamos a usar de las stores y lo igualamos a la store de donde vienen
+//           metodo    =     store de la que viene
+const { setIdUsuario } = usuariosStore();
+const { agregarUsuario } = usuariosStore();
+const { obtenerUsuarios } = usuariosStore();
+const { eliminarUsuario } = usuariosStore();
+
+const { traerCotizacionMotos } = cotizacionMotoStore();
+const { verificarPermisos } = loginStore();
+const { obtenerEstatusCotizacionN } = estatusCotizacionStore();
+const { obtenerAsesor } = asesoresStore();
+
+const { cotizacionExiste } = cotizacionesStore();
+const { obtenerCotizaciones } = cotizacionesStore();
+const { obtenerCotizacion } = cotizacionesStore();
+const { agregarCotizacion } = cotizacionesStore();
+const { setIdCotizacion } = cotizacionesStore();
+const { eliminarCotizacion } = cotizacionesStore();
+const { obtenerCreditosN } = creditosStore();
+
 const { obtenerRolesN } = rolesStore();
 const { obtenerUnUser, obtenerIdPorUser } = usuariosStore();
 const { consultarMotocicletas, obtenerUnModelo } = catalogoStore();
@@ -28,6 +47,29 @@ const { getUser } = loginStore();
 const { obtenerMediosN, obtenerMedios } = mediosContactoStore();
 
 const { obtenerTodos } = CitasStore();
+//variables reactivas
+const cotizaciones = ref({});
+//const roles = ref([]);
+//const arrayNicknames = ref([]);
+const deshabilitado = ref(true);
+//para buscar
+const cotizacionesFiltradas = ref({});
+const cotizacionAct = ref("");
+const idUsuarioAct = ref("");
+const cotizacionFiltrados = ref([]);
+const cotizacion = ref([]);
+const busqueda = ref("");
+const idCotizacioneliminar = ref("");
+
+const cotizacionArray = ref([]); //arreglo que guarda las cotizaciones que se mostraran en la tabla
+//variable asociada al modal
+var modal;
+var tried = false;
+const validado = ref(true);
+const alertaLlenado = ref(false);
+const arregloCotizacionesAux = ref([]);
+
+const cotizacionesMostradas = ref([]);
 
 //Variables Prospectos
 const nickActual = ref();
@@ -71,6 +113,121 @@ const alertFechaReporte = ref(false);
 const alertIncDatos = ref(false);
 const sinDatos = ref(true);
 var cargando = ref(false);
+
+//Metodos para cotizaciones
+
+async function iniciarCotizacion() {
+  await consultarUsuarioAct();
+
+  await consultarTodo();
+
+ 
+}
+
+const consultarTodo = async () => {
+  try {
+    let todas = await obtenerCotizaciones();
+    todas = todas.data.body;
+    console.log(todas);
+    for (let item of todas) {
+      let motos=[];
+      var cotizacionesMotos = await traerCotizacionMotos();
+    
+      cotizacionesMotos.forEach(element => {
+        if (element.Cotizaciones_idCotizaciones==item.idCotizaciones) {
+          motos.push(element.Moto_idMoto)
+        }
+        
+      });
+      item.motos = motos;
+      arregloCotizacionesAux.value.push(item);
+    }
+    console.log("ActualActualActualActualActualActualActualActualActualActual");
+
+    console.log(arregloCotizacionesAux.value);
+
+    for(let element of arregloCotizacionesAux.value) {
+      console.log("Hola");
+      var cotizacion = await obtenerCotizacion(element.idCotizaciones); //asigna cada elememento a cada cotizacion
+      cotizacion = cotizacion.data.body[0];
+      console.log(cotizacion);
+
+      cotizacion.usuario = await obtenerUnUser(cotizacion.Empleados_idEmpleados);
+      cotizacion.usuario = cotizacion.usuario.data.body[0].Usuario;
+
+      console.log(cotizacion.usuario)
+      console.log(nickActual.value)
+      if (!(superUsuario.value || cotizacion.usuario.trim() == nickActual.value.trim())) {
+        return;
+      }
+
+      var cliente = await obtenerCliente(cotizacion.Clientes_idClientes);
+      cliente = cliente.data.body[0];
+
+      var tipoCredito = await obtenerCreditosN(
+        cotizacion.Tipos_De_Creditos_idTipos_De_Creditos
+      );
+      tipoCredito = tipoCredito.data.body[0];
+
+      var estatus = await obtenerEstatusCotizacionN(
+        cotizacion.EstatusCotizacion_idEstatusCotizacion
+      );
+      estatus = estatus.data.body[0];
+
+      var asesor = await obtenerAsesor(cotizacion.AsesoresBAZ_idAsesoresBAZ);
+      asesor = asesor.data.body[0];
+
+      var motos = [];
+      for (const moto of element.motos) {
+        var motoData = await obtenerUnModelo(moto);
+        motos.push(motoData.data.body);
+      }
+
+      // console.log(moto);
+
+      //para juntar todo
+      const objetoCotizacion = await {
+        idCotizaciones: cotizacion.idCotizaciones,
+        NoClienteBAZ: cliente.NoClienteBAZ,
+        Nombre: cliente.Nombre,
+        Apellido_Paterno: cliente.Apellido_Paterno,
+        Apellido_Materno: cliente.Apellido_Materno,
+        DescripcionCredito: tipoCredito.Descripcion,
+        DescripcionEstatus: estatus.Descripcion,
+        usuario: cotizacion.usuario,
+        Motos: motos,
+        NombreAsesorBAZ: asesor.Nombre,
+        Telefono: cliente.Telefono,
+        Correo: cliente.Correo,
+        PagoInicial: cotizacion.PagoInicial,
+        Capacidad: cotizacion.Capacidad,
+        FechaRegistro: cotizacion.FechaRegistro,
+        FechaVisita: cotizacion.FechaVisita,
+        HoraInicial: cotizacion.HoraInicial,
+        HoraFinal: cotizacion.HoraFinal,
+        FechaVenta: cotizacion.FechaVenta,
+        Comentario: cotizacion.Comentario,
+      };
+      console.log(objetoCotizacion);
+      // console.log(objetoCotizacion);
+      await cotizacionArray.value.push(objetoCotizacion); //agregar objeto al arreglo, lo hace una vez para cada objeto, a fin de cuentas termina haciendolo para todos los objetos
+      console.log(cotizacionArray.value);
+    }
+    console.log(cotizacionArray.value);
+    cotizacionesMostradas.value = cotizacionArray.value;
+    tablaLista.value = true;
+    console.log(cotizacionArray.value.length)
+
+
+    console.log(
+      "-------------------------------------------------------------------------"
+    );
+    console.log(cotizacionesMostradas.value);
+  } catch (error) {
+    console.log(error);
+  }
+}
+
 
 //Metodos de reportes                ------------------------------------
 onMounted(async () => {
@@ -153,6 +310,7 @@ async function revFechas() {
 async function asignarHTML() {
   if (tipoReporte.value == 2) {
     tagHTML.value = tagCotizaciones.value;
+    await iniciarCotizacion();
   } else if (tipoReporte.value == 1) {
     tagHTML.value = tagProspectos.value;
     await iniciarProspecto();
@@ -167,26 +325,8 @@ async function generarPDF() {
   sinDatos.value = false;
   cargando.value = true;
   var doc = new jsPDF("p", "px");
-
-  // Se hace dos veces el doc.html porque por alguna razon a la primera no carga .-.
   tagHTML.value.style.display = "inline-block";
-  // await doc.html(tagHTML.value, {
-  //   callback: function (doc) {
-  //     const pdfData = doc.output("datauristring");
-  //     //   tagIframe.value.src = pdfData;
-  //     //   cargando.value = false;
-  //     var pageCount = doc.internal.getNumberOfPages();
-  //     doc.deletePage(pageCount);
-  //     doc.deletePage(pageCount - 1);
-  //     doc.deletePage(pageCount - 2);
-  //     doc.deletePage(pageCount - 3);
-  //     doc.deletePage(pageCount - 4);
-  //   },
-  //   x: 0,
-  //   y: 0,
-  //   html2canvas: { scale: 0.35, x: 1000, y: 0 },
-  // });
-
+  
   await doc.html(tagHTML.value, {
     callback: function (doc) {
       // setTimeout(() => {
@@ -360,6 +500,8 @@ const montarProspectos = async () => {
       prospectosFiltrados.value.push(element);
     }
     prospectosDesplegados.value = prospectosFiltrados.value;
+
+    
   }
 
   tablaLista.value = true;
@@ -453,7 +595,7 @@ const montarProspectos = async () => {
   </div>
 
   <!------------------------------------------------------- DIV QUE OCULTA LOS REPORTES --------------------------------------------------------->
-  <div style="display: none">
+  <div style="display: ">
     <!------------------------------------------------------- Cotizaciones  --------------------------------------------------------->
     <div class="temp-target" ref="tagCotizaciones">
       <div class="container mt-5 ms-0" style="text-align: center">
@@ -485,101 +627,61 @@ const montarProspectos = async () => {
           <h5>Periodo: {{ fechaInicialFormatted }} - {{ fechaFinalFormatted }}</h5>
         </div>
       </div>
-      <div class="table-responsive-sm">
-        <table
-          id="myTable"
-          class="table table-hover table-striped text-center mt-4 mx-auto"
-          style="width: 950px; overflow-x: scroll"
-        >
-          <thead>
-            <tr style="background-color: #2b4677; color: white; vertical-align: middle">
-              <th scope="col">No. Cliente BAZ</th>
-              <th scope="col">Nombre</th>
-              <th scope="col">Apellido Paterno</th>
-              <th scope="col">Apellido Materno</th>
-              <th scope="col">Tipo de Crédito</th>
-              <th scope="col">Estatus de Cotizacion</th>
-              <th scope="col">Modelo de Motocicleta</th>
-              <th scope="col">Asesor BAZ</th>
-              <th scope="col">Telefono:</th>
-              <th scope="col">Correo electronico</th>
-              <th scope="col">Pago inicial:</th>
-              <th scope="col">Capacidad</th>
-              <th scope="col">Fecha de Registro</th>
-              <th scope="col">Fecha de Visita</th>
-              <th scope="col">Hora inicial</th>
-              <th scope="col">Hora final</th>
-              <th scope="col">Fecha de venta</th>
-              <!-- <th scope="col" style="width: 200px"></th> -->
-              <th scope="col" class="sticky" style="position: sticky; right: 0">
-                Opciones
-              </th>
-              <!-- <th scope="col" style="width: 200px"></th> -->
-              <!-- Establecemos "position:sticky" en la columna de "Opciones" -->
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="cotizacion in cotizacionArray">
-              <td>{{ cotizacion.NoClienteBAZ }}</td>
-              <td>{{ cotizacion.Nombre }}</td>
-              <td>{{ cotizacion.Apellido_Paterno }}</td>
-              <td>{{ cotizacion.Apellido_Materno }}</td>
-              <td>{{ cotizacion.DescripcionCredito }}</td>
-              <td>{{ cotizacion.DescripcionEstatus }}</td>
-              <td>
-                <p v-for="moto in cotizacion.Modelo">{{ moto[0].Modelo }}</p>
-              </td>
-              <td>{{ cotizacion.NombreAsesorBAZ }}</td>
-              <td>{{ cotizacion.Telefono }}</td>
-              <td>{{ cotizacion.Correo }}</td>
-              <td>{{ cotizacion.PagoInicial }}</td>
-              <td>{{ cotizacion.Capacidad }}</td>
-              <td>{{ cotizacion.FechaRegistro }}</td>
-              <td>{{ cotizacion.FechaVisita }}</td>
-              <td>{{ cotizacion.HoraInicial }}</td>
-              <td>{{ cotizacion.HoraFinal }}</td>
-              <td>{{ cotizacion.FechaVenta }}</td>
-              <td scope="row" class="sticky" style="position: sticky">
-                <div class="container">
-                  <div class="d-inline-flex">
-                    <button
-                      class="btn btn-primary d-inline-block mr-3 btn-spacer"
-                      type="submit"
-                      style="
-                        background-color: #ffbe16;
-                        border-color: #ffbe16;
-                        height: 37px;
-                        width: 45px;
-                      "
-                      @click="modificarCotizacion(usuario.idEmpleados)"
-                    >
-                      <i class="fa-solid fa-pen-to-square" style="color: black"></i>
-                    </button>
-                    <button
-                      class="btn btn-primary btn-delete d-inline-block"
-                      type="submit"
-                      style="
-                        background-color: #c01a1a;
-                        border-color: #c01a1a;
-                        height: 37px;
-                        width: 45px;
-                        margin-top: 0% !important;
-                      "
-                      @click="mostrarmodal(usuario.Usuario, usuario.idEmpleados)"
-                    >
-                      <img
-                        class="img-fluid mb-1"
-                        style="width: 24.5px; height: 22.75px; margin-top: 0% !important"
-                        src="../assets/basura.png"
-                      />
-                    </button>
-                  </div>
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+      <table id="myTable" class="table-striped text-center mt-4 mx-auto" style="width: 850px; overflow-x: auto"
+          v-if="tablaLista">
+        <thead>
+          <tr style="background-color: #2b4677; color: white; vertical-align: middle">
+            <th scope="col">No. Cliente BAZ</th>
+            <th scope="col">Nombre</th>
+            <th scope="col">Apellido Paterno</th>
+            <th scope="col">Apellido Materno</th>
+            <th scope="col">Tipo de Crédito</th>
+            <th scope="col">Estatus de Cotizacion</th>
+            <th scope="col">Modelo de Motocicleta</th>
+            <th scope="col">Asesor BAZ</th>
+            <th scope="col">Telefono:</th>
+            <th scope="col">Correo electronico</th>
+            <th scope="col">Pago inicial:</th>
+            <th scope="col">Capacidad</th>
+            <th scope="col">Fecha de Registro</th>
+            <th scope="col">Fecha de Visita</th>
+            <th scope="col">Hora inicial</th>
+            <th scope="col">Hora final</th>
+            <th scope="col">Fecha de venta</th>
+            <!-- <th scope="col" style="width: 200px"></th> -->
+            <!-- Establecemos "position:sticky" en la columna de "Opciones" -->
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="cotizacion in cotizacionesMostradas">
+            <td>{{ cotizacion.NoClienteBAZ }}</td>
+            <td>{{ cotizacion.Nombre }}</td>
+            <td>{{ cotizacion.Apellido_Paterno }}</td>
+            <td>{{ cotizacion.Apellido_Materno }}</td>
+            <td>{{ cotizacion.DescripcionCredito }}</td>
+            <td>{{ cotizacion.DescripcionEstatus }}</td>
+            <td>
+              <div v-for="(moto,index) in cotizacion.Motos">
+                <h2 v-if="moto[index]">
+                  
+                     {{ moto[index].Modelo}}
+                  
+                </h2>
+              </div>
+            </td>
+            <td>{{ cotizacion.NombreAsesorBAZ }}</td>
+            <td>{{ cotizacion.Telefono }}</td>
+            <td>{{ cotizacion.Correo }}</td>
+            <td>{{ cotizacion.PagoInicial }}</td>
+            <td>{{ cotizacion.Capacidad }}</td>
+            <td>{{ cotizacion.FechaRegistro }}</td>
+            <td>{{ cotizacion.FechaVisita }}</td>
+            <td>{{ cotizacion.HoraInicial }}</td>
+            <td>{{ cotizacion.HoraFinal }}</td>
+            <td>{{ cotizacion.FechaVenta }}</td>
+          </tr>
+        </tbody>
+      </table>
     </div>
 
     <!------------------------------------------------------- CITAS  --------------------------------------------------------->
