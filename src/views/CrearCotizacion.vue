@@ -25,6 +25,7 @@ const { getUser } = loginStore();
 const { agregarCotizacion } = cotizacionesStore();
 
 //Variables
+const noNBAZ = ref(true);
 const exists = ref(false);
 const idVisita = ref("");
 const visita = ref(false);
@@ -61,12 +62,14 @@ const horaIValida = ref("");
 const horaFValida = ref("");
 
 var modal;
+var modalE;
 var tried = false;
 const validado = ref(true);
 const alertaLlenado = ref(false);
 const nuevo = ref(false);
 const canActualizar = ref(false);
 
+const fechaActual = ref(null);
 const tagMoto1 = ref(null);
 const tagMoto2 = ref([]);
 const tagCreditos = ref(null);
@@ -84,10 +87,9 @@ const tagCorreo = ref(null);
 const tagTlfn = ref(null);
 
 onMounted(async () => {
-    idUser.value = await obtenerIdPorUser({ Usuario: getUser() });
+    idUser.value = await obtenerIdPorUser({ Usuario: "Gerente" });
     idCliente.value = getIdCliente();
     if (idCliente.value == null) {
-        console.log("idC vacio");
         nuevo.value = true;
     } else {
         console.log(idCliente.value);
@@ -100,8 +102,8 @@ onMounted(async () => {
     await obtenerAsesores();
 
     llenarCombos();
-    //cargarComboVisita();
-    console.log(visita);
+    fechaActual.value = new Date();
+    console.log(fechaActual.value);
 });
 
 const obtenerCreditos = async () => {
@@ -307,9 +309,11 @@ const validarEstatus = async () => {
     else if (tagEstatus.value.value == idVisita.value){
         visita.value = true;
         estatusValido.value = "";
+        cargarComboVisita();
         return true;
     }else{
         estatusValido.value = "";
+        visita.value = false;
         return true;
     }
 };
@@ -360,7 +364,8 @@ const crearCliente = async() => {
           Correo: correo.value,
         };
         idCliente.value = await agregarCliente(cliente);
-        await crearCotizacion();
+        nuevo.value = false;
+        await submt();
     } catch (error) {
         console.log(error);
     }
@@ -375,7 +380,10 @@ const revisarCliente = async() => {
         });
 
         if (exists.value) {
-            //Llamar modal 
+            idCliente.value = exists.value.idClientes;
+            nuevo.value = false
+            console.log(idCliente.value);
+            //await submt();
         } else {
             await crearCliente();
         }
@@ -385,6 +393,7 @@ const revisarCliente = async() => {
 };
 
 const validarGeneral = () => {
+    console.log("validarG");
         validado.value = validarTexto(tagNombre.value) &&
         validarTexto(tagAP.value) &&
         validarTexto(tagAM.value) &&
@@ -398,10 +407,13 @@ const validarGeneral = () => {
         validarPagos(tagC.value) &&
         validarNumBAZ();
 
-    return validado.value;
+        console.log(validado.value);
+
 };
 
 const validarVisita = () => {
+    console.log("validarV");
+    console.log(visita.value);
         validado.value = validarTexto(tagNombre.value) &&
         validarTexto(tagAP.value) &&
         validarTexto(tagAM.value) &&
@@ -417,36 +429,54 @@ const validarVisita = () => {
         validarHoraI() &&
         validarHoraF();
     
-    return validado.value;
+        console.log(validado.value);
+};
+
+const validar = async() => {
+    try {
+        if (visita==true){
+            validarVisita();
+            submt();
+        }else{
+            validarGeneral();
+            console.log("llegue aqui");
+            submt();
+        } 
+    } catch (error) {
+        console.log(error);
+    }
 };
 
 const submt = async() => {
     try {
-        validado.value = false;
-
-        if (visita){
-            validado = validarVisita();
-        }else{
-            validado = validarGeneral();
-        } 
-
         if(validado){
-            if (nuevo) {
+            console.log("codigo amarillo");
+            if (nuevo==true) {
                 await revisarCliente();
             } else {
                 alertaLlenado.value = false;
-                await crearCotizacion();
+                if (visita){
+                    await crearCotizacionV();
+                }else{
+                    await crearCotizacion();
+                }
+                
             }
         }else{
             alertaLlenado.value = true;
+            modalE = new bootstrap.Modal(document.getElementById("modalEr"), {
+            keyboard: false,
+            });
+            await modalE.show();
         }
     } catch (error) {
         console.log(error);
     }
 };
 
-const crearCotizacion = async() => {
+const crearCotizacionV = async() => {
     try {
+        console.log("codigo ROJOV");
         const cotizacion = {
         idCotizaciones: 0,
         Empleados_idEmpleados: idUser.value,
@@ -455,19 +485,50 @@ const crearCotizacion = async() => {
         Moto_idMoto: tagMoto1.value.value,
         AsesoresBAZ_idAsesoresBAZ: tagAsesores.value.value,
         EstatusCotizacion_idEstatusCotizacion: tagEstatus.value.value,
-        FechaRegistro: s,
+        FechaRegistro: fechaActual.value,
         PagoInicial: tagPi.value,
         Capacidad: tagC.value,
-        FechaVisita: s,
-        HoraInicial: n,
-        HoraFinal: n,
-        FechaVenta: n,
+        FechaVisita: fechaActual.value,
+        HoraInicial: tagInicio.value.value,
+        HoraFinal: tagFin.value.value,
         Comentario: comentario.value,
         };
 
         await agregarCotizacion(cotizacion);
         setIdCliente(null);
-        
+        modal = new bootstrap.Modal(document.getElementById("modalCrear"), {
+        keyboard: false,
+        });
+        await modal.show();
+    } catch (error) {
+        console.log(error);
+    }
+};
+
+const crearCotizacion = async() => {
+    try {
+        console.log("codigo ROJO");
+        const cotizacion = {
+        idCotizaciones: 0,
+        Empleados_idEmpleados: idUser.value,
+        Tipos_De_Creditos_idTipos_De_Creditos: tagCreditos.value.value,
+        Clientes_idClientes: idCliente.value,
+        Moto_idMoto: tagMoto1.value.value,
+        AsesoresBAZ_idAsesoresBAZ: tagAsesores.value.value,
+        EstatusCotizacion_idEstatusCotizacion: tagEstatus.value.value,
+        FechaRegistro: fechaActual.value,
+        PagoInicial: tagPi.value,
+        Capacidad: tagC.value,
+        FechaVisita: fechaActual.value,
+        Comentario: comentario.value,
+        };
+
+        await agregarCotizacion(cotizacion);
+        setIdCliente(null);
+        modal = new bootstrap.Modal(document.getElementById("modalCrear"), {
+        keyboard: false,
+        });
+        await modal.show();
     } catch (error) {
         console.log(error);
     }
@@ -475,11 +536,11 @@ const crearCotizacion = async() => {
 
 const reset = async() => {
 
-    //modal = new bootstrap.Modal(document.getElementById("modal"), {
-      //keyboard: false,
-    //});
-    //await modal.hide();
-    //await modal.dispose();
+    modal = new bootstrap.Modal(document.getElementById("modalCrear"), {
+      keyboard: false,
+    });
+    await modal.hide();
+    await modal.dispose();
 
     const botones = document.getElementsByClassName('dselect-clear');
     var elementosArray = Array.from(botones);
@@ -494,6 +555,7 @@ const reset = async() => {
  horaIValida.value = "";
  horaFValida.value = "";
 
+ noNBAZ.value = true;
  exists.value = false;
  visita.value = false;
  divs.value = ([]);
@@ -559,6 +621,10 @@ const cargarCliente = async () => {
     let numBAZ;
     cliente.NoClienteBAZ == null ? (numBAZ = "") : (numBAZ = cliente.NoClienteBAZ);
     nBaz.value = numBAZ;
+
+    if (cliente.NoClienteBAZ != null){
+        noNBAZ.value = false;
+    }
     console.log(cliente);
 
     var inputs = document.querySelectorAll(".base");
@@ -569,9 +635,6 @@ const cargarCliente = async () => {
 
 const seleccionarCliente = async () => {
     setInterfazOrigen("crearCotizacion");
-    //console.log(getInterfazOrigen()) 
-    //await modal.hide();
-
     router.push({ name: "seleccionCliente" });
 };
 
@@ -601,7 +664,7 @@ function cargarComboVisita(){
         search: true,
         clearable: true
     };
-    select = document.getElementById("select6");
+    let select = document.getElementById("select6");
     for(let i = 0; i < 24; i++) {
         const optionElement = document.createElement("option");
         //Juntar el nombre completo
@@ -673,9 +736,14 @@ function llenarCombos() {
   console.log("acabando Llenar combos")
 };
 
+const verCotizaiones = async() => {
+    await modal.hide();
+    //router.push({ name: "prospectos" });
+};
+
 </script>
 <template>
-    <form @submit.prevent="submt()" class="needs-validation" novalidate>
+    <form @submit.prevent="validar()" class="needs-validation" novalidate>
         <div class="container-fluid">
             <CompHeader/>
             
@@ -731,7 +799,7 @@ function llenarCombos() {
                         v-model.trim="nombre"
                         @input="validarTexto(tagNombre)"
                         ref="tagNombre"
-                        
+                        :disabled="!nuevo"
                     />
                 </div>
             </div>
@@ -750,7 +818,7 @@ function llenarCombos() {
                         v-model.trim="aPaterno"
                         @input="validarTexto(tagAP)"
                         ref="tagAP"
-                        
+                        :disabled="!nuevo"
                     />
                 </div>
                 <div class="col-1"></div>
@@ -766,7 +834,7 @@ function llenarCombos() {
                         v-model.trim="aMaterno"
                         @input="validarTexto(tagAM)"
                         ref="tagAM"
-                        
+                        :disabled="!nuevo"
                     />
                 </div>
             </div>
@@ -903,6 +971,7 @@ function llenarCombos() {
                         @input="validarTlfn()"
                         ref="tagTlfn"
                         id="tlfn"
+                        :disabled="!nuevo"
                     />
                 </div>
                 <div class="col-1"></div>
@@ -919,6 +988,7 @@ function llenarCombos() {
                         @input="validarEmail()"
                         ref="tagCorreo"
                         id="emailInpt"
+                        :disabled="!nuevo"
                     />
                 </div>
             </div>
@@ -965,12 +1035,12 @@ function llenarCombos() {
                         v-model.trim="nBaz"
                         @input="validarNumBAZ()"
                         ref="tagBaz"
-                        
+                        :disabled="!noNBAZ"
                     />
                 </div>
             </div>
             <!-- Div Visita-->
-            <div class="row d-flex align-items-center mb-4" v-if="visita">
+            <div class="row d-flex align-items-center mb-4">
                 <div class="col-1"></div>
                 <div class="col-2 d-flex justify-content-end pt-2">
                     <h5 class="italika d-flex justify-content-end pe-2">
@@ -984,6 +1054,7 @@ function llenarCombos() {
                     @change="validarHoraI()"
                     ref="tagInicio"
                     style="height: 40px; width: 200px;"
+                    :disabled="!visita"
                   >
                     <option value="-1">Seleccionar</option>
                   </select>
@@ -1001,6 +1072,7 @@ function llenarCombos() {
                     @change="validarHoraF()"
                     ref="tagFin"
                     style="height: 40px; width: 200px;"
+                    :disabled="!visita"
                   >
                     <option value="-1">Seleccionar</option>
                   </select>
@@ -1041,6 +1113,77 @@ function llenarCombos() {
             </div>
         </div>
     </form>
+    <!-- Modal crear cotizacion -->
+    <div
+        class="modal fade"
+        id="modalCrear"
+        data-bs-backdrop="static"
+        data-bs-keyboard="false"
+        tabindex="-1"
+        aria-labelledby="staticBackdropLabel"
+        aria-hidden="true"
+    >
+        <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+            <h5 class="modal-title" id="staticBackdropLabel">¡Cotizacion creada!</h5>
+            </div>
+            <div v-show="nuevo" class="modal-body">
+                El Cliente y la Cotizacion fueron creados exitosamente.
+            </div>
+            <div v-show="!nuevo" class="modal-body">
+                La Cotizacion fue creada exitosamente.
+            </div>
+            
+            <div class="modal-footer">
+            <button
+                type="button"
+                class="btn btn-primary"
+                @click="reset()"
+                data-bs-dismiss="modal"
+                ref="btnSeguirCreando"
+            >
+                Seguir creando cotizaciones
+            </button>
+            <button type="button" class="btn btn-success" @click="verCotizaiones()">
+                Ver cotizaciones
+            </button>
+            </div>
+        </div>
+        </div>
+    </div>
+    <!-- Modal error en datos -->
+    <!-- Modal cliente ya existe -->
+    <div
+        class="modal fade"
+        id="modalEr"
+        data-bs-backdrop="static"
+        data-bs-keyboard="false"
+        tabindex="-1"
+        aria-labelledby="staticBackdropLabel"
+        aria-hidden="true"
+    >
+        <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+            <h5 class="modal-title" id="staticBackdropLabel">¡Completar datos!</h5>
+            </div>
+            <div class="modal-body">
+                Existe uno mas campos que requieren ser llenados o modificados.
+            </div>
+            <div class="modal-footer">
+            <button
+                type="button"
+                class="btn btn-primary"
+                data-bs-dismiss="modal"
+                ref="btnSeguirCreando"
+            >
+                Regresar a cotizacion
+            </button>
+            </div>
+        </div>
+        </div>
+    </div>
 </template>
 
 <style>
@@ -1078,5 +1221,8 @@ select.comboHFin + div > button {
   border-color: red;
   border-width: 5px;
   border-style: solid;
+}
+.dselect-clear{
+    margin-right: .5rem !important;
 }
 </style>
