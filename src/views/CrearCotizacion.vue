@@ -36,6 +36,8 @@ const { agregarCotizacion } = cotizacionesStore();
 const { agregarMotosACotizacion } = cotizacionMotoStore();
 
 //Variables
+
+const motosAgregadas = [];
 const noNBAZ = ref(true);
 const exists = ref(false);
 const idVisita = ref("");
@@ -136,6 +138,7 @@ const obtenerCreditos = async () => {
 const obtenerMotos = async () => {
   try {
     catalogo.value = (await consultarMotocicletasActivas()).data.body;
+    console.log("CATALOGOCATALOGOCATALOGOCATALOGOCATALOGOCATALOGOCATALOGO")
     console.log(catalogo.value);
   } catch (error) {
     console.log(error);
@@ -171,7 +174,17 @@ const obtenerAsesores = async () => {
 };
 
 const agregarMoto = async () => {
-  arregloIdMotos.value.push(tagMoto1.value.value);
+  if (tagMoto1.value.value!=-1) {
+    arregloIdMotos.value.push(tagMoto1.value.value);
+    motosAgregadas.push(catalogo.value[(tagMoto1.value.value -1)].Modelo)
+  divs.value.push("");
+  console.log(arregloIdMotos.value);
+  }
+ 
+};
+const eliminarMoto = async (index) => {
+  arregloIdMotos.value.splice(index, 1);
+  divs.value.splice(index, 1);
   console.log(arregloIdMotos.value);
 };
 
@@ -496,8 +509,8 @@ const crearCotizacionV = async () => {
       AsesoresBAZ_idAsesoresBAZ: tagAsesores.value.value,
       EstatusCotizacion_idEstatusCotizacion: tagEstatus.value.value,
       FechaRegistro: fechaActual.value,
-      PagoInicial: tagPi.value,
-      Capacidad: tagC.value,
+      PagoInicial: tagPi.value.value,
+      Capacidad: tagC.value.value,
       FechaVisita: fechaActual.value,
       HoraInicial: tagInicio.value.value,
       HoraFinal: tagFin.value.value,
@@ -625,7 +638,7 @@ const reset = async () => {
 };
 
 const mandarACrear = () => {
-  router.push({ name: "prospectos" });
+  router.push({ name: "crearCliente" });
 };
 
 const cargarCliente = async () => {
@@ -769,14 +782,14 @@ const verCotizaiones = async () => {
         </div>
         <div class="col-1"></div>
         <div class="col-2 d-flex align-items-center justify-content-center">
-          <button
+          <!-- <button
             type="button"
             class="btn btn-success"
             @click="mandarACrear()"
             style="height: 50px; width: 180px"
           >
             Crear cliente
-          </button>
+          </button> -->
         </div>
         <div class="col-1"></div>
         <div class="col-2 d-flex align-items-center justify-content-center">
@@ -923,18 +936,10 @@ const verCotizaiones = async () => {
       >
         <div class="col-1" id="motos"></div>
         <div class="col-1" id="motos">
-          <h5 class="italika d-flex justify-content-end pe-2">Motocicleta:</h5>
+          <h5 class="italika d-flex justify-content-end pe-2">Modelo {{ index +1 }}:</h5>
         </div>
         <div class="col-3" ref="tagBordeMoto" id="motos">
-          <select
-            :class="motoValida2"
-            id="select5"
-            @change="validarMoto2()"
-            :ref="tagMoto2[index]"
-            style="height: 40px; width: 310px"
-          >
-            <option value="-1">Seleccionar</option>
-          </select>
+          <input type="text" v-model="motosAgregadas[index]" class="form-control" disabled/>
         </div>
         <!-- Boton agregar mas motos-->
         <div class="col-1 d-flex justify-content-center" id="motos">

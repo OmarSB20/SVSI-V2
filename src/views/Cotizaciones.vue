@@ -99,6 +99,10 @@ const consultarUsuarioAct = async () => {
 
 const consultarTodo = async () => {
   try {
+    arregloCotizacionesAux.value =[];
+    cotizacionArray.value = [];
+    cotizacionesFiltradas.value = [];
+    cotizacionesMostradas.value = [];
     let todas = await obtenerCotizaciones();
     todas = todas.data.body;
     console.log(todas);
@@ -152,7 +156,7 @@ const consultarTodo = async () => {
         var motoData = await obtenerUnModelo(moto);
         motos.push(motoData.data.body);
       }
-
+      cotizacion.FechaVisita = new Date(cotizacion.FechaVisita).toISOString().split('T')[0];
       // console.log(moto);
 
       //para juntar todo
@@ -532,5 +536,8 @@ body {
 .table-container {
   max-width: 100%;
   overflow-x: scroll;
+}
+::-webkit-scrollbar {
+    display: none;
 }
 </style>

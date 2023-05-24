@@ -40,7 +40,7 @@ const tablaServiciosActivo = ref(false);
 const tablaCitasActivo = ref(false);
 const mjrVendedorActivo = ref(false);
 const nickname = ref();
-const metaVentas = ref(15);
+const metaVentas = ref("?");
 const ventasPropias = ref(2);
 const totalVentas = ref(5);
 const totalServicios = ref(3);
@@ -60,7 +60,9 @@ onMounted(async () => {
 
   containerTag.value.style.height = altoPantalla.value + "px";
   definirBotones();
-  await revisarMeta();
+  if (await verificarPermisos(3)) {
+    await revisarMeta();
+  } 
   mostrarTodo.value = true;
 });
 
