@@ -22,6 +22,7 @@ import SeleccionCliente from '../views/SeleccionCliente.vue'
 import EstatusCotizacion from '../views/EstatusCotizacion.vue'
 import Citas from '../views/Citas.vue'
 import Reportes from '../views/Reportes.vue'
+import MetaVentas from '../views/MetasVentas.vue'
 
 
 //const { reanudarSesion } = loginStore();
@@ -37,6 +38,7 @@ const interfaces = {
   prospectos:'1',
   actualizarProspecto:'1',
   mediosContacto: '3',
+  metaVentas: '4',
   asesores: '5',
   estatusCotizacion:'6',
   creditos:'7',
@@ -195,6 +197,12 @@ const router = createRouter({
       path: '/reportes',
       name: 'reportes',
       component: Reportes
+      
+    },
+    {
+      path: '/metaVentas',
+      name: 'metaVentas',
+      component: MetaVentas
       
     }
 

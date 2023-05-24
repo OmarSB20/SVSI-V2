@@ -89,6 +89,7 @@ const tablaLista = ref(false);
 const citas = ref([]);
 const citasFiltradas = ref([]);
 const citasDesplegadas = ref([]);
+var xdes;
 
 //Variables de Reportes--------
 //datos cabecera de reporte
@@ -157,7 +158,7 @@ const consultarTodo = async () => {
 
       console.log(cotizacion.usuario);
       console.log(nickActual.value);
-      if (!(superUsuario.value || cotizacion.usuario.trim() == nickActual.value.trim())) {
+      if (!(superUsuario.value || cotizacion.usuario == nickActual.value)) {
         return;
       }
 
@@ -315,27 +316,26 @@ async function asignarHTML() {
 
   } else if (tipoReporte.value == 1) {
     tagHTML.value = tagProspectos.value;
+    xdes = 20;
     await iniciarProspecto();
   } else {
     tagHTML.value = tagCitas.value;
+    xdes = 40;
     await iniciarCita();
   }
-  setTimeout(async () => {
+  cargando.value = true;
+
     await generarPDF();
-  }, 2000);
+  
 }
 
 async function generarPDF() {
   sinDatos.value = false;
-  cargando.value = true;
-  var doc = new jsPDF("l", "px");
+  var doc = new jsPDF("p", "px");
   tagHTML.value.style.display = "inline-block";
-  console.log("kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk");
-  console.log(tagHTML.value);
   let pdfData2;
   await doc.html(tagHTML.value, {
     callback: function (doc) {
-       setTimeout(() => {
       var pageCount = doc.internal.getNumberOfPages();
       doc.deletePage(pageCount);
       doc.deletePage(pageCount - 1);
@@ -344,41 +344,12 @@ async function generarPDF() {
       doc.deletePage(pageCount - 4);
       pdfData2 = doc.output("datauristring");
       cargando.value = false;
-      doc.save();
-
       tagIframe.value.src = pdfData2;
 
-      }, 1000);
-
-
     },
-    x: 0,
+    x: xdes,
     y: 0,
-    html2canvas: { scale: 0.30, x: -55, y: 0 },
-  });
-
-  await doc.html(tagHTML.value, {
-    callback: function (doc) {
-       setTimeout(() => {
-      var pageCount = doc.internal.getNumberOfPages();
-      doc.deletePage(pageCount);
-      doc.deletePage(pageCount - 1);
-      doc.deletePage(pageCount - 2);
-      doc.deletePage(pageCount - 3);
-      doc.deletePage(pageCount - 4);
-      pdfData2 = doc.output("datauristring");
-      cargando.value = false;
-      doc.save();
-
-      tagIframe.value.src = pdfData2;
-
-      }, 1000);
-
-
-    },
-    x: 0,
-    y: 0,
-    html2canvas: { scale: 0.30, x: -55, y: 0 },
+    html2canvas: { scale: 0.35, x: -55, y: 0 },
   });
 
   //tagHTML.value.style.display = "none";
@@ -439,7 +410,7 @@ async function filtrarCitas() {
     const reg = new Date(fecha);
 
     if (
-      (superUsuario.value || usuarioCita.Usuario.trim() == nickActual.value.trim()) &&
+      (superUsuario.value || usuarioCita.Usuario == nickActual.value) &&
       reg.getTime() >= ini.getTime() &&
       reg.getTime() <= fin.getTime()
     ) {
@@ -527,7 +498,7 @@ const montarProspectos = async () => {
     const reg = new Date(element.Fecha_registro);
 
     if (
-      (superUsuario.value || element.usuario.trim() == nickActual.value.trim()) &&
+      (superUsuario.value || element.usuario == nickActual.value) &&
       reg.getTime() >= ini.getTime() &&
       reg.getTime() <= fin.getTime()
     ) {
@@ -754,7 +725,7 @@ const montarProspectos = async () => {
             </tr>
           </thead>
           <tbody>
-            <tr v-for="cita in citasDesplegadas" :key="cita.idCitas">
+            <tr v-for="(cita,index2) in citasDesplegadas" :key="cita.idCitas">
               <td>{{ cita.Clientes_idClientes }}</td>
               <td>{{ cita.Empleados_idEmpleados }}</td>
               <td v-if="superUsuario">
@@ -818,7 +789,7 @@ const montarProspectos = async () => {
             </tr>
           </thead>
           <tbody>
-            <tr v-for="prospecto in prospectosDesplegados" :key="prospecto.idProspectos">
+            <tr v-for="(prospecto,index) in prospectosDesplegados" :key="prospecto.idProspectos">
               <td v-if="!prospecto.noBAZ == ''">{{ prospecto.noBAZ }}</td>
               <td v-else><span class="badge bg-secondary"> N/D </span></td>
               <td>
