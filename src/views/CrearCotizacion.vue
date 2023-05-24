@@ -14,7 +14,7 @@ import { cotizacionesMotosStore } from "../stores/cotizacionesMotos";
 import router from "../router";
 import CompHeader from "../components/Header.vue";
 
-const { obtenerNombresCreditos } = creditosStore();
+const { obtenerCredito } = creditosStore();
 const {
   obtenerNombresEstatusCotizacion,
   obtenerEstatusCotizacion,
@@ -118,12 +118,15 @@ onMounted(async () => {
 
   llenarCombos();
   fechaActual.value = new Date();
+  fechaActual.value = fechaActual.value.toISOString().split('T')[0]
   console.log(fechaActual.value);
 });
 
 const obtenerCreditos = async () => {
   try {
-    tiposCreditos.value = (await obtenerNombresCreditos()).data.body;
+    tiposCreditos.value = (await obtenerCredito());
+    tiposCreditos.value = tiposCreditos.value.data.body;
+    console.log("creditooooooooooooooooooo")
     console.log(tiposCreditos.value);
   } catch (error) {
     console.log(error);
@@ -298,6 +301,7 @@ function validarMoto2() {
 }
 
 const validarCredito = () => {
+    console.log(tagCreditos.value)
   if (tagCreditos.value.value == -1) {
     creditoValido.value = "comboCredito";
 
@@ -309,6 +313,7 @@ const validarCredito = () => {
 };
 
 const validarEstatus = async () => {
+    console.log(tagEstatus.value.value)
   if (tagEstatus.value.value == -1) {
     estatusValido.value = "comboEstatus";
     visita.value = false;
@@ -510,7 +515,7 @@ const crearCotizacionV = async () => {
 const crearCotizacion = async () => {
   try {
     console.log("codigo ROJO");
-    console.log(tagCreditos.value.value)
+    console.log(tagCreditos.value)
     const cotizacion = {
       idCotizaciones: 0,
       Empleados_idEmpleados: idUser.value,
@@ -679,6 +684,7 @@ function llenarCombos() {
   tiposCreditos.value.forEach((option) => {
     const optionElement = document.createElement("option");
     optionElement.text = option.Descripcion;
+    console.log(option)
     optionElement.value = option.idTipos_De_Creditos;
     select.add(optionElement);
   });
