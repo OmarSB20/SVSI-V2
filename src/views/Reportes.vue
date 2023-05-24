@@ -84,7 +84,7 @@ const mediosContacto = ref([]);
 const superUsuario = ref(false);
 const idProspectoEl = ref();
 const tablaLista = ref(false);
-
+var sc;
 //variables citas
 const citas = ref([]);
 const citasFiltradas = ref([]);
@@ -216,12 +216,8 @@ const consultarTodo = async () => {
     }
     console.log(cotizacionArray.value);
     cotizacionesMostradas.value = cotizacionArray.value;
-    tablaLista.value = true;
-    console.log(cotizacionArray.value.length);
+      tablaLista.value = true;
 
-    console.log(
-      "-------------------------------------------------------------------------"
-    );
     console.log(cotizacionesMostradas.value);
   } catch (error) {
     console.log(error);
@@ -307,13 +303,12 @@ async function revFechas() {
 }
 
 async function asignarHTML() {
+  sc= 0.35;
   if (tipoReporte.value == 2) {
-    tagHTML.value = tagCotizaciones.value;
+    xdes = -5;
+    sc=0.33;
     await iniciarCotizacion();
-    console.log("qwqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq");
-    console.log(tagCotizaciones.value);
     tagHTML.value = tagCotizaciones.value;
-
   } else if (tipoReporte.value == 1) {
     tagHTML.value = tagProspectos.value;
     xdes = 20;
@@ -326,7 +321,6 @@ async function asignarHTML() {
   cargando.value = true;
 
     await generarPDF();
-  
 }
 
 async function generarPDF() {
@@ -335,21 +329,20 @@ async function generarPDF() {
   tagHTML.value.style.display = "inline-block";
   let pdfData2;
   await doc.html(tagHTML.value, {
-    callback: function (doc) {
+    callback: async function (doc) {
       var pageCount = doc.internal.getNumberOfPages();
       doc.deletePage(pageCount);
       doc.deletePage(pageCount - 1);
       doc.deletePage(pageCount - 2);
       doc.deletePage(pageCount - 3);
       doc.deletePage(pageCount - 4);
-      pdfData2 = doc.output("datauristring");
-      cargando.value = false;
-      tagIframe.value.src = pdfData2;
-
+        pdfData2 = await doc.output("datauristring");
+        cargando.value = false;
+        tagIframe.value.src = pdfData2;
     },
     x: xdes,
     y: 0,
-    html2canvas: { scale: 0.35, x: -55, y: 0 },
+    html2canvas: { scale: sc, x: -55, y: 0 },
   });
 
   //tagHTML.value.style.display = "none";
@@ -632,7 +625,7 @@ const montarProspectos = async () => {
       </div>
       <table
         id="myTable"
-        class="table-striped text-center mt-4 mx-auto"
+        class="table text-center mt-4 mx-auto"
         style="width: 850px; overflow-x: auto"
         v-if="tablaLista"
       >
@@ -656,7 +649,10 @@ const montarProspectos = async () => {
           </tr>
         </thead>
         <tbody>
-          <tr v-for="cotizacion in cotizacionesMostradas">
+          <tr
+            v-for="(cotizacion, index23) in cotizacionesMostradas"
+            :key="cotizacion.idCotizaciones"
+          >
             <td>{{ cotizacion.NoClienteBAZ }}</td>
             <td>{{ cotizacion.Nombre }}</td>
             <td>{{ cotizacion.Apellido_Paterno }}</td>
@@ -725,7 +721,7 @@ const montarProspectos = async () => {
             </tr>
           </thead>
           <tbody>
-            <tr v-for="(cita,index2) in citasDesplegadas" :key="cita.idCitas">
+            <tr v-for="(cita, index2) in citasDesplegadas" :key="cita.idCitas">
               <td>{{ cita.Clientes_idClientes }}</td>
               <td>{{ cita.Empleados_idEmpleados }}</td>
               <td v-if="superUsuario">
@@ -789,7 +785,10 @@ const montarProspectos = async () => {
             </tr>
           </thead>
           <tbody>
-            <tr v-for="(prospecto,index) in prospectosDesplegados" :key="prospecto.idProspectos">
+            <tr
+              v-for="(prospecto, index) in prospectosDesplegados"
+              :key="prospecto.idProspectos"
+            >
               <td v-if="!prospecto.noBAZ == ''">{{ prospecto.noBAZ }}</td>
               <td v-else><span class="badge bg-secondary"> N/D </span></td>
               <td>
