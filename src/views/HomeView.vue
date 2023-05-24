@@ -538,12 +538,6 @@ function redirigir(interfaz) {
       <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title" id="exampleModalLabel">Definir meta de esta semana</h5>
-          <button
-            type="button"
-            class="btn-close"
-            data-bs-dismiss="modal"
-            aria-label="Close"
-          ></button>
         </div>
         <div class="modal-body">
           <div>Meta de la semana</div>
@@ -569,7 +563,7 @@ function redirigir(interfaz) {
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title" id="exampleModalLabel">Actualizar meta de la semana</h5>
+          <h5 class="modal-title" id="exampleModalLabel">Meta de la semana</h5>
           <button
             type="button"
             class="btn-close"
@@ -578,10 +572,13 @@ function redirigir(interfaz) {
           ></button>
         </div>
         <div class="modal-body">
-          <div>Meta de la semana</div>
+          <div>Meta actual</div>
           <div><input class="form-control" type="number" v-model="cantMeta" /></div>
         </div>
         <div class="modal-footer">
+          <button type="button" class="btn btn-primary" @click="redirigir('metaVentas')" data-bs-dismiss="modal">
+            ver metas
+          </button>
           <button type="button" class="btn btn-success" @click="actMeta()" data-bs-dismiss="modal">
             Actualizar
           </button>

@@ -1,192 +1,98 @@
 <script setup>
 import { ref, computed } from "vue"; //para usar variables reactivas
 import { onMounted } from "vue"; //para poder usar el onMounted, que ejecuta todo lo que tenga adentro cada que cargue la pagina
+import { metaVentasStore } from "../stores/metaVentas";
 import { usuariosStore } from "../stores/usuarios";
-import { rolesStore } from "../stores/roles";
-import { loginStore } from "../stores/login";
+
 import CompHeader from "../components/Header.vue";
 import router from "../router";
-//declaramos como constantes los metodos exactos que vamos a usar de las stores y lo igualamos a la store de donde vienen
-//           metodo    =     store de la que viene
-const { setIdUsuario } = usuariosStore();
-const { agregarUsuario } = usuariosStore();
-const { obtenerRoles } = rolesStore();
-const { obtenerUsuarios } = usuariosStore();
-const { eliminarUsuario } = usuariosStore();
-const { actualizarUsuario } = usuariosStore();
-const { getIdUsuario } = usuariosStore();
-const { reanudarSesion } = loginStore();
-const {verificarPermisos} = loginStore();
-//variables reactivas
-const usuarios = ref({});
-const roles = ref([]);
-const arrayNicknames = ref([]);
-const deshabilitado = ref(true);
-//para buscar
-const usuariosFiltrados = ref({});
-const valorBusqueda = ref("");
-const nombreUsuarioAct = ref("");
-const idUsuarioAct = ref("");
-//variable asociada al modal
-var modal;
-var tried = false;
-const validado = ref(true);
-const alertaLlenado = ref(false);
-//al cargar la pagina se consultan los permisos y roles que hay en la BD y se define el objeto relacionado al modal
+
+const { obtenerTodas  } = metaVentasStore();
+const { obtenerUnUser } = usuariosStore();
+
+const metas = ref();
+const metasMostradas = ref();
+const busqMeta = ref();
+
+
 onMounted(async () => {
-  
-    await consultarRoles();
-    await consultarUsuarios();
-    deshabilitado.value = true;
-    modal = new bootstrap.Modal(document.getElementById("modal"), {
-      keyboard: false,
-  });
-  
+  await consultarMetas();
+
 });
-//consulta los roles usando el metodo de la store, los almacena en rolesArray
-const consultarRoles = async () => {
+
+const consultarMetas = async () => {
   try {
-    roles.value = await obtenerRoles();
-    roles.value = roles.value.data.body;
-    console.log(roles.value);
-  } catch (error) {
-    console.log(error);
-  }
-};
-const consultarUsuarios = async () => {
-  try {
-    const usuariosArray = (await obtenerUsuarios()).data.body;
-    console.log(usuariosArray);
-    usuarios.value = usuariosArray.reduce((acc, cur) => {
-      acc[cur.Usuario] = cur;
-      return acc;
-    }, {});
-    usuariosFiltrados.value = usuarios.value;
-  } catch (error) {
-    console.log(error);
-  }
-};
-const buscarRol = (idRol) => {
-  const rolEncontrado = roles.value.find((rol) => rol.idRoles == idRol);
-  console.log(rolEncontrado.Nombre);
-  return rolEncontrado.Nombre;
-};
-const eliminarRoles = async (idRol) => {
-  try {
-    await eliminarPermisosDelRol(idRol);
-    await eliminarRol(idRol);
-    await consultarRoles();
-  } catch (error) {
-    console.log(error);
-  }
-};
-function myFunction() {
-  var input, filter, table, tr, td, i, txtValue;
-  input = document.getElementById("myInput");
-  filter = input.value.toUpperCase();
-  table = document.getElementById("myTable");
-  tr = table.getElementsByTagName("tr");
-  for (i = 0; i < tr.length; i++) {
-    td = tr[i].getElementsByTagName("td")[0];
-    if (td) {
-      txtValue = td.textContent || td.innerText;
-      if (txtValue.toUpperCase().indexOf(filter) > -1) {
-        tr[i].style.display = "";
-      } else {
-        tr[i].style.display = "none";
-      }
+    metas.value = await obtenerTodas();
+
+    for(let item of metas.value){
+      let empleado = await obtenerUnUser(item.Empleados_idEmpleados);
+      empleado = empleado.data.body[0];
+      item.Nombre = empleado.Nombre;
+      item.Apellido_Paterno = empleado.Apellido_Paterno;
+      item.Apellido_Materno = empleado.Apellido_Materno;
     }
-  }
-}
-function modificaruser(idEmpleados) {
-  setIdUsuario(idEmpleados); //guardar el ide en el store
-  //mandar a otra interfaz
-  router.push({ name: "actualizarUsuario"});
-}
-function confirmar(idEmpleados) {
-  idempleadoEliminar.value = idEmpleados;
-  modalConfirmacion.show();
-}
-function mostrarmodal(unombreUsuario, idUsuario) {
-  nombreUsuarioAct.value = unombreUsuario;
-  idUsuarioAct.value = idUsuario;
-  modal.show();
-  console.log(idUsuarioAct.value);
-  console.log(nombreUsuarioAct.value);
-}
-async function desactivarUsuario(idEmpleado) {
-  console.log(idEmpleado);
-  //decalro un objeto lo que se recibe la funcion con el inactivo
-  const usuarioActualizar = {
-    idEmpleados: idEmpleado,
-    EstatusActividad_idEstatusActividad: 2,
-  };
-  //mando llamar el metodo
-  try {
-    await actualizarUsuario(usuarioActualizar);
+
+    metasMostradas.value = metas.value;
   } catch (error) {
     console.log(error);
   }
-  consultarUsuarios();
+};
+
+function actualizarTabla() {
+    let busqueda;
+  if (busqMeta.value.trim() == "") {
+    metasMostradas.value = metas.value;
+  } else {
+    busqueda = busqMeta.value.replace(/ /g, "");
+    metasMostradas.value = [];
+    let numSemana;
+    metas.value.forEach((element) => {
+      numSemana = element.NumSemana+"";
+      if (numSemana.includes(busqueda)) {
+        metasMostradas.value.push(element);
+      }
+    });
+  }
 }
+
 </script>
 <template>
   <div class="container-fluid">
     <CompHeader />
 
     <div class="row">
-      <div class="col-1 mb-3 pt-5 d-flex justify-content-end">
+      <div class="col-1 d-flex justify-content-end">
         <router-link to="/italika">
           <img
-            class="img-fluid mt-3"
-            style="margin-top: 20px; width: 31.23px; height: 35.5px"
+            class="img-fluid"
+            style="margin-top: 9.2vh; width: 31.23px; height: 35.5px"
             src="../assets/triangulito.png"
           />
         </router-link>
       </div>
-      <div class="col-8 mb-3 pt-5">
+      <div class="col mb-3 pt-5" >
         <div class="row align-items-end">
-          <p class="italika" style="font-size: 50px">Usuarios</p>
+          <p class="italika ms-4" style="font-size: 50px">Meta de ventas</p>
         </div>
         <div class="row align-items-end">
-          <h5 class="italika d-flex justify-content-start">Usuarios registrados</h5>
+          <h5 class="italika ms-5 d-flex justify-content-start">Metas registradas</h5>
         </div>
       </div>
-      <div class="col-3 align-items-end">
-        <div class="row align-items-end pt-2">
+      <div class="col-5 align-items-end pt-4" >
+        <div class="row align-items-end pt-2 ps-5">
           <input
             id="myInput"
-            v-on:keyup="myFunction"
+            v-on:keyup="actualizarTabla()"
             type="text"
             class="form-control rounded-pill mt-4"
-            style="width: 250px; height: 50px; border-color: #5e5e5e"
+            style=" height: 50px; border-color: #5e5e5e"
             placeholder="Buscar"
+            v-model.trim="busqMeta"
           />
         </div>
-        <div class="row">
-          <div class="col-7">
-            <h5 class="italika mt-3 d-flex justify-content-end">Agregar Usuarios</h5>
-          </div>
 
-          <div class="col">
-            <router-link to="../crearUsuario" style="text-decoration: none">
-              <button
-                class="btn btn-primary btn-create mt-2 d-flex align-items-center justify-content-center"
-                type="button"
-                style="
-                  background-color: #66d054;
-                  width: 40px;
-                  height: 40px;
-                  border-color: #5e5e5e;
-                "
-              >
-                <h4>+</h4>
-              </button>
-            </router-link>
-          </div>
-          <div class="col-3"></div>
-        </div>
       </div>
+      <div class="col-1"></div>
     </div>
     <div class="table-responsive-sm">
       <table
@@ -196,164 +102,24 @@ async function desactivarUsuario(idEmpleado) {
       >
         <thead>
           <tr style="background-color: #2b4677; color: white; vertical-align: middle">
-            <th scope="col">Nombre Usuario</th>
-            <!-- <th scope="col" style="width: 200px"></th> -->
-            <th scope="col">Nombre</th>
-            <!-- <th scope="col" style="width: 200px"></th> -->
-            <th scope="col">Apellido paterno</th>
-            <!-- <th scope="col" style="width: 200px"></th> -->
-            <th scope="col">Apellido materno</th>
-            <!-- <th scope="col" style="width: 200px"></th> -->
-            <th scope="col">Correo</th>
-            <!-- <th scope="col" style="width: 200px"></th> -->
-            <th scope="col">Telefono</th>
-            <th scope="col">Rol</th>
-            <!-- <th scope="col" style="width: 200px"></th> -->
-            <th scope="col" class="sticky" style="position: sticky; right: 0">
-              Opciones
-            </th>
-            <!-- <th scope="col" style="width: 200px"></th> -->
-            <!-- Establecemos "position:sticky" en la columna de "Opciones" -->
+            <th scope="col">No. semana</th>
+            <th scope="col">Fecha</th>
+            <th scope="col">Meta</th>
+            <th scope="col">Empleado</th>
           </tr>
         </thead>
         <tbody>
-          <tr v-for="usuario in usuarios" :key="usuario.idEmpleados">
-            <td>{{ usuario.Usuario }}</td>
-            <td>{{ usuario.Nombre }}</td>
-            <td>{{ usuario.Apellido_Paterno }}</td>
-            <td>{{ usuario.Apellido_Materno }}</td>
-            <td>{{ usuario.Correo }}</td>
-            <td>{{ usuario.Telefono }}</td>
-            <!-- <td>{{ usuario.Roles_idRoles }}</td>  -->
-            <td>{{ buscarRol(usuario.Roles_idRoles) }}</td>
-            <td scope="row" class="sticky" style="position: sticky">
-              <div class="container">
-                <div class="d-inline-flex">
-                  <button
-                    class="btn btn-primary d-inline-block mr-3 btn-spacer"
-                    type="submit"
-                    style="
-                      background-color: #ffbe16;
-                      border-color: #ffbe16;
-                      height: 37px;
-                      width: 45px;
-                    "
-                    @click="modificaruser(usuario.idEmpleados)"
-                  >
-                    <i
-                  class="fa-solid fa-pen-to-square"
-                  style="color: black;"
-                ></i>
-                  </button>
-                  <button
-                    class="btn btn-primary btn-delete d-inline-block"
-                    type="submit"
-                    style="
-                      background-color: #c01a1a;
-                      border-color: #c01a1a;
-                      height: 37px;
-                      width: 45px;
-                      margin-top: 0% !important;
-                    "
-                    @click="mostrarmodal(usuario.Usuario, usuario.idEmpleados)"
-                  >
-                    <img
-                      class="img-fluid mb-1"
-                      style="width: 24.5px; height: 22.75px; margin-top: 0% !important"
-                      src="../assets/basura.png"
-                    />
-                  </button>
-                </div>
-              </div>
-            </td>
+          <tr v-for="meta in metasMostradas" :key="meta.idMeta_De_Ventas">
+            <td>{{ meta.NumSemana }}</td>
+            <td>{{ meta.Fecha }}</td>
+            <td>{{ meta.Meta }}</td>
+            <td>{{ meta.Nombre }} {{ meta.Apellido_Paterno }} {{ meta.Apellido_Materno }}</td>
           </tr>
         </tbody>
       </table>
     </div>
   </div>
 
-  <!-- <td scope="row">
-            <div class ="container">
-              
-              <div class ="row">
-                
-                <div class ="col">
-                  <button
-                class="btn btn-primary   d-inline-block" 
-                type="submit"
-                style="background-color: #ffbe16; border-color: #ffbe16; height: 37px"
-                @click="modificaruser (usuario.idEmpleados)"
-              >
-                <img
-                  class="img-fluid mb-3"
-                  style="width: 100; height: 20px; margin-top: 0% !important"
-                  src="../assets/lapiz.png"
-                />
-              </button>
-                </div>
-                <div class ="col">
-                  <button
-                class="btn btn-primary d-inline-block"
-                type="submit"
-                style="background-color: #c01a1a; border-color: #c01a1a; height: 37px; margin-top: 0% !important"
-                @click="mostrarmodal(usuario.Usuario, usuario.idEmpleados)"
-              >
-                <img
-                class="img-fluid mb-1"
-                  style="width: 24.5px; height: 22.75px ; margin-top: 0% !important"
-                  src="../assets/basura.png"
-                
-                />
-              </button>
-                </div>
-            </div>
-         </div>
-        
-          </td>
-        </tr>
-      </tbody>
-    </table>
-    </div>
-  </div> -->
-
-  <!-- Modal  modalCon-->
-
-  <div
-    class="modal fade"
-    id="modal"
-    tabindex="-1"
-    aria-labelledby="exampleModalLabel"
-    aria-hidden="true"
-  >
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="exampleModalLabel">Eliminar Usuario</h5>
-          <button
-            type="button"
-            class="btn-close"
-            data-bs-dismiss="modal"
-            aria-label="Close"
-          ></button>
-        </div>
-        <div class="modal-body">
-          <span
-            >¿Está seguro de que quiere eliminar al Usuario {{ nombreUsuarioAct }}?</span
-          >
-        </div>
-        <div class="modal-footer">
-          <button
-            type="button"
-            class="btn btn-danger"
-            data-bs-dismiss="modal"
-            @click="desactivarUsuario(idUsuarioAct)"
-          >
-            Confirmar
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
 </template>
 <style>
 body {
@@ -362,9 +128,18 @@ body {
   background-image: linear-gradient(113.96deg, #000103 2.35%, #164193 100%);
   min-height: 100vh;
 }
+.btn-delete:hover{
+  background-color: #fc4d4d !important;
+}
+
 .btn-spacer {
   margin-right: 10px;
 }
+.btn-spacer:hover {
+  margin-right: 10px;
+  background-color: #ffef16 !important;
+}
+
 .italika {
   font-family: "Fjalla One";
   font-style: normal;
@@ -409,5 +184,14 @@ body {
 .table-container {
   max-width: 100%;
   overflow-x: scroll;
+}
+
+.btn-crear {
+  background-color: #19aa66 !important;
+}
+
+.btn-crear:hover {
+  /*background-color: #66d054 !important;*/
+  background-color: #2ecc28 !important;
 }
 </style>
