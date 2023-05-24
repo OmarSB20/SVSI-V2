@@ -434,7 +434,7 @@ const validarVisita = () => {
 
 const validar = async() => {
     try {
-        if (visita==true){
+        if (visita.value){
             validarVisita();
             submt();
         }else{
@@ -449,13 +449,13 @@ const validar = async() => {
 
 const submt = async() => {
     try {
-        if(validado){
+        if(validado.value){
             console.log("codigo amarillo");
-            if (nuevo==true) {
+            if (nuevo.value) {
                 await revisarCliente();
             } else {
                 alertaLlenado.value = false;
-                if (visita){
+                if (visita.value){
                     await crearCotizacionV();
                 }else{
                     await crearCotizacion();
@@ -897,9 +897,9 @@ const verCotizaiones = async() => {
             <!-- Boton agregar mas motos-->
                 <div class="col-1 d-flex justify-content-center">
                     <button
+                        type="button" 
                         class="btn btn-primary"
                         style="width: 100%"
-                        type="submit"
                         @click="agregarMoto()"
                         
                     >
