@@ -11,6 +11,7 @@ import { creditosStore } from "../stores/creditos";
 import { estatusCotizacionStore } from "../stores/estatusCotizacion";
 import { cotizacionesStore } from "../stores/cotizaciones";
 import { usuariosStore } from "../stores/usuarios";
+import { cotizacionesMotosStore } from '../stores/cotizacionesMotos';
 import router from '../router';
 import CompHeader from '../components/Header.vue';
 
@@ -23,6 +24,7 @@ const { obtenerIdPorUser, getIdUsuario } = usuariosStore();
 const { setInterfazOrigen, getIdCliente, obtenerCliente, setIdCliente, clienteExiste, agregarCliente } = clientesStore();
 const { getUser } = loginStore();
 const { agregarCotizacion } = cotizacionesStore();
+const { agregarMotosACotizacion } = cotizacionesMotosStore();
 
 //Variables
 const noNBAZ = ref(true);
@@ -52,6 +54,8 @@ const asesores = ref();
 const deshabilitado = ref(false);
 const idUser = ref(null);
 const idCliente = ref(null);
+const idCotizacion = ref(null);
+const arregloIdMotos = ref([]);
 
 const motoValida1 = ref("");
 const motoValida2 = ref("");
@@ -154,14 +158,10 @@ const obtenerAsesores = async () => {
 };
 
 const agregarMoto = async() => {
-    await divs.value.push({});
-    await llenarmotos();
+    arregloIdMotos.value.push(tagMoto1.value.value);
+    console.log(arregloIdMotos.value);
 };
 
-const eliminarMoto = (index) => {
-    console.log(index);
-    divs.value.splice(index,1);
-};
 
 function validarEmail() {
     var pswd = document.getElementById("emailInpt");
@@ -300,22 +300,19 @@ const validarCredito = () => {
 };
 
 const validarEstatus = async () => {
+
     if (tagEstatus.value.value == -1) {
         estatusValido.value = "comboEstatus";
-        visita.value = false;
+        visita.value=false;
         return false;
-    
     }
-    else if (tagEstatus.value.value == idVisita.value){
-        visita.value = true;
-        estatusValido.value = "";
-        cargarComboVisita();
-        return true;
+
+    if (tagEstatus.value.value == 1) {//Poner el id del estatus visita, el mio es el 12
+        visita.value=true;
     }else{
-        estatusValido.value = "";
-        visita.value = false;
-        return true;
+        visita.value=false;
     }
+    return true;
 };
 
 const validarAsesor = () => {
@@ -412,8 +409,6 @@ const validarGeneral = () => {
 };
 
 const validarVisita = () => {
-    console.log("validarV");
-    console.log(visita.value);
         validado.value = validarTexto(tagNombre.value) &&
         validarTexto(tagAP.value) &&
         validarTexto(tagAM.value) &&
@@ -430,13 +425,15 @@ const validarVisita = () => {
         validarHoraF();
     
         console.log(validado.value);
+        return validado.value
 };
 
 const validar = async() => {
+    console.log(visita.value)
     try {
         if (visita.value){
-            validarVisita();
-            submt();
+             validarVisita()==true ? submt() : console.log("Validacion fallo") 
+            
         }else{
             validarGeneral();
             console.log("llegue aqui");
@@ -482,7 +479,6 @@ const crearCotizacionV = async() => {
         Empleados_idEmpleados: idUser.value,
         Tipos_De_Creditos_idTipos_De_Creditos: tagCreditos.value.value,
         Clientes_idClientes: idCliente.value,
-        Moto_idMoto: tagMoto1.value.value,
         AsesoresBAZ_idAsesoresBAZ: tagAsesores.value.value,
         EstatusCotizacion_idEstatusCotizacion: tagEstatus.value.value,
         FechaRegistro: fechaActual.value,
@@ -494,12 +490,10 @@ const crearCotizacionV = async() => {
         Comentario: comentario.value,
         };
 
-        await agregarCotizacion(cotizacion);
+        idCotizacion.value = await agregarCotizacion(cotizacion);
         setIdCliente(null);
-        modal = new bootstrap.Modal(document.getElementById("modalCrear"), {
-        keyboard: false,
-        });
-        await modal.show();
+        await asignarMotos();
+
     } catch (error) {
         console.log(error);
     }
@@ -513,18 +507,29 @@ const crearCotizacion = async() => {
         Empleados_idEmpleados: idUser.value,
         Tipos_De_Creditos_idTipos_De_Creditos: tagCreditos.value.value,
         Clientes_idClientes: idCliente.value,
-        Moto_idMoto: tagMoto1.value.value,
         AsesoresBAZ_idAsesoresBAZ: tagAsesores.value.value,
         EstatusCotizacion_idEstatusCotizacion: tagEstatus.value.value,
         FechaRegistro: fechaActual.value,
-        PagoInicial: tagPi.value,
-        Capacidad: tagC.value,
+        PagoInicial: tagPi.value.value,
+        Capacidad: tagC.value.value,
         FechaVisita: fechaActual.value,
         Comentario: comentario.value,
         };
 
-        await agregarCotizacion(cotizacion);
+        idCotizacion.value = await agregarCotizacion(cotizacion);
         setIdCliente(null);
+        await asignarMotos();
+        
+    } catch (error) {
+        console.log(error);
+    }
+};
+
+const asignarMotos = async () => {
+    try {
+        for (var j in arregloIdMotos.value){
+            await agregarMotosACotizacion(arregloIdMotos.value[j], idCotizacion.value);
+        }
         modal = new bootstrap.Modal(document.getElementById("modalCrear"), {
         keyboard: false,
         });
@@ -863,7 +868,7 @@ const verCotizaiones = async() => {
                         Estatus:
                     </h5>
                 </div>
-                <div class="col-3" ref="tagBordeMoto">
+                <div class="col-3">
                   <select
                     :class="estatusValido"
                     id="select2"
@@ -911,7 +916,7 @@ const verCotizaiones = async() => {
                         Asesor BAZ:
                     </h5>
                 </div>
-                <div class="col-3" ref="tagBordeMoto">
+                <div class="col-3">
                   <select
                     :class="asesorValido"
                     id="select4"
@@ -947,7 +952,7 @@ const verCotizaiones = async() => {
                     <button
                         class="btn btn-primary"
                         style="width: 100%"
-                        type="submit"
+                        type="button"
                         @click="eliminarMoto(index)"
                         
                     >
@@ -1040,7 +1045,7 @@ const verCotizaiones = async() => {
                 </div>
             </div>
             <!-- Div Visita-->
-            <div class="row d-flex align-items-center mb-4">
+            <div class="row d-flex align-items-center mb-4" >
                 <div class="col-1"></div>
                 <div class="col-2 d-flex justify-content-end pt-2">
                     <h5 class="italika d-flex justify-content-end pe-2">
