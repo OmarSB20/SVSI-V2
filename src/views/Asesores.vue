@@ -163,7 +163,7 @@ async function borrarAsesor(idAsesoresBAZ) {
     apellidoMaterno.value = "";
     botonActualizar.value = false;
     idBotonActualizar.value = -1;
-    repetido = false;
+    repetido.value = false;
   } catch (error) {
     console.log(error);
   }
