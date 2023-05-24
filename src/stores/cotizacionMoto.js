@@ -38,7 +38,23 @@ export const cotizacionMotoStore = defineStore("cotizacionMoto",{
         }
         
 
-    }
+    },
+    async agregarMotosACotizacion(idMotocicleta, idCotizaciones){
+        try {
+            const res = await axios.post('http://localhost:4000/api/cotizacionesMoto',{
+                "Cotizaciones_idCotizaciones": idCotizaciones,
+                "Moto_idMoto": idMotocicleta
+            })
+
+           console.log(res)
+            return ;
+            
+        } catch (error) {
+            console.log(error)
+            return ;
+            
+        }
+    },
 
     // async clienteExiste(cliente){
     //     try {

@@ -33,7 +33,7 @@ const {
 } = clientesStore();
 const { getUser } = loginStore();
 const { agregarCotizacion } = cotizacionesStore();
-const { agregarMotosACotizacion } = cotizacionesMotosStore();
+const { agregarMotosACotizacion } = cotizacionMotoStore();
 
 //Variables
 const noNBAZ = ref(true);
@@ -531,6 +531,7 @@ const crearCotizacion = async () => {
     };
 
     idCotizacion.value = await agregarCotizacion(cotizacion);
+    console.log(idCotizacion.value)
     setIdCliente(null);
     await asignarMotos();
   } catch (error) {
@@ -726,7 +727,7 @@ function llenarCombos() {
 
 const verCotizaiones = async () => {
   await modal.hide();
-  //router.push({ name: "prospectos" });
+  router.push({ name: "cotizaciones" });
 };
 </script>
 <template>
@@ -737,7 +738,7 @@ const verCotizaiones = async () => {
       <!-- Row 1-->
       <div class="row d-flex align-items-center mb-3">
         <div class="col-1 d-flex justify-content-end">
-          <router-link to="/roles">
+          <router-link to="/cotizaciones">
             <img
               class="img-fluid mb-3"
               style="margin-top: 20px; width: 31.23px; height: 35.5px"
