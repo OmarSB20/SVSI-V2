@@ -239,6 +239,7 @@ function redirigir(interfaz) {
                     v-if="estadoBotones[1]"
                     class="noAccordionBtn w-100 ps-5 d-flex justify-content-start align-items-center"
                     type="button"
+                    @click="redirigir('cotizaciones')"
                     :style="{ height: altoBtn + 'px' }"
                   >
                     Cotizaciones
