@@ -14,45 +14,26 @@ import cli from "nodemon/lib/cli";
 
 const { obtenerRolesN } = rolesStore();
 const { obtenerUnUser, obtenerIdPorUser } = usuariosStore();
-const { obtenerUsuarios } = usuariosStore();
-const { consultarMotocicletas } = catalogoStore();
-const { obtenerUnModelo } = catalogoStore();
-const { obtenerCliente } = clientesStore();
-const { obtenerTodosClientes } = clientesStore();
-const { getIdCliente } = prospectosStore();
-const { obtenerProspectos } = prospectosStore();
-const { obtenerProspecto } = prospectosStore();
-const { getIdProspecto } = prospectosStore();
-const { setIdProspecto } = prospectosStore();
-const { eliminarProspecto } = prospectosStore();
+const { consultarMotocicletas, obtenerUnModelo } = catalogoStore();
+const { obtenerCliente, obtenerTodosClientes } = clientesStore();
+const { obtenerProspectos, setIdProspecto, eliminarProspecto } = prospectosStore();
 const { getUser } = loginStore();
 const { obtenerMediosN, obtenerMedios } = mediosContactoStore();
 
 //Variables reactivas
 const nickActual = ref();
 const nivelUsuario = ref([]);
-const idEmpleado = ref("");
 const prospectos = ref([]);
 const prospectosFiltrados = ref([]);
 const prospectosDesplegados = ref([]);
-const prospectosPrueba = ref([]);
 const usuarioActual = ref("Lupillo");
-const usuarios = ref([]);
-const idUsuario = ref("");
 const clientes = ref([]);
 const motos = ref([]);
 const mediosContacto = ref([]);
 const superUsuario = ref(false);
 const nombre = ref("");
-const arregloDeProspectos = ref([]);
-const nombreP = ref("");
-const apellidoP = ref("");
-const apellidoM = ref("");
-
 const idProspectoEl = ref();
-
 const tablaLista = ref(false);
-
 var modal;
 
 onMounted(async () => {

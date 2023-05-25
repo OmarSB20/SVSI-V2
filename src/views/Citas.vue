@@ -9,10 +9,27 @@ import { usuariosStore } from "../stores/usuarios";
 import CompHeader from "../components/Header.vue";
 import router from "../router";
 
-const { agregarCita, obtenerTodos, obtenerUno, setDia, getDia, setCita, getCita,actualizarCita } = CitasStore();
-const { obtenerCliente, setIdCliente, getIdCliente, setInterfazOrigen, getAccionPas, setAccionPas } = clientesStore();
+const {
+  agregarCita,
+  obtenerTodos,
+  obtenerUno,
+  setDia,
+  getDia,
+  setCita,
+  getCita,
+  actualizarCita,eliminarCita
+} = CitasStore();
+const {
+  obtenerCliente,
+  setIdCliente,
+  getIdCliente,
+  setInterfazOrigen,
+  getAccionPas,
+  setAccionPas,
+} = clientesStore();
 const { getUser } = loginStore();
-const { obtenerIdPorUser } = usuariosStore();
+const { obtenerIdPorUser, obtenerUnUser } = usuariosStore();
+const { obtenerRolesN } = rolesStore();
 
 const alertaLlenar = ref(false);
 
@@ -34,10 +51,14 @@ const nombreClienteAct = ref("");
 const inptHoraAct = ref("");
 const idActualizar = ref("");
 
+const nickActual = ref("");
+const superUsuario = ref(false);
 const tagSelect = ref(null);
-const citaActualizar = ref(null)
+const citaActualizar = ref(null);
 
-const eventsArr = [];
+const idCitaEliminar = ref();
+
+const tituloFecha = ref("");
 
 let today = new Date();
 let activeDay;
@@ -67,57 +88,54 @@ const months = [
 ];
 
 onMounted(async () => {
-  citaActualizar.value = getCita();
-  console.log("citaAct")
-  console.log(citaActualizar.value)
-  setCita(null);
-if (getCita()) {
-  modal = new bootstrap.Modal(document.getElementById("ModalAct"), {
-    keyboard: false,
-  });
+  await consultarUsuarioAct();
+  await initCalendar();
+  const accPas = getAccionPas();
+  if (accPas) {
+    if (accPas == "crearCita") {
+      modal = new bootstrap.Modal(document.getElementById("exampleModal"), {
+        keyboard: false,
+      });
 
-  inptHoraAct.value = citaActualizar.value.hora;
-  tagSelect.value.value = citaActualizar.value.estatusCita;
-}else{
-  modal = new bootstrap.Modal(document.getElementById("exampleModal"), {
-    keyboard: false,
-  });
-}
-  
-  diaGuard = getDia();
-  console.log("diaGuard")
-  console.log(diaGuard)
-  if (diaGuard) {
-    year = diaGuard.ano;
-    month = diaGuard.mes;
-    await initCalendar();
-    printDate(diaGuard.posDiaActivo);
-
-    await consultarCliente();
-
-    modal.show();
-  } else {
-    await initCalendar();
-    console.log(diasMostrados.value);
+      await cargarDatosGuardar();
+    } else {
+      modal = await new bootstrap.Modal(document.getElementById("ModalAct"), {
+        keyboard: false,
+      });
+      await cargarDatosAct();
+    }
   }
 });
 
+const consultarUsuarioAct = async () => {
+  try {
+    nickActual.value = getUser();
+    let usuarioActual = await obtenerIdPorUser({ Usuario: nickActual.value });
+    usuarioActual = await obtenerUnUser(usuarioActual);
+    usuarioActual = usuarioActual.data.body[0];
+
+    let nivelUsuario = await obtenerRolesN(usuarioActual.Roles_idRoles);
+    nivelUsuario = nivelUsuario.data.body[0].SuperRol;
+
+    console.log("super usuario? " + nivelUsuario);
+
+    nivelUsuario == 1 ? (superUsuario.value = true) : (superUsuario.value = false);
+    console.log(superUsuario.value);
+  } catch (error) {
+    console.log(error);
+  }
+};
+
 async function consultarCliente() {
   let cliente = await obtenerCliente(getIdCliente());
-  cliente = cliente.data.body[0];
-  nombreCliente.value =
-    cliente.Nombre + " " + cliente.Apellido_Paterno + " " + cliente.Apellido_Materno;
-  nombreClienteAct.value =
-  cliente.Nombre + " " + cliente.Apellido_Paterno + " " + cliente.Apellido_Materno;
-
-  idCliente.value = cliente.idClientes;
-  if (getCita()) {
-    citaActualizar.value.Clientes_idClientes = cliente.idClientes;  
-  }
-  
   setIdCliente(null);
   setInterfazOrigen(null);
+  cliente = cliente.data.body[0];
   console.log(cliente);
+  console.log("SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS");
+  const nombreCompleto =
+    cliente.Nombre + " " + cliente.Apellido_Paterno + " " + cliente.Apellido_Materno;
+  return { id: cliente.idClientes, nombre: nombreCompleto };
 }
 
 //function to add days in days with class day and prev-date next-date on previous month and next month days and active on today
@@ -159,14 +177,34 @@ async function initCalendar() {
   for (let i = 1; i <= lastDate; i++) {
     citasDia = [];
     citaFormat = new Date(year, month, i);
+    citaFormat = citaFormat.toLocaleDateString();
+    citaFormat = citaFormat.replaceAll("/", "-");
+    const ano = citaFormat.substring(citaFormat.length - 4);
+    citaFormat = citaFormat.replace(ano, "");
+
+    let dia;
+    if (citaFormat.substring(0, 2).includes("-")) {
+      dia = "0" + citaFormat.substring(0, 1);
+      citaFormat = citaFormat.substring(1);
+    } else {
+      dia = citaFormat.substring(0, 2);
+      citaFormat = citaFormat.substring(2);
+    }
+    if (citaFormat.length == 3) {
+      citaFormat = citaFormat.replace("-", "-0");
+    }
+    citaFormat = ano + citaFormat + dia;
+
     let citaAprove = citasMes.value.filter((cita) => {
-      return cita.fecha.slice(0, -9) == citaFormat.toISOString().split("T")[0];
+      console.log(citaFormat);
+      console.log("sig cita");
+      console.log(cita.fecha.slice(0, -9));
+      return cita.fecha.slice(0, -9) == citaFormat;
     });
 
     citaAprove.forEach(async (item) => {
       item.hora = item.fecha.slice(11, item.fecha.length - 3);
       item.fecha = item.fecha.slice(0, -9);
-
       const client = await obtenerCliente(item.Clientes_idClientes);
       item.Nombre = client.data.body[0].Nombre;
       item.Apellido_Paterno = client.data.body[0].Apellido_Paterno;
@@ -240,72 +278,47 @@ async function initCalendar() {
 }
 
 async function obtenerCitasMes() {
-  const citas = await obtenerTodos();
-  citasMes.value = citas.data.body;
-}
+  citasMes.value = [];
+  let citas = await obtenerTodos();
+  citas = citas.data.body;
 
-//function to add month and year on prev and next button
-function prevMonth() {
-  month--;
-  if (month < 0) {
-    month = 11;
-    year--;
+  for (let element of citas) {
+    let emp = await obtenerUnUser(element.Empleados_idEmpleados);
+    emp = emp.data.body[0];
+    if (superUsuario.value || emp.Usuario.trim() == nickActual.value.trim()) {
+      citasMes.value.push(element);
+      console.log(element);
+    }
   }
-  initCalendar();
-}
-
-function nextMonth() {
-  month++;
-  if (month > 11) {
-    month = 0;
-    year++;
-  }
-  initCalendar();
-}
-
-function printDate(indice) {
-  console.log(diasMostrados.value[indice]);
-
-  diasMostrados.value[posDiaActivo].estilo = "day";
-  diasMostrados.value[indice].estilo = "day today active ";
-  posDiaActivo = indice;
-
-  eventosMostrados.value = diasMostrados.value[posDiaActivo].citas;
-  console.log(eventosMostrados.value);
-
-  alertaLlenar.value = false;
-  nombreCliente.value = "";
-  inptHora.value = "";
-}
-
-async function irHoy() {
-  today = new Date();
-  month = today.getMonth();
-  year = today.getFullYear();
-  await initCalendar();
-  printDate(posDiaActivo);
 }
 
 async function selecCliente(accionPas) {
-  if (accionPas=="actualizarCita") {
+  if (accionPas == "actualizarCita") {
     setCita(citaActualizar.value);
-   
-  }else{
+  } else {
     setCita(null);
-    inptHora.value="";
+    setDia(posDiaActivo);
+    inptHora.value = "";
   }
-  const prepDia = diasMostrados.value[posDiaActivo];
-  prepDia.posDiaActivo = posDiaActivo;
-  console.log(prepDia);
-  setDia(prepDia);
   setInterfazOrigen("citas");
   setAccionPas(accionPas);
-  modal.hide();
+  //modal.hide();
   router.push({ name: "seleccionCliente" });
+}
+//----------------Metodos para proceso de guardar ------------
+async function cargarDatosGuardar() {
+  const indice = getDia();
+  setDia(null);
+  const clienteSeleccionado = await consultarCliente();
+  printDate(indice);
+  idCliente.value = clienteSeleccionado.id;
+  nombreCliente.value = clienteSeleccionado.nombre;
+  console.log(nombreCliente.value);
+  inptHora.value = "";
+  await modal.show();
 }
 
 async function guardarCita() {
-  console.log(inptHora.value == "" || nombreCliente.value == "");
   if (inptHora.value == "" || nombreCliente.value == "") {
     alertaLlenar.value = true;
   } else {
@@ -322,60 +335,153 @@ async function guardarCita() {
       fecha: fechaTemp + " " + inptHora.value,
       estatusCita: 1,
     };
-
+    const indiceDia = posDiaActivo;
     await agregarCita(cita);
     await initCalendar();
-    printDate(diaGuard.posDiaActivo);
-    
+    printDate(indiceDia);
+
     modal.hide();
   }
 }
-
-
-async function preActualizar(cita,pos) {
+//----------------Metodos para proceso de actualizar ------------
+async function preActualizar(cita, pos,idEliminar) {
+  idCitaEliminar.value = idEliminar; 
   console.log(cita);
+  console.log("ubicateeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee");
+  console.log(pos);
   citaActualizar.value = cita;
-  posDiaActivo =pos;
+  citaActualizar.value.posicion = posDiaActivo;
   idActualizar.value = cita.idCitas;
+  idCliente.value =cita.Clientes_idClientes;
   let clienteAct = await obtenerCliente(cita.Clientes_idClientes);
   clienteAct = clienteAct.data.body[0];
-  nombreClienteAct.value = clienteAct.Nombre + " " + clienteAct.Apellido_Paterno + " " + clienteAct.Apellido_Materno;
+  nombreClienteAct.value =
+    clienteAct.Nombre +
+    " " +
+    clienteAct.Apellido_Paterno +
+    " " +
+    clienteAct.Apellido_Materno;
   inptHoraAct.value = cita.hora;
-  console.log(inptHoraAct.value)
+  console.log(inptHoraAct.value);
   tagSelect.value.value = cita.estatusCita;
-  console.log(tagSelect.value.value)
+  console.log(tagSelect.value.value);
   modal = new bootstrap.Modal(document.getElementById("ModalAct"), {
     keyboard: false,
   });
   await modal.show();
 }
 
+async function cargarDatosAct() {
+  citaActualizar.value = getCita();
+  console.log("cargaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaarrrrrrrrr");
+  console.log(citaActualizar.value);
+  setCita(null);
+  printDate(citaActualizar.value.posicion);
+  const clienteSeleccionado = await consultarCliente();
+  console.log(clienteSeleccionado);
+  if (clienteSeleccionado) {
+    idCliente.value = clienteSeleccionado.id;
+    nombreClienteAct.value = clienteSeleccionado.nombre;
+    console.log(nombreClienteAct.value);
+    console.log(idCliente.value);
+  } else {
+    idCliente.value = citaActualizar.value.Clientes_idClientes;
+  }
+  console.log("IDDDDDDDDDDDCLIENTEEEEEEEEEE")
+  console.log(idCliente.value)
+  // idCliente.value = clienteSeleccionado.id;
+  // nombreClienteAct.value = clienteSeleccionado.nombre;
+  inptHoraAct.value = citaActualizar.value.hora;
+  tagSelect.value.value = citaActualizar.value.estatusCita;
+  await modal.show();
+}
+
 async function actualizarCitas() {
+  console.log("POSIDACACITOVOO---");
+  console.log(posDiaActivo);
   if (inptHoraAct.value == "" || nombreClienteAct.value == "") {
     alertaLlenar.value = true;
   } else {
     let fechaTemp = diasMostrados.value[posDiaActivo];
-    console.log(fechaTemp)
+    console.log(fechaTemp);
     const mesAg = fechaTemp.mes + 1;
     fechaTemp = fechaTemp.ano + "-" + mesAg + "-" + fechaTemp.dia;
-
+    console.log(fechaTemp);
     console.log("fechaAct");
-    console.log(citaActualizar.value.fecha)
-    console.log(citaActualizar.value.fecha + " " + inptHoraAct.value)
+    console.log(citaActualizar.value.fecha);
+    console.log(citaActualizar.value.fecha + " " + inptHoraAct.value);
+    //idCliente.value = citaActualizar.value.Clientes_idClientes;
     const cita = {
       idCitas: citaActualizar.value.idCitas,
-      Clientes_idClientes: citaActualizar.value.Clientes_idClientes,
+      Clientes_idClientes: idCliente.value,
       Empleados_idEmpleados: citaActualizar.value.Empleados_idEmpleados,
-      fecha: citaActualizar.value.fecha + " " + inptHoraAct.value,
+      fecha: fechaTemp + " " + inptHoraAct.value,
       estatusCita: tagSelect.value.value,
     };
-    console.log(cita)
-
+    console.log(cita);
+    const indiceDia = posDiaActivo;
     await actualizarCita(cita);
     await initCalendar();
-    printDate(posDiaActivo);
+    printDate(indiceDia);
     await modal.hide();
   }
+}
+
+//metodos de utilidad
+//function to add month and year on prev and next button
+async function prevMonth() {
+  month--;
+  if (month < 0) {
+    month = 11;
+    year--;
+  }
+  await initCalendar();
+}
+
+async function nextMonth() {
+  month++;
+  if (month > 11) {
+    month = 0;
+    year++;
+  }
+  await initCalendar();
+}
+
+async function irHoy() {
+  today = new Date();
+  month = today.getMonth();
+  year = today.getFullYear();
+  await initCalendar();
+  printDate(posDiaActivo);
+}
+//selecciona un día segun su indice y carga sus citas
+function printDate(indice) {
+  console.log(diasMostrados.value[indice]);
+  console.log(diasMostrados.value);
+  diasMostrados.value[posDiaActivo].estilo = "day";
+  diasMostrados.value[indice].estilo = "day today active ";
+  posDiaActivo = indice;
+  console.log("-----------------------------PintDate posDiaActivo");
+  console.log(posDiaActivo);
+  eventosMostrados.value = diasMostrados.value[posDiaActivo].citas;
+  console.log(eventosMostrados.value);
+
+  alertaLlenar.value = false;
+  nombreCliente.value = "";
+  inptHora.value = "";
+
+  tituloFecha.value =
+    diasMostrados.value[posDiaActivo].dia +
+    "/" +
+    diasMostrados.value[posDiaActivo].mes +
+    "/" +
+    diasMostrados.value[posDiaActivo].ano;
+}
+
+async function eliminar(){
+  await eliminarCita(idCitaEliminar.value);
+  await initCalendar();
+  printDate(posDiaActivo)
 }
 </script>
 
@@ -418,22 +524,21 @@ async function actualizarCitas() {
             </div>
           </div>
         </div>
-        <div class="goto-today">
-          <div class="goto">
-            <input type="text" placeholder="mm/yyyy" class="date-input" />
-            <button class="goto-btn">Go</button>
-          </div>
+        <div class="goto-today d-flex justify-content-center">
           <button class="today-btn" @click="irHoy()">Hoy</button>
         </div>
       </div>
     </div>
     <div class="right">
       <div class="today-date">
-        <div class="event-day">wed</div>
-        <div class="event-date">12th december 2022</div>
+        <div class="event-day">Citas</div>
+        <div class="event-date">{{ tituloFecha }}</div>
       </div>
       <div class="events" v-for="(evento, index3) in eventosMostrados">
-        <div class="event d-flex align-items-center" @click="preActualizar(evento, index3)">
+        <div
+          class="event d-flex align-items-center"
+          @click="preActualizar(evento, index3,evento.idCitas)"
+        >
           <div>
             <i class="fa-solid fa-motorcycle" style="font-size: 50px"></i>
           </div>
@@ -441,9 +546,7 @@ async function actualizarCitas() {
             {{ evento.hora }} - {{ evento.Nombre }} {{ evento.Apellido_Paterno }}
             {{ evento.Apellido_Materno }}
             <span v-if="evento.estatusCita == 1" class="badge bg-primary">Pendiente</span>
-            <span v-if="evento.estatusCita == 2" class="badge bg-success"
-              >Atendida</span
-            >
+            <span v-if="evento.estatusCita == 2" class="badge bg-success">Atendida</span>
             <span v-if="evento.estatusCita == 3" class="badge bg-warning"
               >Sin asistencia</span
             >
@@ -510,7 +613,12 @@ async function actualizarCitas() {
         </div>
         <div class="modal-body">
           <div class="row mx-auto w-50 mb-2">
-            <button type="button" class="btn btn-success" @click="selecCliente('crearCita')">
+            <button
+              type="button"
+              class="btn btn-success"
+              data-bs-dismiss="modal"
+              @click="selecCliente('crearCita')"
+            >
               seleccionar cliente
             </button>
           </div>
@@ -574,11 +682,16 @@ async function actualizarCitas() {
           ></button>
         </div>
         <div class="modal-body">
-          <!-- <div class="row mx-auto w-50 mb-2">
-            <button type="button" class="btn btn-success" @click="selecCliente('actualizarCita')">
+          <div class="row mx-auto w-50 mb-2">
+            <button
+              type="button"
+              class="btn btn-success"
+              data-bs-dismiss="modal"
+              @click="selecCliente('actualizarCita')"
+            >
               seleccionar cliente
             </button>
-          </div> -->
+          </div>
           <div class="row d-flex align-items-center">
             <div class="col-2">Cliente</div>
             <div class="col">
@@ -607,9 +720,7 @@ async function actualizarCitas() {
             </div>
           </div>
           <div class="row d-flex justify-content-center align-items-center">
-            <div class="col-2">
-              Estatus
-            </div>
+            <div class="col-2">Estatus</div>
             <div class="col">
               <select class="form-select mt-2" ref="tagSelect">
                 <option value="1">Pendiente</option>
@@ -624,6 +735,9 @@ async function actualizarCitas() {
           </div>
         </div>
         <div class="modal-footer">
+          <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#elimModal">
+            Eliminar cita
+          </button>
           <button type="button" class="btn btn-primary" @click="actualizarCitas()">
             Guardar
           </button>
@@ -631,6 +745,26 @@ async function actualizarCitas() {
       </div>
     </div>
   </div>
+  
+<!-- elimModal -->
+<div class="modal fade" id="elimModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Eliminar cita</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        ¿Está seguro de eliminar esta cita?
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button type="button" class="btn btn-danger" @click="eliminar()" data-bs-dismiss="modal">Confirmar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 </template>
 <style scoped>
 .calendar {

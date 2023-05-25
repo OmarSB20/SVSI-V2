@@ -4,7 +4,7 @@ import axios from "axios";
 export const cotizacionesStore = defineStore("cotizaciones",{
   state: ()=>({
     idCotizaciones:null,
-    interfazOrigen:null
+   
   }), 
   actions:{
     setIdCotizacion(id){
@@ -53,7 +53,7 @@ export const cotizacionesStore = defineStore("cotizaciones",{
         try {
             const res = await axios.post('http://localhost:4000/api/cotizaciones',cotizacion)
             console.log(res)
-            return ;
+            return res.data.body;
         } catch (error) {
             console.log(error)
             return ;
@@ -87,10 +87,6 @@ export const cotizacionesStore = defineStore("cotizaciones",{
             return ;
             
         }
-    },
-    setInterfazOrigen(interfaz){
-        this.interfazOrigen = interfaz;
-        console.log(this.interfazOrigen)
     },
   } 
 })
