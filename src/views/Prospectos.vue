@@ -21,6 +21,8 @@ const { getUser } = loginStore();
 const { obtenerMediosN, obtenerMedios } = mediosContactoStore();
 
 //Variables reactivas
+const fechaInicial = ref("");
+const fechaFinal = ref("");
 const nickActual = ref();
 const nivelUsuario = ref([]);
 const prospectos = ref([]);
@@ -34,6 +36,8 @@ const superUsuario = ref(false);
 const nombre = ref("");
 const idProspectoEl = ref();
 const tablaLista = ref(false);
+
+const buscarPor = ref("Nombre");
 var modal;
 
 onMounted(async () => {
@@ -72,7 +76,7 @@ const consultarUsuarioAct = async () => {
 };
 
 const montarProspectos = async () => {
-prospectosFiltrados.value=[];
+  prospectosFiltrados.value = [];
 
   prospectos.value = await obtenerProspectos();
   prospectos.value = prospectos.value.data.body;
@@ -80,8 +84,8 @@ prospectosFiltrados.value=[];
 
   let cliente;
   prospectos.value.forEach(async (element) => {
-    console.log(element.Empleados_idEmpleados)
-    element.usuario = await obtenerUnUser(element.Empleados_idEmpleados) 
+    console.log(element.Empleados_idEmpleados);
+    element.usuario = await obtenerUnUser(element.Empleados_idEmpleados);
     element.usuario = element.usuario.data.body[0].Usuario;
 
     element.moto = await obtenerUnModelo(element.Moto_idMoto);
@@ -106,9 +110,9 @@ prospectosFiltrados.value=[];
     delete element.idClientes;
 
     if (superUsuario.value || element.usuario.trim() == nickActual.value.trim()) {
-        prospectosFiltrados.value.push(element)
+      prospectosFiltrados.value.push(element);
     }
-    prospectosDesplegados.value=prospectosFiltrados.value;
+    prospectosDesplegados.value = prospectosFiltrados.value;
   });
 
   tablaLista.value = true;
@@ -116,14 +120,14 @@ prospectosFiltrados.value=[];
 
 const actualizarTabla = (nombre) => {
   if (nombre == "") {
-    prospectosFiltrados.value=prospectosDesplegados.value;
+    prospectosFiltrados.value = prospectosDesplegados.value;
   } else {
     nombre = nombre.replace(/ /g, "");
     prospectosFiltrados.value = [];
     prospectosDesplegados.value.forEach((element) => {
-      console.log(element)
-      const nomCliente = element.nombre + element.paterno + element.materno+"";
-      console.log(nomCliente + " " + nombre)
+      console.log(element);
+      const nomCliente = element.nombre + element.paterno + element.materno + "";
+      console.log(nomCliente + " " + nombre);
       if (nomCliente.toLowerCase().includes(nombre.toLowerCase())) {
         prospectosFiltrados.value.push(element);
       }
@@ -131,11 +135,40 @@ const actualizarTabla = (nombre) => {
   }
 };
 
+function filtrarFecha() {
+  console.log("viendoFecha");
+
+  const ini = new Date(fechaInicial.value).getTime();
+  const fin = new Date(fechaFinal.value).getTime();
+  const resta = fin - ini;
+
+  if (resta < 0||!ini||!fin) {
+    //alertFecha.value = true;
+    prospectosFiltrados.value = prospectosDesplegados.value;
+  } else {
+    prospectosFiltrados.value = [];
+    prospectosDesplegados.value.forEach((element) => {
+      let fechaObtenida = element.Fecha_registro;
+      fechaObtenida = new Date(element.Fecha_registro).getTime();
+      
+      if (fechaObtenida >= ini && fechaObtenida <= fin) {
+        prospectosFiltrados.value.push(element);
+        console.log("ENTRO")
+      }
+    });
+  }
+}
+
+function cambiarBusqueda() {
+  buscarPor.value == "Nombre"
+    ? (buscarPor.value = "Fecha")
+    : (buscarPor.value = "Nombre");
+}
+
 const modificarProspecto = (idProspecto) => {
   setIdProspecto(idProspecto);
-  router.push({name:"actualizarProspecto"});
+  router.push({ name: "actualizarProspecto" });
 };
-
 
 const eliminar = async () => {
   try {
@@ -147,7 +180,7 @@ const eliminar = async () => {
 };
 
 const mostrarModal = (idProspecto) => {
-    idProspectoEl.value = idProspecto;
+  idProspectoEl.value = idProspecto;
   modal.show();
 };
 </script>
@@ -165,7 +198,7 @@ const mostrarModal = (idProspecto) => {
           />
         </router-link>
       </div>
-      <div class="col-7 mb-3 pt-5">
+      <div class="col-5 mb-3 pt-5">
         <div class="row align-elements-end">
           <p class="italika" style="font-size: 50px">Prospectos</p>
         </div>
@@ -173,15 +206,42 @@ const mostrarModal = (idProspecto) => {
           <h5 class="italika d-flex justify-content-start">Prospectos registrados</h5>
         </div>
       </div>
-      <div class="col-4 pt-4">
-        <div class="row d-flex align-elements-center pt-2">
+      <div class="col-6 pt-4 d-flex align-elements-end">
+        <div class="row d-flex align-elements-end pt-2">
+          <button
+            class="btn btn-primary mt-4"
+            type="button"
+            style="width: 100px; height: 50px"
+            @click="cambiarBusqueda()"
+          >
+            {{ buscarPor }}
+          </button>
           <input
+            v-show="buscarPor == 'Nombre'"
             type="text"
             class="form-control rounded-pill mt-4"
             style="width: 300px; height: 50px; border-color: #5e5e5e"
             placeholder="Buscar"
             v-model.trim="nombre"
             @input="actualizarTabla(nombre)"
+          />
+          <input
+            v-show="buscarPor == 'Fecha'"
+            type="date"
+            class="form-control rounded-pill mt-4"
+            style="width: 150px; height: 50px; border-color: #5e5e5e"
+            placeholder="Inicio"
+            v-model.trim="fechaInicial"
+            @input="filtrarFecha()"
+          />
+          <input
+            v-show="buscarPor == 'Fecha'"
+            type="date"
+            class="form-control rounded-pill mt-4"
+            style="width: 150px; height: 50px; border-color: #5e5e5e"
+            placeholder="Fin"
+            v-model.trim="fechaFinal"
+            @input="filtrarFecha()"
           />
         </div>
         <div class="row pt-3">
@@ -229,7 +289,7 @@ const mostrarModal = (idProspecto) => {
             <th scope="col">Telefono</th>
             <th scope="col">Correo</th>
             <th scope="col">Comentario</th>
-            <th scope="col" style="min-width: 150px;">Fecha de registro</th>
+            <th scope="col" style="min-width: 150px">Fecha de registro</th>
             <th scope="col" class="sticky" style="position: sticky; right: 0">
               Opciones
             </th>
@@ -266,10 +326,10 @@ const mostrarModal = (idProspecto) => {
                     "
                     @click="modificarProspecto(prospecto.idProspectos)"
                   >
-                  <i
-                  class="fa-solid fa-pen-to-square"
-                  style="color: black;width: 28.5px; height: 18.75px;"
-                ></i>
+                    <i
+                      class="fa-solid fa-pen-to-square"
+                      style="color: black; width: 28.5px; height: 18.75px"
+                    ></i>
                   </button>
                   <button
                     class="btn btn-primary btn-delete d-inline-block"
@@ -281,9 +341,7 @@ const mostrarModal = (idProspecto) => {
                       width: 45px;
                       margin-top: 0% !important;
                     "
-                    @click="
-                      mostrarModal(prospecto.idProspectos)
-                    "
+                    @click="mostrarModal(prospecto.idProspectos)"
                   >
                     <img
                       class="img-fluid mb-1"
@@ -318,9 +376,7 @@ const mostrarModal = (idProspecto) => {
           ></button>
         </div>
         <div class="modal-body">
-          <span
-            >¿Está seguro de que quiere eliminar este prospecto?</span
-          >
+          <span>¿Está seguro de que quiere eliminar este prospecto?</span>
         </div>
         <div class="modal-footer">
           <button
