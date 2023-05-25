@@ -10,7 +10,7 @@ import { creditosStore } from "../stores/creditos";
 import { estatusCotizacionStore } from "../stores/estatusCotizacion";
 import { cotizacionesStore } from "../stores/cotizaciones";
 import { usuariosStore } from "../stores/usuarios";
-import { cotizacionesMotosStore } from "../stores/cotizacionesMotos";
+import { cotizacionMotoStore } from "../stores/cotizacionMoto";
 import router from "../router";
 import CompHeader from "../components/Header.vue";
 
@@ -33,9 +33,11 @@ const {
 } = clientesStore();
 const { getUser } = loginStore();
 const { agregarCotizacion } = cotizacionesStore();
-const { agregarMotosACotizacion } = cotizacionesMotosStore();
+const { agregarMotosACotizacion } = cotizacionMotoStore();
 
 //Variables
+
+const motosAgregadas = [];
 const noNBAZ = ref(true);
 const exists = ref(false);
 const idVisita = ref("");
@@ -136,6 +138,7 @@ const obtenerCreditos = async () => {
 const obtenerMotos = async () => {
   try {
     catalogo.value = (await consultarMotocicletasActivas()).data.body;
+    console.log("CATALOGOCATALOGOCATALOGOCATALOGOCATALOGOCATALOGOCATALOGO")
     console.log(catalogo.value);
   } catch (error) {
     console.log(error);
@@ -171,7 +174,20 @@ const obtenerAsesores = async () => {
 };
 
 const agregarMoto = async () => {
-  arregloIdMotos.value.push(tagMoto1.value.value);
+  if (tagMoto1.value.value!=-1) {
+    arregloIdMotos.value.push(tagMoto1.value.value);
+    divs.value.push({});
+    console.log(divs.value);
+    motosAgregadas.push(catalogo.value[(tagMoto1.value.value -1)].Modelo)
+  console.log(arregloIdMotos.value);
+  }
+ 
+};
+const eliminarMoto = async (index) => {
+  console.log(index);
+  arregloIdMotos.value.splice(index, 1);
+  divs.value.splice(index, 1);
+  motosAgregadas.splice(index, 1);
   console.log(arregloIdMotos.value);
 };
 
@@ -214,6 +230,16 @@ function validarTlfn() {
     }
   }
 }
+
+const validarHVisita = () => {
+  if(tagInicio.value.value < tagFin.value.value){
+    validado.value = true;
+
+  }else{
+    validado.value = false;
+  }
+  console.log(validado.value);
+};
 
 function validarNumBAZ() {
   if (nBaz.value == "") {
@@ -287,19 +313,6 @@ function validarMoto1() {
   }
 }
 
-function validarMoto2() {
-  console.log(tagMoto2.value.value);
-  console.log(tagMoto2.value.value == -1);
-  if (tagMoto1.value.value == -1) {
-    motoValida2.value = "comboMoto";
-
-    return false;
-  } else {
-    motoValida2.value = "";
-    return true;
-  }
-}
-
 const validarCredito = () => {
     console.log(tagCreditos.value)
   if (tagCreditos.value.value == -1) {
@@ -320,7 +333,7 @@ const validarEstatus = async () => {
     return false;
   }
 
-  if (tagEstatus.value.value == 12) {
+  if (tagEstatus.value.value == idVisita.value) {
     //Poner el id del estatus visita, el mio es el 12
     visita.value = true;
   } else {
@@ -360,6 +373,7 @@ const validarHoraF = () => {
     return false;
   } else {
     horaFValida.value = "";
+    console.log(tagFin.value.value);
     return true;
   }
 };
@@ -440,7 +454,8 @@ const validarVisita = () => {
     validarPagos(tagC.value) &&
     validarNumBAZ() &&
     validarHoraI() &&
-    validarHoraF();
+    validarHoraF() &&
+    validarHVisita();
 
   console.log(validado.value);
   return validado.value;
@@ -496,8 +511,8 @@ const crearCotizacionV = async () => {
       AsesoresBAZ_idAsesoresBAZ: tagAsesores.value.value,
       EstatusCotizacion_idEstatusCotizacion: tagEstatus.value.value,
       FechaRegistro: fechaActual.value,
-      PagoInicial: tagPi.value,
-      Capacidad: tagC.value,
+      PagoInicial: tagPi.value.value,
+      Capacidad: tagC.value.value,
       FechaVisita: fechaActual.value,
       HoraInicial: tagInicio.value.value,
       HoraFinal: tagFin.value.value,
@@ -531,6 +546,7 @@ const crearCotizacion = async () => {
     };
 
     idCotizacion.value = await agregarCotizacion(cotizacion);
+    console.log(idCotizacion.value)
     setIdCliente(null);
     await asignarMotos();
   } catch (error) {
@@ -623,10 +639,6 @@ const reset = async () => {
   console.log("despues");
 };
 
-const mandarACrear = () => {
-  router.push({ name: "prospectos" });
-};
-
 const cargarCliente = async () => {
   const cliente = (await obtenerCliente(idCliente.value)).data.body[0];
   nombre.value = cliente.Nombre;
@@ -654,28 +666,8 @@ const seleccionarCliente = async () => {
   router.push({ name: "seleccionCliente" });
 };
 
-function llenarmotos() {
-  console.log("llenando motos");
-  const config = {
-    search: true,
-    clearable: true,
-  };
-  console.log(tagMoto2);
-  tagMoto2.value.forEach((optionM) => {
-    console.log(optionM);
-    //let select = document.getElementById("option");
-    catalogo.value.forEach((option) => {
-      const optionElement = document.createElement("option");
-      optionElement.text = option.Modelo;
-      optionElement.value = option.idMoto;
-      select.add(optionElement);
-    });
-    dselect(optionM, config); //si jala, no mover xd
-  });
-}
-
 function llenarCombos() {
-  console.log("llenando combos");
+  console.log("llenando combos");;
   const config = {
     search: true,
     clearable: true,
@@ -726,7 +718,7 @@ function llenarCombos() {
 
 const verCotizaiones = async () => {
   await modal.hide();
-  //router.push({ name: "prospectos" });
+  router.push({ name: "cotizaciones" });
 };
 </script>
 <template>
@@ -737,7 +729,7 @@ const verCotizaiones = async () => {
       <!-- Row 1-->
       <div class="row d-flex align-items-center mb-3">
         <div class="col-1 d-flex justify-content-end">
-          <router-link to="/roles">
+          <router-link to="/cotizaciones">
             <img
               class="img-fluid mb-3"
               style="margin-top: 20px; width: 31.23px; height: 35.5px"
@@ -768,14 +760,14 @@ const verCotizaiones = async () => {
         </div>
         <div class="col-1"></div>
         <div class="col-2 d-flex align-items-center justify-content-center">
-          <button
+          <!-- <button
             type="button"
             class="btn btn-success"
             @click="mandarACrear()"
             style="height: 50px; width: 180px"
           >
             Crear cliente
-          </button>
+          </button> -->
         </div>
         <div class="col-1"></div>
         <div class="col-2 d-flex align-items-center justify-content-center">
@@ -922,18 +914,10 @@ const verCotizaiones = async () => {
       >
         <div class="col-1" id="motos"></div>
         <div class="col-1" id="motos">
-          <h5 class="italika d-flex justify-content-end pe-2">Motocicleta:</h5>
+          <h5 class="italika d-flex justify-content-end pe-2">Modelo {{ index +1 }}:</h5>
         </div>
         <div class="col-3" ref="tagBordeMoto" id="motos">
-          <select
-            :class="motoValida2"
-            id="select5"
-            @change="validarMoto2()"
-            :ref="tagMoto2[index]"
-            style="height: 40px; width: 310px"
-          >
-            <option value="-1">Seleccionar</option>
-          </select>
+          <input type="text" v-model="motosAgregadas[index]" class="form-control" disabled/>
         </div>
         <!-- Boton agregar mas motos-->
         <div class="col-1 d-flex justify-content-center" id="motos">

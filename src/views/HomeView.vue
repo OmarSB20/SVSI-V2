@@ -2,18 +2,37 @@
 import { ref } from "vue";
 import { onMounted } from "vue";
 import { onUpdated } from "vue";
+import { usuariosStore } from "../stores/usuarios";
 import { loginStore } from "../stores/login";
 import router from "../router/index";
+import { metaVentasStore } from "../stores/metaVentas";
 
-const {verificarPermisos} = loginStore();
-const {reanudarSesion} = loginStore();
-const {cerrarSesion} = loginStore();
+const { obtenerMetaActual, agregarMeta, actualizarMeta } = metaVentasStore();
+const { verificarPermisos, getUser } = loginStore();
+const { obtenerUnUser, obtenerIdPorUser } = usuariosStore();
+const { reanudarSesion } = loginStore();
+const { cerrarSesion } = loginStore();
 
 const altoPantalla = ref(0);
 const containerTag = ref(null);
 const cantPermisos = ref(9);
 const altoBtn = ref("20px");
-const estadoBotones = ref([false,false,false,false,  false,false,false,  false,false,false,false,false,false,false]);
+const estadoBotones = ref([
+  false,
+  false,
+  false,
+  false,
+  false,
+  false,
+  false,
+  false,
+  false,
+  false,
+  false,
+  false,
+  false,
+  false,
+]);
 const ventasActivo = ref(false);
 const bancoActivo = ref(false);
 const serviciosActivo = ref(false);
@@ -21,97 +40,159 @@ const tablaServiciosActivo = ref(false);
 const tablaCitasActivo = ref(false);
 const mjrVendedorActivo = ref(false);
 const nickname = ref();
-const metaVentas = ref(15);
+const metaVentas = ref("?");
 const ventasPropias = ref(2);
 const totalVentas = ref(5);
 const totalServicios = ref(3);
 const serviciosPropios = ref(2);
 const mostrarTodo = ref(false);
 
-onMounted(async () => {
+const objMeta = ref(null);
+const cantMeta = ref();
 
-    
-    await definirPermisos();
-    contarPermisos();
-  console.log(screen.height);
-  altoPantalla.value = screen.height -73;
-  console.log(altoPantalla.value);
-  containerTag.value.style.height = altoPantalla.value +"px";
+var modal;
+
+onMounted(async () => {
+  await definirPermisos();
+  contarPermisos();
+  consultarUsuarioAct();
+  altoPantalla.value = screen.height - 73;
+
+  containerTag.value.style.height = altoPantalla.value + "px";
   definirBotones();
-  console.log(ventasActivo.value)
-  console.log(bancoActivo.value)
-  
-  mostrarTodo.value=true
- 
+  if (await verificarPermisos(3)) {
+    await revisarMeta();
+  } 
+  mostrarTodo.value = true;
 });
 
-const definirPermisos= async ()=>{
+async function revisarMeta() {
+  const res = await obtenerMetaActual();
+  if (!res) {
+    modal = new bootstrap.Modal(document.getElementById("modalCrear"));
+    modal.show();
+  } else {
+    objMeta.value = res;
+    cantMeta.value = objMeta.value.Meta;
+
+  }
+  metaVentas.value = cantMeta.value;
+}
+
+async function crearMeta() {
+  try {
+    const idUser = await obtenerIdPorUser({Usuario: getUser()});
+    const metaNueva = {
+      idMeta_De_Ventas: 0,
+      Empleados_idEmpleados: idUser,
+      Fecha: new Date().toISOString().split('T')[0],
+      Meta: cantMeta.value,
+    };
+    await agregarMeta(metaNueva);
+    await revisarMeta();
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+async function actMeta() {
+  try {
+    const idUser = await obtenerIdPorUser({Usuario: getUser()});
+    const metaNueva = {
+      idMeta_De_Ventas: objMeta.value.idMeta_De_Ventas,
+      Empleados_idEmpleados: idUser,
+      Fecha: objMeta.value.Fecha,
+      Meta: cantMeta.value,
+    };
+    await actualizarMeta(metaNueva);
+    await revisarMeta();
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+const definirPermisos = async () => {
   for (let i = 0; i < estadoBotones.value.length; i++) {
     try {
-      const result = await verificarPermisos(i+1)
+      const result = await verificarPermisos(i + 1);
       if (result) {
-        estadoBotones.value[i] = result.accepted; 
-        nickname.value = result.user; 
+        estadoBotones.value[i] = result.accepted;
+        nickname.value = result.user;
       }
-      
     } catch (error) {
-      //console.log(error)
+      console.log(error);
     }
   }
+};
+
+const consultarUsuarioAct = async () => {
+  try {
+    const nickActual = getUser();
+    let usuarioActual = await obtenerIdPorUser({ Usuario: nickActual });
+    usuarioActual = await obtenerUnUser(usuarioActual);
+    usuarioActual = usuarioActual.data.body[0];
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+function definirBotones() {
+  altoBtn.value = (screen.height - 190) / cantPermisos.value;
+  ventasActivo.value = false;
+  bancoActivo.value = false;
+  serviciosActivo.value = false;
+  for (let i = 0; i <= 3; i++) {
+    if (estadoBotones.value[i] == true) {
+      ventasActivo.value = true;
+    }
+  }
+
+  for (let i = 4; i <= 6; i++) {
+    if (estadoBotones.value[i] == true) {
+      bancoActivo.value = true;
+    }
+  }
+
+  estadoBotones.value[7] == true
+    ? (serviciosActivo.value = true)
+    : (serviciosActivo.value = false);
+  estadoBotones.value[12] == true
+    ? (tablaCitasActivo.value = true)
+    : (tablaCitasActivo.value = false);
+
+  if (!ventasActivo.value && serviciosActivo) {
+    mjrVendedorActivo.value = false;
+    tablaServiciosActivo.value = true;
+  } else {
+    mjrVendedorActivo.value = true;
+  }
 }
 
-function definirBotones(){
-   altoBtn.value = (screen.height-190)/cantPermisos.value;
-  console.log(altoBtn.value)
-  ventasActivo.value=false;
-  bancoActivo.value=false;
-  serviciosActivo.value=false;
-  for (let i = 0; i <=3; i++) {
-    if(estadoBotones.value[i]==true){ventasActivo.value=true}
+function contarPermisos() {
+  let cont = 0;
+  for (let i = 7; i < estadoBotones.value.length; i++) {
+    if (estadoBotones.value[i]) {
+      cont++;
+    }
   }
-
-  for (let i = 4; i <=6; i++) {
-    if(estadoBotones.value[i]==true){bancoActivo.value=true}
-  }
-
-  estadoBotones.value[7]==true ? serviciosActivo.value=true : serviciosActivo.value=false
-  estadoBotones.value[12]==true ? tablaCitasActivo.value=true : tablaCitasActivo.value=false 
-
-  if (!ventasActivo.value&&serviciosActivo) {
-    mjrVendedorActivo.value=false;
-    tablaServiciosActivo.value = true;  
-  }else{
-    mjrVendedorActivo.value=true;  
-  }
-   
-
-}
-
-function contarPermisos(){
-  let cont=0;
-  for (let i = 7; i <estadoBotones.value.length; i++) {
-     if(estadoBotones.value[i]){cont++}
-  }
-  console.log(cont)
   cantPermisos.value = cont;
 }
 
-async function logOut(){
+async function logOut() {
   await cerrarSesion();
   redirigir("login");
 }
 
-function redirigir(interfaz){
-  router.push({name:interfaz})
+function redirigir(interfaz) {
+  router.push({ name: interfaz });
 }
-
 </script>
 
 <template>
   <div v-show="mostrarTodo" class="container-fluid body2" ref="containerTag">
     <div class="row">
-    <!------------------------------------------------AREA IZQUIERDA MENU----------------------------------------------------------->
-      <div class="col-3 ps-0 ">
+      <!------------------------------------------------AREA IZQUIERDA MENU----------------------------------------------------------->
+      <div class="col-3 ps-0">
         <div class="row pb-2">
           <img
             class="img-fluid ms-3 mt-1"
@@ -119,13 +200,13 @@ function redirigir(interfaz){
             src="../assets/LogoItalikaRamos.png"
           />
         </div>
-        <div class="row ps-4 overflow-auto scrollPers" style="height: 580px;">
+        <div class="row ps-4 overflow-auto scrollPers" style="height: 580px">
           <div
             class="accordion accordion-flush"
             id="accordionFlushExample"
             style="color: chartreuse !important"
           >
-          <!-------------------------------------------------AREA VENTAS---------------------------------------------------------   -->
+            <!-------------------------------------------------AREA VENTAS---------------------------------------------------------   -->
             <div v-if="ventasActivo" class="accordion-item">
               <h2 class="accordion-header" id="flush-headingTwo">
                 <button
@@ -135,8 +216,7 @@ function redirigir(interfaz){
                   data-bs-target="#flush-collapseTwo"
                   aria-expanded="false"
                   aria-controls="flush-collapseTwo"
-                  :style="{ height:altoBtn+'px'}"
-                  
+                  :style="{ height: altoBtn + 'px' }"
                 >
                   Area de ventas
                 </button>
@@ -148,10 +228,43 @@ function redirigir(interfaz){
                 data-bs-parent="#accordionFlushExample"
               >
                 <div class="">
-                  <button v-if="estadoBotones[0]" class="noAccordionBtn w-100 ps-5 d-flex justify-content-start align-items-center" type="button" @click="redirigir('prospectos')" :style="{ height:altoBtn+'px',borderTopWidth:'5px'}">Prospectos</button>
-                  <button v-if="estadoBotones[1]" class="noAccordionBtn w-100 ps-5 d-flex justify-content-start align-items-center" type="button" :style="{ height:altoBtn+'px'}">Cotizaciones</button>
-                  <button v-if="estadoBotones[2]" class="noAccordionBtn w-100 ps-5 d-flex justify-content-start align-items-center" type="button" @click="redirigir('mediosContacto')" :style="{ height:altoBtn+'px'}">Medios de contacto</button>
-                  <button v-if="estadoBotones[3]" class="noAccordionBtn w-100 ps-5 d-flex justify-content-start align-items-center" type="button" :style="{ height:altoBtn+'px',borderBottomWidth:'5px'}">Meta de ventas</button>
+                  <button
+                    v-if="estadoBotones[0]"
+                    class="noAccordionBtn w-100 ps-5 d-flex justify-content-start align-items-center"
+                    type="button"
+                    @click="redirigir('prospectos')"
+                    :style="{ height: altoBtn + 'px', borderTopWidth: '5px' }"
+                  >
+                    Prospectos
+                  </button>
+                  <button
+                    v-if="estadoBotones[1]"
+                    class="noAccordionBtn w-100 ps-5 d-flex justify-content-start align-items-center"
+                    type="button"
+                    @click="redirigir('cotizaciones')"
+                    :style="{ height: altoBtn + 'px' }"
+                  >
+                    Cotizaciones
+                  </button>
+                  <button
+                    v-if="estadoBotones[2]"
+                    class="noAccordionBtn w-100 ps-5 d-flex justify-content-start align-items-center"
+                    type="button"
+                    @click="redirigir('mediosContacto')"
+                    :style="{ height: altoBtn + 'px' }"
+                  >
+                    Medios de contacto
+                  </button>
+                  <button
+                    v-if="estadoBotones[3]"
+                    class="noAccordionBtn w-100 ps-5 d-flex justify-content-start align-items-center"
+                    type="button"
+                    data-bs-toggle="modal"
+                    data-bs-target="#modalActualizar"
+                    :style="{ height: altoBtn + 'px', borderBottomWidth: '5px' }"
+                  >
+                    Meta de ventas
+                  </button>
                 </div>
               </div>
             </div>
@@ -165,8 +278,7 @@ function redirigir(interfaz){
                   data-bs-target="#flush-collapseThree"
                   aria-expanded="false"
                   aria-controls="flush-collapseThree"
-                  :style="{ height:altoBtn+'px'}"
-                  
+                  :style="{ height: altoBtn + 'px' }"
                 >
                   Banco
                 </button>
@@ -178,43 +290,132 @@ function redirigir(interfaz){
                 data-bs-parent="#accordionFlushExample"
               >
                 <div class="">
-                  <button v-if="estadoBotones[4]" class="noAccordionBtn w-100 ps-5 d-flex justify-content-start align-items-center" @click="redirigir('asesores')" type="button" :style="{ height:altoBtn+'px',borderTopWidth:'5px'}">Asesores BAZ</button>
-                  <button v-if="estadoBotones[5]" class="noAccordionBtn w-100 ps-5 d-flex justify-content-start align-items-center" @click="redirigir('estatusCotizacion')" type="button" :style="{ height:altoBtn+'px'}">Estatus de cotización</button>
-                  <button v-if="estadoBotones[6]" class="noAccordionBtn w-100 ps-5 d-flex justify-content-start align-items-center" @click="redirigir('creditos')" type="button" :style="{ height:altoBtn+'px',borderBottomWidth:'5px'}">Tipos de creditos</button>
+                  <button
+                    v-if="estadoBotones[4]"
+                    class="noAccordionBtn w-100 ps-5 d-flex justify-content-start align-items-center"
+                    @click="redirigir('asesores')"
+                    type="button"
+                    :style="{ height: altoBtn + 'px', borderTopWidth: '5px' }"
+                  >
+                    Asesores BAZ
+                  </button>
+                  <button
+                    v-if="estadoBotones[5]"
+                    class="noAccordionBtn w-100 ps-5 d-flex justify-content-start align-items-center"
+                    @click="redirigir('estatusCotizacion')"
+                    type="button"
+                    :style="{ height: altoBtn + 'px' }"
+                  >
+                    Estatus de cotización
+                  </button>
+                  <button
+                    v-if="estadoBotones[6]"
+                    class="noAccordionBtn w-100 ps-5 d-flex justify-content-start align-items-center"
+                    @click="redirigir('creditos')"
+                    type="button"
+                    :style="{ height: altoBtn + 'px', borderBottomWidth: '5px' }"
+                  >
+                    Tipos de creditos
+                  </button>
                 </div>
               </div>
             </div>
             <!-------------------------------------------------SERVICIOS---------------------------------------------------------   -->
-            <button v-if="estadoBotones[7]" class="noAccordionBtn w-100 ps-4 d-flex justify-content-start align-items-center" @click="redirigir('servicios')" type="button" :style="{ height:altoBtn+'px'}">Servicios</button>
+            <button
+              v-if="estadoBotones[7]"
+              class="noAccordionBtn w-100 ps-4 d-flex justify-content-start align-items-center"
+              @click="redirigir('servicios')"
+              type="button"
+              :style="{ height: altoBtn + 'px' }"
+            >
+              Servicios
+            </button>
             <!-------------------------------------------------AREA Usuarios---------------------------------------------------------   -->
-            <button v-if="estadoBotones[8]" class="noAccordionBtn w-100 ps-4 d-flex justify-content-start align-items-center" @click="redirigir('usuarios')" type="button" :style="{ height:altoBtn+'px'}">Usuarios</button>
+            <button
+              v-if="estadoBotones[8]"
+              class="noAccordionBtn w-100 ps-4 d-flex justify-content-start align-items-center"
+              @click="redirigir('usuarios')"
+              type="button"
+              :style="{ height: altoBtn + 'px' }"
+            >
+              Usuarios
+            </button>
             <!-------------------------------------------------AREA Clientes---------------------------------------------------------   -->
-            <button v-if="estadoBotones[9]" class="noAccordionBtn w-100 ps-4 d-flex justify-content-start align-items-center" @click="redirigir('clientes')" type="button" :style="{ height:altoBtn+'px'}">Clientes</button>
+            <button
+              v-if="estadoBotones[9]"
+              class="noAccordionBtn w-100 ps-4 d-flex justify-content-start align-items-center"
+              @click="redirigir('clientes')"
+              type="button"
+              :style="{ height: altoBtn + 'px' }"
+            >
+              Clientes
+            </button>
             <!-------------------------------------------------AREA Motos---------------------------------------------------------   -->
-            <button v-if="estadoBotones[10]" class="noAccordionBtn w-100 ps-4 d-flex justify-content-start align-items-center" @click="redirigir('catalogo')" type="button" :style="{ height:altoBtn+'px'}">Catálogo</button>
+            <button
+              v-if="estadoBotones[10]"
+              class="noAccordionBtn w-100 ps-4 d-flex justify-content-start align-items-center"
+              @click="redirigir('catalogo')"
+              type="button"
+              :style="{ height: altoBtn + 'px' }"
+            >
+              Catálogo
+            </button>
             <!-------------------------------------------------AREA roles---------------------------------------------------------   -->
-            <button v-if="estadoBotones[13]" class="noAccordionBtn w-100 ps-4 d-flex justify-content-start align-items-center" @click="redirigir('roles')" type="button" :style="{ height:altoBtn+'px'}">Roles</button>
+            <button
+              v-if="estadoBotones[13]"
+              class="noAccordionBtn w-100 ps-4 d-flex justify-content-start align-items-center"
+              @click="redirigir('roles')"
+              type="button"
+              :style="{ height: altoBtn + 'px' }"
+            >
+              Roles
+            </button>
             <!-------------------------------------------------AREA citas---------------------------------------------------------   -->
-            <button v-if="estadoBotones[12]" class="noAccordionBtn w-100 ps-4 d-flex justify-content-start align-items-center" @click="redirigir('citas')" type="button" :style="{ height:altoBtn+'px'}">Citas</button>
+            <button
+              v-if="estadoBotones[12]"
+              class="noAccordionBtn w-100 ps-4 d-flex justify-content-start align-items-center"
+              @click="redirigir('citas')"
+              type="button"
+              :style="{ height: altoBtn + 'px' }"
+            >
+              Citas
+            </button>
             <!-------------------------------------------------AREA reportes---------------------------------------------------------   -->
-            <button v-if="estadoBotones[11]" class="noAccordionBtn w-100 ps-4 d-flex justify-content-start align-items-center" @click="redirigir('reportes')" type="button" :style="{ height:altoBtn+'px'}">Reportes</button>
+            <button
+              v-if="estadoBotones[11]"
+              class="noAccordionBtn w-100 ps-4 d-flex justify-content-start align-items-center"
+              @click="redirigir('reportes')"
+              type="button"
+              :style="{ height: altoBtn + 'px' }"
+            >
+              Reportes
+            </button>
             <!-------------------------------------------------AREA reportes---------------------------------------------------------   -->
-            <button class="noAccordionBtn w-100 ps-4 d-flex justify-content-start align-items-center" type="button" @click="logOut()" :style="{ height:altoBtn+'px'}">Cerrar sesión</button>
+            <button
+              class="noAccordionBtn w-100 ps-4 d-flex justify-content-start align-items-center"
+              type="button"
+              @click="logOut()"
+              :style="{ height: altoBtn + 'px' }"
+            >
+              Cerrar sesión
+            </button>
           </div>
         </div>
       </div>
       <!---------------------------------------------------Area derecha-------------------------------------------------------------------------------->
       <div class="col">
-      <!---------------------------------------------------Row de Bienvenida--------------------------------- -->
-      <div class="row">
-          <p class="saludo d-flex justify-content-center mt-3 mb-0">Bienvenido {{ nickname }}</p>
+        <!---------------------------------------------------Row de Bienvenida--------------------------------- -->
+        <div class="row">
+          <p class="saludo d-flex justify-content-center mt-3 mb-0">
+            Bienvenido {{ nickname }}
+          </p>
         </div>
         <!---------------------------------------------------Row de datos de ventas--------------------------------- -->
         <div v-if="ventasActivo" class="row w-75 m-auto">
           <div class="col">
             <div class="container roundedPanel mt-3 w-75">
               <div class="seccionSm text-center">
-                <p style="padding-top: 11px ;margin-bottom:0px">Meta de ventas:</p>
+                <p style="padding-top: 11px; margin-bottom: 0px">Meta de ventas:</p>
                 <p>{{ metaVentas }}</p>
               </div>
             </div>
@@ -222,16 +423,16 @@ function redirigir(interfaz){
           <div class="col">
             <div class="container roundedPanel mt-3 w-75">
               <div class="seccionSm text-center">
-                <p style="padding-top: 11px ;margin-bottom:0px">Tus ventas:</p>
-                <p style="margin-bottom: 0px;">{{ ventasPropias }}</p>
+                <p style="padding-top: 11px; margin-bottom: 0px">Tus ventas:</p>
+                <p style="margin-bottom: 0px">{{ ventasPropias }}</p>
               </div>
             </div>
           </div>
           <div class="col">
             <div class="container roundedPanel mt-3 w-75">
               <div class="seccionSm text-center">
-                <p style="padding-top: 11px ;margin-bottom:0px">Ventas totales:</p>
-                <p> {{ totalVentas }}</p>
+                <p style="padding-top: 11px; margin-bottom: 0px">Ventas totales:</p>
+                <p>{{ totalVentas }}</p>
               </div>
             </div>
           </div>
@@ -241,16 +442,16 @@ function redirigir(interfaz){
           <div class="col">
             <div class="container roundedPanel mt-1 w-75">
               <div class="seccionSm text-center">
-                <p style="padding-top: 11px ;margin-bottom:0px">Servicios totales:</p> 
-                <p style="margin-bottom: 5px;">{{ totalServicios }}</p>
+                <p style="padding-top: 11px; margin-bottom: 0px">Servicios totales:</p>
+                <p style="margin-bottom: 5px">{{ totalServicios }}</p>
               </div>
             </div>
           </div>
-          <div class="col ">
+          <div class="col">
             <div class="container roundedPanel mt-1 w-75">
               <div class="seccionSm text-center">
-              <p style="padding-top: 11px ;margin-bottom:0px">Tus servicios:</p>
-              <p style="margin-bottom: 5px;"> {{ serviciosPropios }}</p>
+                <p style="padding-top: 11px; margin-bottom: 0px">Tus servicios:</p>
+                <p style="margin-bottom: 5px">{{ serviciosPropios }}</p>
               </div>
             </div>
           </div>
@@ -260,49 +461,130 @@ function redirigir(interfaz){
           <div class="container roundedPanel mt-3">
             <div class="row">
               <div class="col-2">
-                <img class="d-flex justify-content-center m-auto" src="../assets/Medalla.png" style="height: 6.5vw;"/>
+                <img
+                  class="d-flex justify-content-center m-auto"
+                  src="../assets/Medalla.png"
+                  style="height: 6.5vw"
+                />
               </div>
               <div class="col">
                 <div class="empleadoMesTitulo">Vendedor de la semana</div>
-                <div class="empleadoMes"> Luis Gerardo Subealdea Hernandez
-                </div>
+                <div class="empleadoMes">Luis Gerardo Subealdea Hernandez</div>
               </div>
-            </div>  
-          </div>   
+            </div>
+          </div>
         </div>
         <!---------------------------------------------------Row servicios en progreso----------------------------------->
         <div v-if="tablaServiciosActivo" class="row w-75 m-auto">
-            <div class="container roundedPanel mt-1">
-              <div class="d-flex justify-content-center mt-3">
-                <p class="pillCal rounded-pill px-5 d-inline-block">Servicios en progreso</p>
-              </div>
-              <div class="d-flex justify-content-center">
-                <div style="width: 10px;background-color: red;margin-bottom: 25px;"></div> <p class="cita px-3 w-75">Viernes 5 de marzo - Fernando López</p>
-              </div>
-              <div class="d-flex justify-content-center">
-                <div style="width: 10px;background-color: #D4C324;margin-bottom: 25px;"></div> <p class="cita px-3 w-75">Viernes 5 de marzo - Fernando López</p>
-              </div>
-              <div class="d-flex justify-content-center">
-                <div style="width: 10px;background-color: green;margin-bottom: 25px;"></div> <p class="cita px-3 w-75">Viernes 5 de marzo - Fernando López</p>
-              </div>
-            </div>   
+          <div class="container roundedPanel mt-1">
+            <div class="d-flex justify-content-center mt-3">
+              <p class="pillCal rounded-pill px-5 d-inline-block">
+                Servicios en progreso
+              </p>
+            </div>
+            <div class="d-flex justify-content-center">
+              <div style="width: 10px; background-color: red; margin-bottom: 25px"></div>
+              <p class="cita px-3 w-75">Viernes 5 de marzo - Fernando López</p>
+            </div>
+            <div class="d-flex justify-content-center">
+              <div
+                style="width: 10px; background-color: #d4c324; margin-bottom: 25px"
+              ></div>
+              <p class="cita px-3 w-75">Viernes 5 de marzo - Fernando López</p>
+            </div>
+            <div class="d-flex justify-content-center">
+              <div
+                style="width: 10px; background-color: green; margin-bottom: 25px"
+              ></div>
+              <p class="cita px-3 w-75">Viernes 5 de marzo - Fernando López</p>
+            </div>
+          </div>
         </div>
         <!---------------------------------------------------Row citas pendientes----------------------------------->
         <div v-if="tablaCitasActivo" class="row w-75 m-auto">
-            <div class="container roundedPanel mt-3">
-              <div class="d-flex justify-content-center mt-3">
-                <p class="pillCal rounded-pill px-5 d-inline-block">Citas próximas</p>
-              </div>
-              <div class="d-flex justify-content-center">
-                <div style="width: 10px;background-color: red;margin-bottom: 25px;"></div> <p class="cita px-3 w-75">Viernes 5 de marzo - Fernando Lopez</p>
-              </div>
-              <div class="d-flex justify-content-center">
-                <div style="width: 10px;background-color: #D4C324;margin-bottom: 25px;"></div> <p class="cita px-3 w-75">Viernes 5 de marzo - Fernando Lopez</p>
-              </div>
-              <div class="d-flex justify-content-center">
-                <div style="width: 10px;background-color: green;margin-bottom: 25px;"></div> <p class="cita px-3 w-75">Viernes 5 de marzo - Fernando Lopez</p>
-              </div>
-            </div>   
+          <div class="container roundedPanel mt-3">
+            <div class="d-flex justify-content-center mt-3">
+              <p class="pillCal rounded-pill px-5 d-inline-block">Citas próximas</p>
+            </div>
+            <div class="d-flex justify-content-center">
+              <div style="width: 10px; background-color: red; margin-bottom: 25px"></div>
+              <p class="cita px-3 w-75">Viernes 5 de marzo - Fernando Lopez</p>
+            </div>
+            <div class="d-flex justify-content-center">
+              <div
+                style="width: 10px; background-color: #d4c324; margin-bottom: 25px"
+              ></div>
+              <p class="cita px-3 w-75">Viernes 5 de marzo - Fernando Lopez</p>
+            </div>
+            <div class="d-flex justify-content-center">
+              <div
+                style="width: 10px; background-color: green; margin-bottom: 25px"
+              ></div>
+              <p class="cita px-3 w-75">Viernes 5 de marzo - Fernando Lopez</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal  Crear-->
+  <div
+    class="modal fade"
+    id="modalCrear"
+    data-bs-backdrop="static"
+    tabindex="-1"
+    aria-labelledby="exampleModalLabel"
+    aria-hidden="true"
+  >
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="exampleModalLabel">Definir meta de esta semana</h5>
+        </div>
+        <div class="modal-body">
+          <div>Meta de la semana</div>
+          <div><input class="form-control" type="number" v-model="cantMeta" /></div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-primary" @click="crearMeta()" data-bs-dismiss="modal">
+            Guardar
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!--------------modalActualizar----------->
+  <div
+    class="modal fade"
+    id="modalActualizar"
+    data-bs-backdrop="static"
+    tabindex="-1"
+    aria-labelledby="exampleModalLabel"
+    aria-hidden="true"
+  >
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="exampleModalLabel">Meta de la semana</h5>
+          <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="modal"
+            aria-label="Close"
+          ></button>
+        </div>
+        <div class="modal-body">
+          <div>Meta actual</div>
+          <div><input class="form-control" type="number" v-model="cantMeta" /></div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-primary" @click="redirigir('metaVentas')" data-bs-dismiss="modal">
+            ver metas
+          </button>
+          <button type="button" class="btn btn-success" @click="actMeta()" data-bs-dismiss="modal">
+            Actualizar
+          </button>
         </div>
       </div>
     </div>
@@ -318,7 +600,7 @@ function redirigir(interfaz){
   );
 }
 
-.noAccordionBtn{
+.noAccordionBtn {
   background-color: #000103 !important;
   color: white !important;
   font-size: 2.092vw;
@@ -355,37 +637,38 @@ function redirigir(interfaz){
 /* Estilos para motores Webkit y blink (Chrome, Safari, Opera... )*/
 
 .scrollPers::-webkit-scrollbar {
-    -webkit-appearance: none;
+  -webkit-appearance: none;
 }
 
 .scrollPers::-webkit-scrollbar:vertical {
-    width:10px;
+  width: 10px;
 }
 
-.scrollPers::-webkit-scrollbar-button:increment,.scrollPers::-webkit-scrollbar-button {
-    display: none;
-} 
+.scrollPers::-webkit-scrollbar-button:increment,
+.scrollPers::-webkit-scrollbar-button {
+  display: none;
+}
 
 .scrollPers::-webkit-scrollbar:horizontal {
-    height: 10px;
+  height: 10px;
 }
 
 .scrollPers::-webkit-scrollbar-thumb {
-    background-color: #5c5c5c;
-    border-radius: 20px;
+  background-color: #5c5c5c;
+  border-radius: 20px;
 }
 
 .scrollPers::-webkit-scrollbar-track {
-    border-radius: 10px;  
+  border-radius: 10px;
 }
 
-.roundedPanel{
+.roundedPanel {
   background-color: rgba(91, 117, 137, 0.31);
   box-shadow: 4px 4px 4px 0px rgba(0, 0, 0, 0.7) inset;
   border-radius: 30px;
 }
 
-.pillCal{
+.pillCal {
   background-color: white;
   box-shadow: 4px 4px 4px 0px rgba(0, 0, 0, 0.59) inset;
   font-family: "Fjalla One";
@@ -393,7 +676,7 @@ function redirigir(interfaz){
   margin-bottom: 2%;
 }
 
-.cita{
+.cita {
   background-color: white;
   font-family: "Fjalla One";
   font-size: 1.7vw;
@@ -401,48 +684,47 @@ function redirigir(interfaz){
   margin-bottom: 2.5%;
 }
 
-.empleadoMesTitulo{
-margin-top: 7px;
-font-family: 'Fjalla One';
-font-style: normal;
-font-weight: 400;
-font-size: 1.6vw;
-line-height: 38px;
-display: flex;
-align-items: center;
-text-align: center;
-letter-spacing: 0.04em;
-color: #FFFFFF;
+.empleadoMesTitulo {
+  margin-top: 7px;
+  font-family: "Fjalla One";
+  font-style: normal;
+  font-weight: 400;
+  font-size: 1.6vw;
+  line-height: 38px;
+  display: flex;
+  align-items: center;
+  text-align: center;
+  letter-spacing: 0.04em;
+  color: #ffffff;
 }
 
-.empleadoMes{
-  font-family: 'Fjalla One';
-font-style: normal;
-font-weight: 400;
-font-size: 5vh;
-line-height: 52px;
-display: flex;
-align-items: center;
-text-align: center;
-letter-spacing: 0.04em;
-color: #6AFF79;
+.empleadoMes {
+  font-family: "Fjalla One";
+  font-style: normal;
+  font-weight: 400;
+  font-size: 5vh;
+  line-height: 52px;
+  display: flex;
+  align-items: center;
+  text-align: center;
+  letter-spacing: 0.04em;
+  color: #6aff79;
 }
 
-.saludo{
-  font-family: 'Fjalla One';
-font-style: normal;
-font-weight: 400;
-font-size: 3vw;
-line-height: 60px;
-display: flex;
-align-items: center;
-text-align: center;
-letter-spacing: 0.04em;
-color: #FFFFFF;
-
+.saludo {
+  font-family: "Fjalla One";
+  font-style: normal;
+  font-weight: 400;
+  font-size: 3vw;
+  line-height: 60px;
+  display: flex;
+  align-items: center;
+  text-align: center;
+  letter-spacing: 0.04em;
+  color: #ffffff;
 }
 
-.seccionSm{
+.seccionSm {
   font-family: "Fjalla One";
   font-size: 1.5vw;
   color: white;
@@ -451,5 +733,4 @@ color: #FFFFFF;
 .accordion-button:after {
   background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23ffffff'><path fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/></svg>") !important;
 }
-
 </style>

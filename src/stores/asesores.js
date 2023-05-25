@@ -31,6 +31,18 @@ export const asesoresStore = defineStore("asesores",{
             throw(error);
         }
     },
+    async obtenerAsesor(id){
+        try {
+            const res = await axios.get('http://localhost:4000/api/asesoresBAZ/'+ id)
+            console.log(res)
+            return res;
+            
+        } catch (error) {
+            console.log(error)
+            throw(error);
+        }
+    },
+
 
     async agregarAsesor(asesor){
         try {
