@@ -24,6 +24,7 @@ import CrearServicio from '../views/CrearServicio.vue'
 import EstatusServicio from '../views/EstatusServicio.vue'
 import Cotizacion from '../views/Cotizacion.vue'
 import Catalogo from '../views/Catalogo.vue'
+import Servicios from '../views/Servicios.vue'
 
 //const { reanudarSesion } = loginStore();
 //const reanudarSesion = loginStore();
@@ -45,6 +46,7 @@ const interfaces = {
   creditos:'7',
   crearServicio:'8',
   estatusServicio:'8',
+  servicios: '8',
   crearUsuario: '9',
   usuarios: '9',
   actualizarUsuario: '9',
@@ -210,6 +212,11 @@ const router = createRouter({
       path: '/estatusServicio',
       name: 'estatusServicio',
       component: EstatusServicio
+    },
+    {
+      path: '/servicios',
+      name: 'servicios',
+      component: Servicios
     }
 
   ]

@@ -1,7 +1,7 @@
 import { defineStore } from "pinia";
 import axios from "axios";
 
-export const motosTallerStore = defineStore("motosTaller",{
+export const motosTallerStore = defineStore("motosTallerStore",{
     state: ()=>({
         token:"",
         idMotoTallerActual: ""

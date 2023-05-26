@@ -33,12 +33,11 @@ const {
   actualizarCliente, getInterfazOrigen
 } = clientesStore();
 const { obtenerIdPorUser } = usuariosStore();
-const {agregarMotoTaller,consultarMotosTaller,obtenerMotoTaller} = motosTallerStore;
+const {agregarMotoTaller,consultarMotosTaller,obtenerMotoTaller} = motosTallerStore();
 const { getUser } = loginStore();
 const { servicioExiste, agregarServicio,obtenerServicio } = serviciosStore();
-const {obtenerEstatusServicios,obtenerEstatusServicioN,
-       obtenerNombresEstatusServicio, agregarEstatusServicio} = estatusServicioStore;
-
+const {obtenerEstatusServicioN,obtenerNombresEstatusServicio, agregarEstatusServicio} = estatusServicioStore();
+const {obtenerEstatusServicios} = estatusServicioStore();
 
 //variables reactivas
 const nombre = ref("");
@@ -47,14 +46,13 @@ const materno = ref("");
 const email = ref("");
 const telefono = ref("");
 const noSerie = ref("");
-const motoTaller = ref("");
+const modeloTaller = ref("");
 const noBAZ = ref("");
 const importe = ref("");
-const Kilometraje = ref("");
-const cantidad = ref("");
+const kilometraje = ref("");
+const cantidadServicio = ref("");
 const estatusServicio = ref();
 const descripcion = ref("");
-
 
 const catalogo = ref();
 const mediosContacto = ref([
@@ -69,6 +67,7 @@ const repetido = ref(false);
 const expermnt = ref(true);
 
 const idCliente = ref(null);
+const idMotoTaller = ref(null);
 const idUser = ref(null);
 
 const btnSeguirCreando = ref(null);
@@ -88,13 +87,18 @@ const motoValida = ref("");
 const estatusValido = ref("");
 const exists = ref(false);
 const existeIgual = ref(false);
+const idMotosTaller = ref ("");
 
 const today = new Date();
 const year = today.getFullYear();
 const month = String(today.getMonth() + 1).padStart(2, "0"); // El mes se indexa desde 0, por lo que se suma 1
 const day = String(today.getDate()).padStart(2, "0");
 
-const formattedDate = `${year}-${month}-${day}`;
+// const formattedDate = `${year}-${month}-${day}`;
+// const formattedDates = `${year}-${month}-${day}`;
+
+const formattedDate = ref ("");
+const formattedDates = ref ("");
 console.log(formattedDate);
 
 //variable asociada al modal
@@ -118,6 +122,7 @@ onMounted(async () => {
   } else {
     esNuevo.value = false;
     cargarDatosCliente();
+   //crearMotoTaller();
   }
 
   async function cargarDatosCliente() {
@@ -138,12 +143,11 @@ onMounted(async () => {
   });
 }
   await obtenerEstatusDeServicio();
-  await obtenerMediosF();
   llenarCombos();
 });
 
 async function obtenerEstatusDeServicio() {
-     estatusServicio.value = (await obtenerEstatusDeServicios()).data.body;
+     estatusServicio.value = (await obtenerEstatusServicios()).data.body;
 }
 
 
@@ -154,24 +158,14 @@ function llenarCombos() {
     clearable: true
   };
   let select = document.getElementById("select1");
-  mediosContacto.value.forEach((option) => {
+  estatusServicio.value.forEach((option) => {
     const optionElement = document.createElement("option");
     optionElement.text = option.Descripcion;
-    optionElement.value = option.idMedioDeContacto;
+    optionElement.value = option.idEstatusServicio;
     select.add(optionElement);
   });
 
-  dselect(tagkilometraje.value, config); //si jala, no mover xd
-
-  select = document.getElementById("select2");
-  catalogo.value.forEach((option) => {
-    const optionElement = document.createElement("option");
-    optionElement.text = option.Modelo;
-    optionElement.value = option.idMoto;
-    select.add(optionElement);
-  });
-
-  dselect(tagMoto.value, config); //si jala, no mover xd
+  dselect(tagEstatus.value, config); //si jala, no mover xd
   console.log("acabando Llenar combos")
 }
 
@@ -201,7 +195,6 @@ async function resetCampos() {
   motoValida.value = "";
   estatusValido.value = "";
 
-
   nombre.value = "";
   paterno.value = "";
   materno.value = "";
@@ -209,8 +202,13 @@ async function resetCampos() {
   telefono.value = "";
   noBAZ.value = "";
   descripcion.value = "";
-  tagkilometraje.value.value = -1;
-  tagMoto.value.value = -1;
+  noSerie.value="";
+  kilometraje.value="";
+  modeloTaller.value="";
+  cantidadServicio.value="";
+  importe.value="";
+  //tagkilometraje.value.value = -1;
+  tagEstatus.value.value = -1;
   alertaLlenado.value = false;
   validado.value = true;
   deshabilitado.value = false;
@@ -219,6 +217,8 @@ async function resetCampos() {
   exists.value = false;
   existeIgual.value = false;
   esNuevo.value = true;
+  formattedDate.value="";
+  formattedDates.value="";
 
   setIdCliente(null);
   var inputs = document.querySelectorAll(".base");
@@ -231,7 +231,7 @@ async function resetCampos() {
 
 console.log("antes")
   await obtenerEstatusDeServicio();
-  await obtenerMediosF();
+  //await obtenerMediosF();
   //llenarCombos();
   console.log("despues")
 }
@@ -314,9 +314,9 @@ function validarKilometraje() {
 
 
 function validarTexto(input) {
-  //input.value = input.value.trim();
+  input.value = input.value.trim();
   var re = /^[a-zA-Z ]+$/;
-  // var pswd = document.getElementById("emailInpt");
+  var pswd = document.getElementById("emailInpt");
   if (!re.test(input.value)) {
     input.style.borderColor = "red";
     input.style.borderWidth = "4px";
@@ -353,6 +353,7 @@ function validarEstatus() {
 
 const revisarCliente = async () => {
   try {
+    console.log("REVISANDO CLIENTE");
     canActualizar.value = false;
     if (esNuevo.value) {
       exists.value = await clienteExiste({
@@ -417,7 +418,8 @@ const revisarCliente = async () => {
         return true;
       }
     }
-    console.log("a revisar prospecto");
+    console.log("a revisar servicio");
+    console.log("CLIENTE REVISADO");
     await revisarServicio();
 
     return true;
@@ -463,43 +465,79 @@ async function actCliente(idClient) {
   }
 }
 
-// async function revisarServicio() {
-//   console.log(exists.value || !esNuevo.value);
-//   if (exists.value || !esNuevo.value) {
-//     const prospecto = {
-//       Moto_idMoto: tagMoto.value.value,
-//       Clientes_idClientes: idCliente.value,
-//       Fecha_registro: formattedDate,
-//     };
-//     console.log(await servicioExiste(prospecto));
-//     if (await servicioExiste(prospecto)) {
-//       repetido.value = true;
-//       return false;
-//     }
-//   }
-//   repetido.value = false;
-//   await crearServicio();
-//   return true;
-// }
+async function revisarServicio() {
+  console.log("REVISAR SERVICIO");
+  console.log(exists.value || !esNuevo.value);
+  if (exists.value || !esNuevo.value) {
+    const servicio = {
+      MotosTaller_idMotosTaller: tagEstatus.value.value,
+      Clientes_idClientes: idCliente.value,
+      FechaRegistro: formattedDate.value,
+      FechaEntrega: formattedDates.value,
+    };
+    console.log(await servicioExiste(servicio));
+    if (await servicioExiste(servicio)) {
+      repetido.value = true;
+      return false;
+    }
+  }
+  console.log("REVISANDO SERVICIO");
+  repetido.value = false;
+  await crearServicio();
+  return true;
+}
+
+async function crearMotoTaller() {
+  try {
+    console.log("MODELO");
+    console.log(modeloTaller.value);
+    console.log("NOSERIE");
+    console.log(noSerie.value);
+    const motoTaller = {
+      idMotosTaller: 0,
+      Modelo: modeloTaller.value,
+      NoSerie: noSerie.value,
+    };
+      console.log(motoTaller);
+    idMotoTaller.value = await agregarMotoTaller(motoTaller);
+    console.log("IMPRIMIR OBJETO");
+    console.log(idMotoTaller.value.data.body);
+   // await revisarServicio();
+   // await crearServicio();
+    return true;
+  } catch (error) {
+    console.log(error);
+  }
+};
 
 async function crearServicio() {
   try {
+    console.log("creando servicio")
     const servicio = {
       idServicios: 0,
-      MotosTaller_idMotosTaller: MotosTaller_idMotosTaller.value,
-      MedioDeContacto_idMedioDeContacto: tagkilometraje.value.value,
+      MotosTaller_idMotosTaller: idMotoTaller.value.data.body,
+      EstatusServicio_idEstatusServicio: tagEstatus.value.value,
       Empleados_idEmpleados: idUser.value,
       Clientes_idClientes: idCliente.value,
-      Comentario: descripcion.value,
-      Fecha_registro: formattedDate,
+      Importe: importe.value,
+      cantidadServicio: cantidadServicio.value,
+      Descripcion: descripcion.value,
+      Kilometraje: kilometraje.value,
+      FechaRegistro: formattedDate.value,
+      FechaEntrega: formattedDates.value,
     };
-
-    await agregarProspecto(servicio);
+    console.log(formattedDate.value);
+    console.log(formattedDates.value);
+    await agregarServicio(servicio);
     setIdCliente(null);
     repetido.value = false;
-    modal = new bootstrap.Modal(document.getElementById("modal"), {
-      keyboard: false,
-    });
+
+    const modal = new bootstrap.Modal(
+      document.getElementById("modal"),
+      {
+        keyboard: false,
+      }
+    );
     await modal.show(); //al ser todo exitoso, mostramos el modal notificando el exito
 
     return true;
@@ -517,12 +555,13 @@ async function sbmtUsuario() {
     validarTexto(tagNombre.value) &&
     validarTexto(tagPaterno.value) &&
     validarTexto(tagMaterno.value) &&
-    validarNumBAZ() &&
-    validarMoto() &&
+   // validarNumBAZ() &&
+    // validarMoto() &&
     validarEstatus();
 
   if (validado) {
     alertaLlenado.value = false;
+    await crearMotoTaller();
     await revisarCliente();
   } else {
     validarEmail();
@@ -530,18 +569,19 @@ async function sbmtUsuario() {
     validarTexto(tagNombre.value);
     validarTexto(tagPaterno.value);
     validarTexto(tagMaterno.value);
-    validarNumBAZ();
-    validarMoto();
+  //  validarNumBAZ();
+    // validarMoto();
     validarEstatus();
     alertaLlenado.value = true;
   }
 }
 
-async function verProspectos() {
+async function verServicios() {
   await modal.hide();
   console.log("escondido");
-  router.push({ name: "prospectos" });
+  router.push({ name: "servicios" });
 }
+
 </script>
 
 <template>
@@ -561,7 +601,7 @@ async function verProspectos() {
         </div>
         <div class="col ms-5">
           <p class="italika d-flex justify-content-start" style="font-size: 50px">
-            Crear Prospecto
+            Crear Servicio
           </p>
         </div>
       </div>
@@ -687,14 +727,13 @@ async function verProspectos() {
                 <h5 class="italika">No. Serie</h5>
                 </div>
                 <input
-                  id="tlfn"
+                  id="noSr"
                   type="text"
                   class="form-control inptElement base"
-                  @input="validarNumBAZ()"
-                  v-model.trim="noBAZ"
-                  :disabled="!esNuevo"
-                  ref="tagSerie"
-                  maxlength="16"
+
+                  v-model.trim="noSerie"
+                  
+                 
                 />
               </div>
             </div>
@@ -705,14 +744,13 @@ async function verProspectos() {
                   <h5 class="italika">Modelo *</h5>
                 </div>
                 <input
-                  id="tlfn"
+                  id="modMot"
                   type="text"
                   class="form-control inptElement base"
-                  @input="validarNumBAZ()"
-                  v-model.trim="noBAZ"
-                  :disabled="!esNuevo"
-                  ref="tagSerie"
-                  maxlength="16"
+                  
+                  v-model.trim="modeloTaller"
+                  
+                  
                 />
               </div>
             </div>
@@ -725,14 +763,12 @@ async function verProspectos() {
                   <h5 class="italika">Kilometraje *</h5>
                 </div>
                 <input
-                  id="tlfn"
+                  id="kil"
                   type="text"
                   class="form-control inptElement base"
-                  @input="validarNumBAZ()"
-                  v-model.trim="noBAZ"
-                  :disabled="!esNuevo"
-                  ref="tagSerie"
-                  maxlength="16"
+                
+                  v-model.trim="kilometraje"
+                  
                 />
               </div>
             </div>
@@ -743,12 +779,12 @@ async function verProspectos() {
                   <h5 class="italika">Importe *</h5>
                 </div>
                 <input
-                  id="tlfn"
+                  id="imp"
                   type="text"
                   class="form-control inptElement base"
-                  @input="validarNumBAZ()"
-                  v-model.trim="noBAZ"
-                  :disabled="!esNuevo"
+                
+                  v-model.trim="importe"
+                  
                   ref="tagSerie"
                   maxlength="16"
                 />
@@ -762,37 +798,27 @@ async function verProspectos() {
                 <div class="col mt-2 me-5 pe-5">
                   <h5 class="italika">Fecha de Registro *</h5>
                 </div>
-                <input
-                  id="tlfn"
-                  type="text"
-                  class="form-control inptElement base"
-                  @input="validarNumBAZ()"
-                  v-model.trim="noBAZ"
-                  :disabled="!esNuevo"
-                  ref="tagSerie"
-                  maxlength="16"
-                />
+                <input v-model="formattedDate"
+                     id="fechR"
+                     type="date"
+                     class="form-control base"
+                      />
               </div>
             </div>
             <div class="col-1"></div>
-            <div class="col">
-              <div class="row d-flex align-items-center">
-                <div class="col mt-2 me-5 pe-1">
-                  <h5 class="italika">Fecha de Entrega*</h5>
+              <div class="col">
+                <div class="row d-flex align-items-center">
+                  <div class="col mt-2 me-5 pe-1">
+                    <h5 class="italika">Fecha de Entrega*</h5>
+                  </div>
+                    <input v-model="formattedDates"
+                     id="fechEn"
+                     type="date"
+                     class="form-control  base"
+                      />
                 </div>
-                <input
-                  id="tlfn"
-                  type="text"
-                  class="form-control inptElement base"
-                  @input="validarNumBAZ()"
-                  v-model.trim="noBAZ"
-                  :disabled="!esNuevo"
-                  ref="tagSerie"
-                  maxlength="16"
-                />
               </div>
             </div>
-          </div>
           <!-----------------------    Row 5 Formulario  --------------------------->
 <div class="row mb-2 pb-2">
             <div class="col">
@@ -804,10 +830,10 @@ async function verProspectos() {
                   id="tlfn"
                   type="text"
                   class="form-control inptElement base"
-                  @input="validarNumBAZ()"
-                  v-model.trim="noBAZ"
-                  :disabled="!esNuevo"
-                  ref="tagSerie"
+                
+                  v-model.trim="cantidadServicio"
+                  
+                 
                   maxlength="16"
                 />
               </div>
@@ -822,9 +848,7 @@ async function verProspectos() {
                   :class="estatusValido"
                   id="select1"
                   @change="validarEstatus()"
-                  ref="tagkilometraje"
-  
-
+                  ref="tagEstatus"
                 >
                   <option value="-1">Seleccionar</option>
                 </select>
@@ -864,7 +888,7 @@ async function verProspectos() {
               style="height: 38px"
               role="alert"
             >
-              ¡Alguien ya registró este prospecto hoy!
+              ¡Alguien ya registró este servicio hoy!
             </div>
           </div>
           <div class="row mb-2 pb-2 mt-4">
@@ -903,7 +927,7 @@ async function verProspectos() {
         <div class="modal-body">
           El cliente {{ nombre }} {{ paterno }} {{ materno }} ya está registrado con otros
           datos ¿Desea actualizar el cliente con los datos aquí escritos o utilizar los
-          datos ya registrados anteriormente? El prospecto se generará al terminar
+          datos ya registrados anteriormente? El servicio se generará al terminar
           cualquiera de las acciones.
         </div>
         <div class="modal-footer">
@@ -936,7 +960,7 @@ async function verProspectos() {
           <h5 class="modal-title" id="staticBackdropLabel">Tipo de cliente</h5>
         </div>
         <div class="modal-body">
-          ¿El cliente de este prospecto ya está registrado o es un cliente nuevo?
+          ¿El cliente de este cliente ya está registrado o es un cliente nuevo?
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-success" @click="seleccionCliente()">
@@ -962,21 +986,21 @@ async function verProspectos() {
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title" id="staticBackdropLabel">¡Prospecto creado!</h5>
+          <h5 class="modal-title" id="staticBackdropLabel">¡Servicio creado!</h5>
         </div>
         <div v-show="existeIgual" class="modal-body">
           El cliente {{ nombre }} {{ paterno }} {{ materno }} ya estaba registrado en el
-          sistema y sus datos son coincidentes, se creó el prospecto sin generar un nuevo
+          sistema y sus datos son coincidentes, se creó el servicio sin generar un nuevo
           cliente
         </div>
         <div v-show="!expermnt" class="modal-body">
           Esto no debería verse
         </div>
         <div v-show="!exists && esNuevo" class="modal-body">
-          El Cliente y Prospecto fueron creados exitosamente.
+          El Cliente y Servicio fueron creados exitosamente.
         </div>
         <div v-show="canActualizar || !esNuevo" class="modal-body">
-          El prospecto fue creado exitosamente.
+          El servicio fue creado exitosamente.
         </div>
         
         <div class="modal-footer">
@@ -987,10 +1011,10 @@ async function verProspectos() {
             data-bs-dismiss="modal"
             ref="btnSeguirCreando"
           >
-            Seguir creando prospectos
+            Seguir creando servicios
           </button>
-          <button type="button" class="btn btn-success" @click="verProspectos()">
-            Ver prospectos
+          <button type="button" class="btn btn-success" @click="verServicios()">
+            Ver servicios
           </button>
         </div>
       </div>
@@ -1009,11 +1033,11 @@ async function verProspectos() {
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title" id="staticBackdropLabel">Imposible crear prospecto</h5>
+          <h5 class="modal-title" id="staticBackdropLabel">Imposible crear servicios</h5>
         </div>
         <div class="modal-body">
           El cliente {{ nombre }} {{ paterno }} {{ materno }} está inhabilitado en el
-          sistema. El prospecto no se generará. Consulte con su gerente.
+          sistema. El servicios no se generará. Consulte con su gerente.
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-danger" data-bs-dismiss="modal">
@@ -1056,6 +1080,7 @@ async function verProspectos() {
       </div>
     </div>
   </div>
+  <pre>{{ modeloTaller }} {{ noSerie }}</pre>
   
 </template>
 
