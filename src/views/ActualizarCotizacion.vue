@@ -498,6 +498,8 @@ const reset = async () => {
   tagCorreo.value.value = -1;
   tagTlfn.value.value = -1;
 
+  inptHoraIni.value = null;
+  inptHoraFin.value = null;
   validado.value = true;
   idCotizacion.value = null;
   nuevo.value = false;
