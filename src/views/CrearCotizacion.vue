@@ -13,7 +13,6 @@ import { usuariosStore } from "../stores/usuarios";
 import { cotizacionMotoStore } from "../stores/cotizacionMoto";
 import router from "../router";
 import CompHeader from "../components/Header.vue";
-import { DatePickerComponent } from "@syncfusion/ej2-vue-calendars"
 
 const { obtenerCredito } = creditosStore();
 const {

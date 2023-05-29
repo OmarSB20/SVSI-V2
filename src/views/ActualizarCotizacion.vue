@@ -13,7 +13,6 @@ import { usuariosStore } from "../stores/usuarios";
 import { cotizacionMotoStore } from "../stores/cotizacionMoto";
 import router from "../router";
 import CompHeader from "../components/Header.vue";
-import { DatePickerComponent } from "@syncfusion/ej2-vue-calendars"
 
 const { obtenerCredito } = creditosStore();
 const {
@@ -60,6 +59,8 @@ const nBaz = ref("");
 const hInicial = ref("");
 const hFinal = ref("");
 const comentario = ref("");
+const inptHoraIni = ref(null);
+const inptHoraFin = ref(null);
 
 const catalogo = ref();
 const estatusCotizaciones = ref();
@@ -111,6 +112,8 @@ const idMonto = ref(null);
 const idEstatus = ref(null);
 const idAsesor = ref(null);
 const idCliente = ref(null);
+const idHoraI = ref(null);
+const idHoraF = ref(null);
 
 onMounted(async () => {
   idUser.value = await obtenerIdPorUser({ Usuario: "Gerente" });
@@ -120,12 +123,13 @@ onMounted(async () => {
   } else {
     console.log(idCotizacion.value);
     bloqueado.value = true;
+    
     await cargarCotizacion();
     await cargarCliente();
   }
+  await obtenerCotizaciones();
   await obtenerCreditos();
   await obtenerMotos();
-  await obtenerCotizaciones();
   await obtenerAsesores();
   motosCotizacion.value = await traerCotizacionMotos();
 
@@ -153,14 +157,11 @@ const cargarCotizacion = async () => {
     idAsesor.value = cotizacion.AsesoresBAZ_idAsesoresBAZ;
     idEstatus.value = cotizacion.EstatusCotizacion_idEstatusCotizacion;
     console.log(idVisita.value);
-    if (idEstatus.value == idVisita.value){
-        tagInicio.value.value = cotizacion.HoraInicial;
-        tagFin.value.value = cotizacion.HoraFinal;
-    }else{
-        pagoInicial.value = cotizacion.PagoInicial;
-        capacidad.value = cotizacion.Capacidad;
-    }
+    pagoInicial.value = cotizacion.PagoInicial;
+    capacidad.value = cotizacion.Capacidad;
     comentario.value = cotizacion.Comentario;
+    idHoraI.value = cotizacion.HoraInicial;
+    idHoraF.value = cotizacion.HoraFinal;
 };
 
 const obtenerCreditos = async () => {
@@ -200,6 +201,7 @@ const validarEVisita = () => {
   estatusCotizaciones.value.forEach((option) => {
     if (option.Descripcion.toLowerCase() == "visita") {
       idVisita.value = option.idEstatusCotizacion;
+      console.log(cotizacion);
     }
   });
 };
@@ -571,6 +573,8 @@ function llenarCombos() {
         optionElement.selected = true;
         if(idEstatus.value == idVisita.value){
           visita.value = true;
+          inptHoraIni.value = idHoraI.value;
+          inptHoraFin.value = idHoraF.value;
         }
     }
     select.add(optionElement);
