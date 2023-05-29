@@ -114,7 +114,7 @@ const idCliente = ref(null);
 
 onMounted(async () => {
   idUser.value = await obtenerIdPorUser({ Usuario: "Gerente" });
-  idCotizacion.value = getIdCotizacion();
+  idCotizacion.value = 3;
   if (idCotizacion.value == null) {
     
   } else {
@@ -152,6 +152,7 @@ const cargarCotizacion = async () => {
     });
     idAsesor.value = cotizacion.AsesoresBAZ_idAsesoresBAZ;
     idEstatus.value = cotizacion.EstatusCotizacion_idEstatusCotizacion;
+    console.log(idVisita.value);
     if (idEstatus.value == idVisita.value){
         tagInicio.value.value = cotizacion.HoraInicial;
         tagFin.value.value = cotizacion.HoraFinal;
@@ -568,6 +569,9 @@ function llenarCombos() {
     select.add(optionElement);
     if(option.idEstatusCotizacion == idEstatus.value){
         optionElement.selected = true;
+        if(idEstatus.value == idVisita.value){
+          visita.value = true;
+        }
     }
     select.add(optionElement);
   });
@@ -852,7 +856,7 @@ const showCalendar = () => {
             v-model.trim="pagoInicial"
             @input="validarPagos(tagPi)"
             ref="tagPi"
-            :disabled="visita"
+            :disabled=true
           />
         </div>
         <div class="col-1 d-flex justify-content-end pt-2">
@@ -865,7 +869,7 @@ const showCalendar = () => {
             v-model.trim="capacidad"
             @input="validarPagos(tagC)"
             ref="tagC"
-            :disabled="visita"
+            :disabled=true
           />
         </div>
         <div class="col-1 d-flex justify-content-end pt-2">
