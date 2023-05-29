@@ -22,6 +22,10 @@ import SeleccionCliente from '../views/SeleccionCliente.vue'
 import EstatusCotizacion from '../views/EstatusCotizacion.vue'
 import  Cotizacion from '../views/cotizacion.vue'
 
+import  Servicios from '../views/servicios.vue'
+import CrearServicio from '../views/CrearServicio.vue'
+import ActualizarServicio from '../views/ActualizarServicio.vue'
+
 
 
 //const { reanudarSesion } = loginStore();
@@ -51,6 +55,10 @@ const interfaces = {
   crearRol: '14',
   actualizarRol: '14',
   roles: '14',
+  crearServicio:'8',
+  actualizarServicio:'8',
+  servicios: '8',
+
 }
 
 const router = createRouter({
@@ -189,7 +197,28 @@ const router = createRouter({
       name: 'cotizacion',
       component: Cotizacion
       
+    },
+    {
+      path: '/servicios',
+      name: 'servicios',
+      component: Servicios
+      
+    },
+
+    {
+      path: '/crearServicio',
+      name: 'crearServicio',
+      component: CrearServicio
+      
+    },
+
+    {
+      path: '/actualizarServicio',
+      name: 'actualizarServicio',
+      component: ActualizarServicio
+      
     }
+
 
   ]
 })

@@ -32,6 +32,19 @@ export const serviciosStore = defineStore("serviciosStore",{
         }
     },
 
+    async obtenerServicio(id){
+        try {
+            console.log("OBTENIENDO SERVICIO");
+            console.log(id);
+            const res = await axios.get('http://localhost:4000/api/servicios/'+id)
+            return res;
+            
+        } catch (error) {
+            console.log(error)
+            throw(error);
+        }
+    },
+
 //Trae TODOS los nombres de usuario que existen
     async obtenerNicknames(){
         try {
