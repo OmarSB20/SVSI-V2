@@ -81,7 +81,7 @@ onMounted(async () => {
 const consultarUsuarioAct = async () => {
   try {
     nickActual.value = getUser();
-    usuarioActual.value = await obtenerIdPorUser({ Usuario: nickActual.value });
+    usuarioActual.value = await obtenerIdPorUser({ Usuario: "Gerente" });
     usuarioActual.value = await obtenerUnUser(usuarioActual.value);
     usuarioActual.value = usuarioActual.value.data.body[0];
 
@@ -200,6 +200,7 @@ const consultarTodo = async () => {
 
 function modificarCotizacion(idCotizaciones){
   setIdCotizacion(idCotizaciones);
+  console.log(idCotizaciones);
   router.push({name:"actualizarCotizacion"})
 
 }

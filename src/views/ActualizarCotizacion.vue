@@ -20,7 +20,7 @@ const {
   obtenerNombresEstatusCotizacion,
   obtenerEstatusCotizacion,
 } = estatusCotizacionStore();
-const { consultarMotocicletasActivas } = catalogoStore();
+const { consultarMotocicletasActivas, obtenerUnModelo } = catalogoStore();
 const { obtenerAsesoresActivos } = asesoresStore();
 const { obtenerProspectos, setIdProspecto } = prospectosStore();
 const { obtenerIdPorUser, getIdUsuario } = usuariosStore();
@@ -33,11 +33,13 @@ const {
   agregarCliente,
 } = clientesStore();
 const { getUser } = loginStore();
-const { agregarCotizacion } = cotizacionesStore();
-const { agregarMotosACotizacion } = cotizacionMotoStore();
+const { actualizarCotizacion, getIdCotizacion, obtenerCotizacion } = cotizacionesStore();
+const { agregarMotosACotizacion, traerCotizacionMotos } = cotizacionMotoStore();
 
 //Variables
 
+const idMC = ref([]);
+const motosCotizacion = ref([]);
 const motosAgregadas = [];
 const noNBAZ = ref(true);
 const exists = ref(false);
@@ -65,9 +67,9 @@ const tiposCreditos = ref();
 const asesores = ref();
 const deshabilitado = ref(false);
 const idUser = ref(null);
-const idCliente = ref(null);
 const idCotizacion = ref(null);
 const arregloIdMotos = ref([]);
+const bloqueado = ref(false);
 
 const motoValida1 = ref("");
 const motoValida2 = ref("");
@@ -90,7 +92,6 @@ const canActualizar = ref(false);
 
 const fechaActual = ref(null);
 const tagMoto1 = ref(null);
-const tagMoto2 = ref([]);
 const tagCreditos = ref(null);
 const tagEstatus = ref(null);
 const tagAsesores = ref(null);
@@ -105,20 +106,28 @@ const tagPi = ref(null);
 const tagCorreo = ref(null);
 const tagTlfn = ref(null);
 
+const idCredito = ref(null);
+const idMonto = ref(null);
+const idEstatus = ref(null);
+const idAsesor = ref(null);
+const idCliente = ref(null);
+
 onMounted(async () => {
   idUser.value = await obtenerIdPorUser({ Usuario: "Gerente" });
-  idCliente.value = getIdCliente();
-  if (idCliente.value == null) {
-    nuevo.value = true;
+  idCotizacion.value = getIdCotizacion();
+  if (idCotizacion.value == null) {
+    
   } else {
-    console.log(idCliente.value);
-    cargarCliente();
-    nuevo.value = false;
+    console.log(idCotizacion.value);
+    bloqueado.value = true;
+    await cargarCotizacion();
+    await cargarCliente();
   }
   await obtenerCreditos();
   await obtenerMotos();
   await obtenerCotizaciones();
   await obtenerAsesores();
+  motosCotizacion.value = await traerCotizacionMotos();
 
   llenarCombos();
   fechaActual.value = new Date();
@@ -126,6 +135,32 @@ onMounted(async () => {
   console.log(fechaActual.value);
 });
 
+const cargarCotizacion = async () => {
+    console.log("llegue aqui");
+    let cotizacion = await obtenerCotizacion(idCotizacion.value);
+    console.log(cotizacion);
+    cotizacion = cotizacion.data.body[0];
+
+    idCliente.value = cotizacion.Clientes_idClientes;
+    idCredito.value = cotizacion.Tipos_De_Creditos_idTipos_De_Creditos;
+    console.log(cotizacion.Tipos_De_Creditos_idTipos_De_Creditos);
+    motosCotizacion.value.forEach((element) => {
+        if(element.Cotizaciones_idCotizaciones == idCotizacion.value){
+            motosAgregadas.push(catalogo.value[(element.Moto_idMoto)].Modelo);
+            divs.value.push({});
+        }
+    });
+    idAsesor.value = cotizacion.AsesoresBAZ_idAsesoresBAZ;
+    idEstatus.value = cotizacion.EstatusCotizacion_idEstatusCotizacion;
+    if (idEstatus.value == idVisita.value){
+        tagInicio.value.value = cotizacion.HoraInicial;
+        tagFin.value.value = cotizacion.HoraFinal;
+    }else{
+        pagoInicial.value = cotizacion.PagoInicial;
+        capacidad.value = cotizacion.Capacidad;
+    }
+    comentario.value = cotizacion.Comentario;
+};
 
 const obtenerCreditos = async () => {
   try {
@@ -133,6 +168,7 @@ const obtenerCreditos = async () => {
     tiposCreditos.value = tiposCreditos.value.data.body;
     console.log("creditooooooooooooooooooo")
     console.log(tiposCreditos.value);
+
   } catch (error) {
     console.log(error);
   }
@@ -176,16 +212,6 @@ const obtenerAsesores = async () => {
   }
 };
 
-const agregarMoto = async () => {
-  if (tagMoto1.value.value!=-1) {
-    arregloIdMotos.value.push(tagMoto1.value.value);
-    divs.value.push({});
-    console.log(divs.value);
-    motosAgregadas.push(catalogo.value[(tagMoto1.value.value -1)].Modelo);
-  console.log(arregloIdMotos.value);
-  }
- 
-};
 const eliminarMoto = async (index) => {
   console.log(index);
   arregloIdMotos.value.splice(index, 1);
@@ -193,46 +219,6 @@ const eliminarMoto = async (index) => {
   motosAgregadas.splice(index, 1);
   console.log(arregloIdMotos.value);
 };
-
-function validarEmail() {
-  var pswd = document.getElementById("emailInpt");
-  if (correo.value == "") {
-    pswd.style.borderWidth = "0px";
-    validado.value = false;
-    return false;
-  } else {
-    var re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!re.test(correo.value)) {
-      pswd.style.borderColor = "red";
-      pswd.style.borderWidth = "4px";
-      validado.value = false;
-      return false;
-    } else {
-      pswd.style.borderWidth = "0px";
-      return true;
-    }
-  }
-}
-
-function validarTlfn() {
-  let tlfnInpt = document.getElementById("tlfn");
-  if (telefono.value == "") {
-    tlfnInpt.style.borderWidth = "0px";
-    validado.value = false;
-    return false;
-  } else {
-    var re = /^[0-9]+$/;
-    if (!(telefono.value.length == 10 && telefono.value.match(re))) {
-      tlfnInpt.style.borderColor = "red";
-      tlfnInpt.style.borderWidth = "4px";
-      validado.value = false;
-      return false;
-    } else {
-      tlfnInpt.style.borderWidth = "0px";
-      return true;
-    }
-  }
-}
 
 const validarHVisita = () => {
   if(tagInicio.value.value < tagFin.value.value){
@@ -263,27 +249,6 @@ function validarNumBAZ() {
   }
 }
 
-function validarTexto(input) {
-  //input.value = input.value.trim();
-  var re = /^[a-zA-Z ]+$/;
-  if (input.value == "") {
-    input.style.borderWidth = "0px";
-    validado.value = false;
-    return false;
-  } else {
-    // var pswd = document.getElementById("emailInpt");
-    if (!re.test(input.value)) {
-      input.style.borderColor = "red";
-      input.style.borderWidth = "4px";
-      validado.value = false;
-      return false;
-    } else {
-      input.style.borderWidth = "0px";
-      return true;
-    }
-  }
-}
-
 const validarPagos = (input) => {
   var re = /^[0-9]+$/;
   if (input.value == "") {
@@ -302,19 +267,6 @@ const validarPagos = (input) => {
     }
   }
 };
-
-function validarMoto1() {
-  console.log(tagMoto1.value.value);
-  console.log(tagMoto1.value.value == -1);
-  if (tagMoto1.value.value == -1) {
-    motoValida1.value = "comboMoto";
-    console.log("el error es aqui motos");
-    return false;
-  } else {
-    motoValida1.value = "";
-    return true;
-  }
-}
 
 const validarCredito = () => {
     console.log(tagCreditos.value)
@@ -365,7 +317,6 @@ const validarHoraI = () => {
     return false;
   } else {
     horaIValida.value = "";
-    console.log(horaIniValido.value);
     return true;
   }
 };
@@ -382,59 +333,12 @@ const validarHoraF = () => {
   }
 };
 
-const crearCliente = async () => {
-  try {
-    const cliente = {
-      idClientes: 0,
-      Nombre: nombre.value,
-      EstatusActividad_idEstatusActividad: 1,
-      Apellido_Paterno: aPaterno.value,
-      Apellido_Materno: aMaterno.value,
-      Telefono: telefono.value,
-      NoClienteBAZ: nBaz.value,
-      Correo: correo.value,
-    };
-    idCliente.value = await agregarCliente(cliente);
-    nuevo.value = false;
-    await submt();
-  } catch (error) {
-    console.log(error);
-  }
-};
-
-const revisarCliente = async () => {
-  try {
-    exists.value = await clienteExiste({
-      Nombre: nombre.value,
-      Apellido_Paterno: aPaterno.value,
-      Apellido_Materno: aMaterno.value,
-    });
-
-    if (exists.value) {
-      idCliente.value = exists.value.idClientes;
-      nuevo.value = false;
-      console.log(idCliente.value);
-      //await submt();
-    } else {
-      await crearCliente();
-    }
-  } catch (error) {
-    console.log(error);
-  }
-};
-
 const validarGeneral = () => {
   console.log("validarG");
   validado.value =
-    validarTexto(tagNombre.value) &&
-    validarTexto(tagAP.value) &&
-    validarTexto(tagAM.value) &&
     validarCredito() &&
     validarEstatus() &&
-    validarMoto1() &&
     validarAsesor() &&
-    validarTlfn() &&
-    validarEmail() &&
     validarPagos(tagPi.value) &&
     validarPagos(tagC.value) &&
     validarNumBAZ();
@@ -445,15 +349,9 @@ const validarGeneral = () => {
 
 const validarVisita = () => {
   validado.value =
-    validarTexto(tagNombre.value) &&
-    validarTexto(tagAP.value) &&
-    validarTexto(tagAM.value) &&
     validarCredito() &&
     validarEstatus() &&
-    validarMoto1() &&
     validarAsesor() &&
-    validarTlfn() &&
-    validarEmail() &&
     validarPagos(tagPi.value) &&
     validarPagos(tagC.value) &&
     validarNumBAZ() &&
@@ -481,17 +379,13 @@ const validar = async () => {
 const submt = async () => {
   try {
     if (validado.value) {
-      console.log("codigo amarillo");
-      if (nuevo.value) {
-        await revisarCliente();
-      } else {
+        
         alertaLlenado.value = false;
         if (visita.value) {
           await crearCotizacionV();
         } else {
           await crearCotizacion();
         }
-      }
     } else {
       alertaLlenado.value = true;
       modalE = new bootstrap.Modal(document.getElementById("modalEr"), {
@@ -506,9 +400,8 @@ const submt = async () => {
 
 const crearCotizacionV = async () => {
   try {
-    console.log("codigo ROJOV");
     const cotizacion = {
-      idCotizaciones: 0,
+      idCotizaciones: idCotizacion.value,
       Empleados_idEmpleados: idUser.value,
       Tipos_De_Creditos_idTipos_De_Creditos: tagCreditos.value.value,
       Clientes_idClientes: idCliente.value,
@@ -523,9 +416,8 @@ const crearCotizacionV = async () => {
       Comentario: comentario.value,
     };
 
-    idCotizacion.value = await agregarCotizacion(cotizacion);
+    idCotizacion.value = await actualizarCotizacion(cotizacion);
     setIdCliente(null);
-    await asignarMotos();
   } catch (error) {
     console.log(error);
   }
@@ -533,10 +425,10 @@ const crearCotizacionV = async () => {
 
 const crearCotizacion = async () => {
   try {
-    console.log("codigo ROJO");
+    
     console.log(tagCreditos.value)
     const cotizacion = {
-      idCotizaciones: 0,
+      idCotizaciones: idCotizacion.value,
       Empleados_idEmpleados: idUser.value,
       Tipos_De_Creditos_idTipos_De_Creditos: tagCreditos.value.value,
       Clientes_idClientes: idCliente.value,
@@ -549,24 +441,9 @@ const crearCotizacion = async () => {
       Comentario: comentario.value,
     };
 
-    idCotizacion.value = await agregarCotizacion(cotizacion);
+    idCotizacion.value = await actualizarCotizacion(cotizacion);
     console.log(idCotizacion.value)
     setIdCliente(null);
-    await asignarMotos();
-  } catch (error) {
-    console.log(error);
-  }
-};
-
-const asignarMotos = async () => {
-  try {
-    for (var j in arregloIdMotos.value) {
-      await agregarMotosACotizacion(arregloIdMotos.value[j], idCotizacion.value);
-    }
-    modal = new bootstrap.Modal(document.getElementById("modalCrear"), {
-      keyboard: false,
-    });
-    await modal.show();
   } catch (error) {
     console.log(error);
   }
@@ -585,7 +462,6 @@ const reset = async () => {
     elemento.click();
   });
 
-  motoValida1.value = "";
   creditoValido.value = "";
   estatusValido.value = "";
   asesorValido.value = "";
@@ -593,7 +469,6 @@ const reset = async () => {
   horaFValida.value = "from-control";
 
   noNBAZ.value = true;
-  exists.value = false;
   visita.value = false;
   divs.value = [];
   nombre.value = "";
@@ -606,7 +481,6 @@ const reset = async () => {
   nBaz.value = "";
   comentario.value = "";
 
-  tagMoto1.value.value = -1;
   tagCreditos.value.value = -1;
   tagEstatus.value.value = -1;
   tagAsesores.value.value = -1;
@@ -622,11 +496,10 @@ const reset = async () => {
   tagTlfn.value.value = -1;
 
   validado.value = true;
-  idCliente.value = null;
-  nuevo.value = true;
+  idCotizacion.value = null;
+  nuevo.value = false;
   alertaLlenado.value = false;
 
-  setIdCliente(null);
   var inputs = document.querySelectorAll(".base");
   Array.prototype.slice.call(inputs).forEach(function (input) {
     input.style.backgroundColor = "#FFFFFF";
@@ -644,7 +517,8 @@ const reset = async () => {
 };
 
 const cargarCliente = async () => {
-  const cliente = (await obtenerCliente(idCliente.value)).data.body[0];
+    console.log("llegue a cliente");
+  let cliente = (await obtenerCliente(idCliente.value)).data.body[0];
   nombre.value = cliente.Nombre;
   aPaterno.value = cliente.Apellido_Paterno;
   aMaterno.value = cliente.Apellido_Materno;
@@ -665,11 +539,6 @@ const cargarCliente = async () => {
   });
 };
 
-const seleccionarCliente = async () => {
-  setInterfazOrigen("crearCotizacion");
-  router.push({ name: "seleccionCliente" });
-};
-
 function llenarCombos() {
   console.log("llenando combos");;
   const config = {
@@ -683,6 +552,10 @@ function llenarCombos() {
     console.log(option)
     optionElement.value = option.idTipos_De_Creditos;
     select.add(optionElement);
+    if(option.idTipos_De_Creditos == idCredito.value){
+        optionElement.selected = true;
+    }
+    select.add(optionElement);
   });
 
   dselect(tagCreditos.value, config); //si jala, no mover xd
@@ -693,19 +566,13 @@ function llenarCombos() {
     optionElement.text = option.Descripcion;
     optionElement.value = option.idEstatusCotizacion;
     select.add(optionElement);
-  });
-
-  dselect(tagEstatus.value, config); //si jala, no mover xd
-
-  select = document.getElementById("select3");
-  catalogo.value.forEach((option) => {
-    const optionElement = document.createElement("option");
-    optionElement.text = option.Modelo;
-    optionElement.value = option.idMoto;
+    if(option.idEstatusCotizacion == idEstatus.value){
+        optionElement.selected = true;
+    }
     select.add(optionElement);
   });
 
-  dselect(tagMoto1.value, config); //si jala, no mover xd
+  dselect(tagEstatus.value, config); //si jala, no mover xd
 
   select = document.getElementById("select4");
   asesores.value.forEach((option) => {
@@ -713,6 +580,10 @@ function llenarCombos() {
     //Juntar el nombre completo
     optionElement.text = option.Nombre;
     optionElement.value = option.idAsesoresBAZ;
+    select.add(optionElement);
+    if(option.idAsesoresBAZ == idAsesor.value){
+        optionElement.selected = true;
+    }
     select.add(optionElement);
   });
 
@@ -723,6 +594,10 @@ function llenarCombos() {
 const verCotizaiones = async () => {
   await modal.hide();
   router.push({ name: "cotizaciones" });
+};
+
+const showCalendar = () => {
+
 };
 
 </script>
@@ -742,9 +617,9 @@ const verCotizaiones = async () => {
             />
           </router-link>
         </div>
-        <div class="col-4 ms-4 pt-4">
+        <div class="col-5 ms-4 pt-4">
           <p class="italika d-flex align-items-center" style="font-size: 50px">
-            Agregar Cotizacion
+            Actualizar Cotizacion
           </p>
         </div>
         <div class="col-1"></div>
@@ -754,14 +629,7 @@ const verCotizaiones = async () => {
       <div class="row d-flex align-items-center mb-5">
         <div class="col-2"></div>
         <div class="col-2 d-flex align-items-center justify-content-center">
-          <button
-            type="button"
-            class="btn btn-success"
-            @click="seleccionarCliente()"
-            style="height: 50px; width: 180px"
-          >
-            Seleccionar cliente
-          </button>
+          
         </div>
         <div class="col-1"></div>
         <div class="col-2 d-flex align-items-center justify-content-center">
@@ -912,6 +780,7 @@ const verCotizaiones = async () => {
             @change="validarMoto1()"
             ref="tagMoto1"
             style="height: 40px; width: 310px"
+            :disabled = true
           >
             <option value="-1">Seleccionar</option>
           </select>
@@ -922,7 +791,7 @@ const verCotizaiones = async () => {
             type="button"
             class="btn btn-primary"
             style="width: 100%"
-            @click="agregarMoto()"
+            :disabled=true
           >
             Agregar
           </button>
@@ -983,6 +852,7 @@ const verCotizaiones = async () => {
             v-model.trim="pagoInicial"
             @input="validarPagos(tagPi)"
             ref="tagPi"
+            :disabled="visita"
           />
         </div>
         <div class="col-1 d-flex justify-content-end pt-2">
@@ -995,6 +865,7 @@ const verCotizaiones = async () => {
             v-model.trim="capacidad"
             @input="validarPagos(tagC)"
             ref="tagC"
+            :disabled="visita"
           />
         </div>
         <div class="col-1 d-flex justify-content-end pt-2">
@@ -1060,9 +931,7 @@ const verCotizaiones = async () => {
       <!-- RowCalendario -->
 
       <div class="row d-flex align-items-center mb3">
-        <div class="wrapper">
-          
-        </div>
+        <Datepicker></Datepicker>
       </div>
 
       <!-- Row 8 -->
@@ -1105,7 +974,7 @@ const verCotizaiones = async () => {
             type="submit"
             :disabled="deshabilitado"
           >
-            Guardar
+            Actualizar
           </button>
         </div>
       </div>

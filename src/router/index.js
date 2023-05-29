@@ -25,6 +25,7 @@ import Citas from '../views/Citas.vue'
 import MetaVentas from '../views/MetasVentas.vue'
 import CrearCotizacion from '../views/CrearCotizacion.vue'
 import Cotizaciones from '../views/Cotizaciones.vue'
+import ActualizarCotizacion from '../views/ActualizarCotizacion.vue'
 
 
 
@@ -214,9 +215,12 @@ const router = createRouter({
       name: 'cotizaciones',
       component: Cotizaciones
       
+    },
+    {
+      path: '/actualizarCotizacion',
+      name: 'actualizarCotizacion',
+      component: ActualizarCotizacion
     }
-
-    
   ]
 })
 
