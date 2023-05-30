@@ -647,12 +647,12 @@ function validarModelo() {
 
 function validarImporte() {
   let impInput = document.getElementById("imp");
-  
+  const kilometrajeString = impInput.value.toString(); 
   var rex = /^[0-9]+$/;
   // if (!(kilometraje.value.length >= 4 && kilometraje.value.match(re))) {
 
 
-  if (impInput.value.trim() === ""||!( kilometrajeString.match(rex))) {
+  if (kilometrajeString.trim() === ""||!( kilometrajeString.match(rex))) {
     impInput.style.borderColor = "red";
     impInput.style.borderWidth = "4px";
     validado.value = false;
