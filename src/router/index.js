@@ -25,7 +25,7 @@ import Reportes from '../views/Reportes.vue'
 import MetaVentas from '../views/MetasVentas.vue'
 import CrearCotizacion from '../views/CrearCotizacion.vue'
 import Cotizaciones from '../views/Cotizaciones.vue'
-
+import ActualizarCotizacion from '../views/ActualizarCotizacion.vue'
 
 
 //const { reanudarSesion } = loginStore();
@@ -42,6 +42,7 @@ const interfaces = {
   actualizarProspecto:'1',
   crearCotizacion:'2',
   cotizaciones: '2',
+  actualizarCotizacion: '2',
   mediosContacto: '3',
   metaVentas: '4',
   asesores: '5',
@@ -220,6 +221,12 @@ const router = createRouter({
       path: '/cotizaciones',
       name: 'cotizaciones',
       component: Cotizaciones
+      
+    },
+    {
+      path: '/actualizarCotizacion',
+      name: 'actualizarCotizacion',
+      component: ActualizarCotizacion
       
     }
 

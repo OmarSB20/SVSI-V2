@@ -199,8 +199,9 @@ const consultarTodo = async () => {
 };
 
 function modificarCotizacion(idCotizaciones){
+  console.log("enviando")
   setIdCotizacion(idCotizaciones);
-  router.push({name:"actualizarCotizacion"})
+  router.push({name:"actualizarCotizacion"});
 
 }
 
