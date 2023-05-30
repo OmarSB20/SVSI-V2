@@ -53,13 +53,8 @@ const kilometraje = ref("");
 const cantidadServicio = ref("");
 const estatusServicio = ref();
 const descripcion = ref("");
+const idEstAct= ref("");
 
-const catalogo = ref();
-const mediosContacto = ref([
-  { idMedioDeContacto: 1, Descripcion: "df" },
-  { idMedioDeContacto: 2, Descripcion: "fd" },
-  { idMedioDeContacto: 3, Descripcion: "df" },
-]);
 
 
 const deshabilitado = ref(false);
@@ -77,10 +72,6 @@ const tagMaterno = ref(null);
 const tagTelefono = ref(null);
 const tagEmail = ref(null);
 const tagSerie = ref(null);
-const tagkilometraje = ref(null);
-const tagMoto = ref(null);
-const tagImporte = ref(null);
-const tagCantidad = ref(null);
 const tagEstatus = ref(null);
 
 const motoValida = ref("");
@@ -94,10 +85,10 @@ const year = today.getFullYear();
 const month = String(today.getMonth() + 1).padStart(2, "0"); // El mes se indexa desde 0, por lo que se suma 1
 const day = String(today.getDate()).padStart(2, "0");
 
-// const formattedDate = `${year}-${month}-${day}`;
+const formattedDate = `${year}-${month}-${day}`;
 // const formattedDates = `${year}-${month}-${day}`;
 
-const formattedDate = ref ("");
+//const formattedDate = ref ("");
 const formattedDates = ref ("");
 console.log(formattedDate);
 
@@ -132,6 +123,8 @@ onMounted(async () => {
   materno.value = cliente.Apellido_Materno;
   email.value = cliente.Correo;
   telefono.value = cliente.Telefono;
+  idEstAct.value = cliente.EstatusActividad_idEstatusActividad;
+
   let numBAZ;
   cliente.NoClienteBAZ == null ? (numBAZ = "") : (numBAZ = cliente.NoClienteBAZ);
   noBAZ.value = numBAZ;
@@ -217,7 +210,7 @@ async function resetCampos() {
   exists.value = false;
   existeIgual.value = false;
   esNuevo.value = true;
-  formattedDate.value="";
+  // formattedDate="";
   formattedDates.value="";
 
   setIdCliente(null);
@@ -265,6 +258,21 @@ function validarTlfn() {
   }
 }
 
+function validarKilometraje() {
+  let klInpt = document.getElementById("kil");
+  var re = /^[0-9]+$/;
+  // if (!(kilometraje.value.length >= 4 && kilometraje.value.match(re))) {
+    if (!( kilometraje.value.match(re))) {
+    klInpt.style.borderColor = "red";
+    klInpt.style.borderWidth = "4px";
+    validado.value = false;
+    return false;
+  } else {
+    klInpt.style.borderWidth = "0px";
+    return true;
+  }
+}
+
 // function validarNumBAZ() {
 //   if (noBAZ.value == "") {
 //     tagSerie.value.style.borderWidth = "0px";
@@ -283,34 +291,20 @@ function validarTlfn() {
 //   }
 // }
 
-function validarImporte() {
-  let impInput = document.getElementById("tlfn");
-  var re = /^[0-9]+$/;
-  if (!(importe.value.length >= 3 && importe.value.match(re))) {
-    impInput.style.borderColor = "red";
-    impInput.style.borderWidth = "4px";
+function validarFecha() {
+  let fechaInput = document.getElementById("fechEn");
+  
+  if (fechaInput.value.trim() === "") {
+    fechaInput.style.borderColor = "red";
+    fechaInput.style.borderWidth = "4px";
     validado.value = false;
     return false;
   } else {
-    impInput.style.borderWidth = "0px";
+    fechaInput.style.borderWidth = "0px";
     return true;
   }
 }
 
-
-function validarKilometraje() {
-  let kmInput = document.getElementById("tlfn");
-  var re = /^[0-9]+$/;
-  if (!(importe.value.length >= 3 && importe.value.match(re))) {
-    kmInput.style.borderColor = "red";
-    kmInput.style.borderWidth = "4px";
-    validado.value = false;
-    return false;
-  } else {
-    kmInput.style.borderWidth = "0px";
-    return true;
-  }
-}
 
 
 function validarTexto(input) {
@@ -472,8 +466,9 @@ async function revisarServicio() {
     const servicio = {
       MotosTaller_idMotosTaller: tagEstatus.value.value,
       Clientes_idClientes: idCliente.value,
-      FechaRegistro: formattedDate.value,
+      FechaRegistro: formattedDate,
       FechaEntrega: formattedDates.value,
+      idEstatusActividad: 1
     };
     console.log(await servicioExiste(servicio));
     if (await servicioExiste(servicio)) {
@@ -520,13 +515,14 @@ async function crearServicio() {
       Empleados_idEmpleados: idUser.value,
       Clientes_idClientes: idCliente.value,
       Importe: importe.value,
-      cantidadServicio: cantidadServicio.value,
+     // cantidadServicio: cantidadServicio.value,
       Descripcion: descripcion.value,
       Kilometraje: kilometraje.value,
-      FechaRegistro: formattedDate.value,
+      FechaRegistro: formattedDate,
       FechaEntrega: formattedDates.value,
+      idEstatusActividad:1
     };
-    console.log(formattedDate.value);
+    console.log(formattedDate);
     console.log(formattedDates.value);
     await agregarServicio(servicio);
     setIdCliente(null);
@@ -555,6 +551,8 @@ async function sbmtUsuario() {
     validarTexto(tagNombre.value) &&
     validarTexto(tagPaterno.value) &&
     validarTexto(tagMaterno.value) &&
+    validarKilometraje() &&
+    validarFecha() &&
    // validarNumBAZ() &&
     // validarMoto() &&
     validarEstatus();
@@ -569,6 +567,8 @@ async function sbmtUsuario() {
     validarTexto(tagNombre.value);
     validarTexto(tagPaterno.value);
     validarTexto(tagMaterno.value);
+    validarFecha();
+    validarKilometraje();
   //  validarNumBAZ();
     // validarMoto();
     validarEstatus();
@@ -724,7 +724,7 @@ async function verServicios() {
             <div class="col">
               <div class="row d-flex align-items-center">
                 <div class="col mt-2 me-5 pe-5">
-                <h5 class="italika">No. Serie</h5>
+                <h5 class="italika">No. Serie*</h5>
                 </div>
                 <input
                   id="noSr"
@@ -792,8 +792,8 @@ async function verServicios() {
             </div>
           </div>
 <!-----------------------    Row 5 Formulario  --------------------------->
-<div class="row mb-2 pb-2">
-            <div class="col">
+<!-- <div class="row mb-2 pb-2"> -->
+            <!-- <div class="col">
               <div class="row d-flex align-items-center">
                 <div class="col mt-2 me-5 pe-5">
                   <h5 class="italika">Fecha de Registro *</h5>
@@ -804,11 +804,11 @@ async function verServicios() {
                      class="form-control base"
                       />
               </div>
-            </div>
-            <div class="col-1"></div>
-              <div class="col">
-                <div class="row d-flex align-items-center">
-                  <div class="col mt-2 me-5 pe-1">
+            </div> -->
+            <!-- <div class="col-1"></div>
+            <div class="col">
+              <div class="row d-flex align-items-center">
+                <div class="col mt-2 me-5 pe-5">
                     <h5 class="italika">Fecha de Entrega*</h5>
                   </div>
                     <input v-model="formattedDates"
@@ -818,10 +818,10 @@ async function verServicios() {
                       />
                 </div>
               </div>
-            </div>
+            </div> -->
           <!-----------------------    Row 5 Formulario  --------------------------->
 <div class="row mb-2 pb-2">
-            <div class="col">
+            <!-- <div class="col">
               <div class="row d-flex align-items-center">
                 <div class="col mt-2 me-5 pe-5">
                   <h5 class="italika">Cantidad *</h5>
@@ -837,11 +837,23 @@ async function verServicios() {
                   maxlength="16"
                 />
               </div>
-            </div>
+            </div> -->
+            <div class="col">
+              <div class="row d-flex align-items-center">
+                <div class="col mt-2 me-5 pe-5">
+                    <h5 class="italika">Fecha de Entrega*</h5>
+                  </div>
+                    <input v-model="formattedDates"
+                     id="fechEn"
+                     type="date"
+                     class="form-control  base"
+                      />
+                </div>
+              </div>
             <div class="col-1"></div>
             <div class="col">
               <div class="row d-flex align-items-center">
-                <div class="col mt-2 me-5 pe-1">
+                <div class="col mt-2 me-5 pe-5">
                   <h5 class="italika">Estatus de Servicio *</h5>
                 </div>
                 <select

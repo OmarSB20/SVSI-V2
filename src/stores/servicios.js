@@ -58,6 +58,16 @@ export const serviciosStore = defineStore("servicios",{
         }
     },
 
+    async consultarServiciosActivas() {
+        try {
+            const res = await axios.get('http://localhost:4000/api/servicios/activas')
+            return res;
+        }catch(error){
+            console.log(error)
+            throw(error);
+        }
+    },
+
     async agregarServicio(servicio){
         try {
             const res = await axios.post('http://localhost:4000/api/servicios',servicio)
