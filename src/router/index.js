@@ -20,7 +20,7 @@ import Prospectos from '../views/Prospectos.vue';
 import ActualizarProspecto from '../views/ActualizarProspecto.vue';
 import SeleccionCliente from '../views/SeleccionCliente.vue'
 import EstatusCotizacion from '../views/EstatusCotizacion.vue'
-import  Cotizacion from '../views/cotizacion.vue'
+import Cotizaciones from '../views/Cotizaciones.vue'
 
 import  Servicios from '../views/servicios.vue'
 import CrearServicio from '../views/CrearServicio.vue'
@@ -40,7 +40,7 @@ const interfaces = {
   crearProspecto: '1',
   prospectos:'1',
   actualizarProspecto:'1',
-  cotizacion:"2",
+  cotizaciones:"2",
   mediosContacto: '3',
   asesores: '5',
   estatusCotizacion:'6',
@@ -193,9 +193,9 @@ const router = createRouter({
       
     },
     {
-      path: '/cotizacion',
-      name: 'cotizacion',
-      component: Cotizacion
+      path: '/cotizaciones',
+      name: 'cotizaciones',
+      component: Cotizaciones
       
     },
     {

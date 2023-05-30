@@ -16,31 +16,28 @@ import router from "../router";
 import { cotizacionMotoStore } from "../stores/cotizacionMoto";
 import { catalogoStore } from "../stores/catalogo";
 
-
 //declaramos como constantes los metodos exactos que vamos a usar de las stores y lo igualamos a la store de donde vienen
 //           metodo    =     store de la que viene
 const { setIdUsuario } = usuariosStore();
 const { agregarUsuario } = usuariosStore();
-const { obtenerRoles } = rolesStore();
+const { obtenerRolesN } = rolesStore();
 const { obtenerUsuarios } = usuariosStore();
 const { eliminarUsuario } = usuariosStore();
-const { actualizarUsuario } = usuariosStore();
+const { obtenerIdPorUser } = usuariosStore();
 const { obtenerCliente } = clientesStore();
-const { getIdUsuario } = usuariosStore();
+const { obtenerUnUser } = usuariosStore();
 const { traerCotizacionMotos } = cotizacionMotoStore();
-const { reanudarSesion } = loginStore();
+const { getUser } = loginStore();
 const { verificarPermisos } = loginStore();
 const { obtenerEstatusCotizacionN } = estatusCotizacionStore();
 const { obtenerAsesor } = asesoresStore();
 const { obtenerUnModelo } = catalogoStore();
 
-
-
 const { cotizacionExiste } = cotizacionesStore();
 const { obtenerCotizaciones } = cotizacionesStore();
 const { obtenerCotizacion } = cotizacionesStore();
 const { agregarCotizacion } = cotizacionesStore();
-const { actualizarCotizacion } = cotizacionesStore();
+const { setIdCotizacion } = cotizacionesStore();
 const { eliminarCotizacion } = cotizacionesStore();
 const { obtenerCreditosN } = creditosStore();
 //variables reactivas
@@ -50,281 +47,186 @@ const cotizaciones = ref({});
 const deshabilitado = ref(true);
 //para buscar
 const cotizacionesFiltradas = ref({});
-const valorBusqueda = ref("");
+const nickActual = ref("");
+const usuarioActual = ref("");
+const nivelUsuario = ref("");
 const cotizacionAct = ref("");
 const idUsuarioAct = ref("");
 const cotizacionFiltrados = ref([]);
 const cotizacion = ref([]);
 const busqueda = ref("");
+const superUsuario = ref(false);
+const idCotizacioneliminar = ref("");
 
-const cotizacionArray = ref([]);//arreglo que guarda las cotizaciones que se mostraran en la tabla 
+const cotizacionArray = ref([]); //arreglo que guarda las cotizaciones que se mostraran en la tabla
 //variable asociada al modal
 var modal;
 var tried = false;
 const validado = ref(true);
 const alertaLlenado = ref(false);
 const arregloCotizacionesAux = ref([]);
+
+const cotizacionesMostradas = ref([]);
 //al cargar la pagina se consultan los permisos y roles que hay en la BD y se define el objeto relacionado al modal
 onMounted(async () => {
-
-  // await montarCotizacion();
-  // await consultarCotizaciones();
+  await consultarUsuarioAct();
   await consultarTodo();
 
   deshabilitado.value = true;
   modal = new bootstrap.Modal(document.getElementById("modal"), {
     keyboard: false,
   });
-
 });
-//consulta los roles usando el metodo de la store, los almacena en rolesArray
-// const consultarRoles = async () => {
-//   try {
-//     roles.value = await obtenerRoles();
-//     roles.value = roles.value.data.body;
-//     console.log(roles.value);
-//   } catch (error) {
-//     console.log(error);
-//   }
-// };
 
+const consultarUsuarioAct = async () => {
+  try {
+    nickActual.value = getUser();
+    usuarioActual.value = await obtenerIdPorUser({ Usuario: nickActual.value });
+    usuarioActual.value = await obtenerUnUser(usuarioActual.value);
+    usuarioActual.value = usuarioActual.value.data.body[0];
+
+    nivelUsuario.value = await obtenerRolesN(usuarioActual.value.Roles_idRoles);
+    nivelUsuario.value = nivelUsuario.value.data.body[0].SuperRol;
+
+    console.log("super usuario? " + nivelUsuario.value);
+
+    nivelUsuario.value == 1 ? (superUsuario.value = true) : (superUsuario.value = false);
+    console.log(superUsuario.value);
+  } catch (error) {
+    console.log(error);
+  }
+};
 
 const consultarTodo = async () => {
   try {
-    var cotizaciones = (await traerCotizacionMotos());
-    
-    var cotizacionActual = null;
-    
-    await cotizaciones.forEach(async(element) => {
-     
-        cotizacionActual = await {
-          Cotizaciones_idCotizaciones: element.Cotizaciones_idCotizaciones,
-          motos: cotizaciones.filter(async (cotizacion)=>{
-            return await cotizacion.Cotizaciones_idCotizaciones == element.Cotizaciones_idCotizaciones
-          })
+    let todas = await obtenerCotizaciones();
+    todas = todas.data.body;
+    console.log(todas);
+    for (let item of todas) {
+      let motos=[];
+      var cotizacionesMotos = await traerCotizacionMotos();
+      cotizacionesMotos.forEach(element => {
+        if (element.Cotizaciones_idCotizaciones==item.idCotizaciones) {
+          motos.push(element.Moto_idMoto)
         }
-        if (!arregloCotizacionesAux.value.some((cot) => cot.Cotizaciones_idCotizaciones === cotizacionActual.Cotizaciones_idCotizaciones)) {
-          await arregloCotizacionesAux.value.push(cotizacionActual);
-        }
-      
-    })
-    
-    console.log(arregloCotizacionesAux.value);  
+        
+      });
+      item.motos = motos;
+      arregloCotizacionesAux.value.push(item);
+    }
+    console.log("ActualActualActualActualActualActualActualActualActualActual");
+
+    console.log(arregloCotizacionesAux.value);
 
     arregloCotizacionesAux.value.forEach(async (element) => {
       console.log("Hola");
-      var cotizacion = await obtenerCotizacion(element.Cotizaciones_idCotizaciones);//asigna cada elememento a cada cotizacion
+      var cotizacion = await obtenerCotizacion(element.idCotizaciones); //asigna cada elememento a cada cotizacion
       cotizacion = cotizacion.data.body[0];
       console.log(cotizacion);
 
-      var cliente = (await obtenerCliente(cotizacion.Clientes_idClientes));
+      cotizacion.usuario = await obtenerUnUser(cotizacion.Empleados_idEmpleados);
+      cotizacion.usuario = cotizacion.usuario.data.body[0].Usuario;
+
+      if (!(superUsuario.value || cotizacion.usuario.trim() == nickActual.value.trim())) {
+        return;
+      }
+
+      var cliente = await obtenerCliente(cotizacion.Clientes_idClientes);
       cliente = cliente.data.body[0];
-      console.log(cliente);
 
-      var tipoCredito = (await obtenerCreditosN(cotizacion.Tipos_De_Creditos_idTipos_De_Creditos));
+      var tipoCredito = await obtenerCreditosN(
+        cotizacion.Tipos_De_Creditos_idTipos_De_Creditos
+      );
       tipoCredito = tipoCredito.data.body[0];
-      console.log(tipoCredito);
 
-      var estatus = (await obtenerEstatusCotizacionN(cotizacion.EstatusCotizacion_idEstatusCotizacion));
+      var estatus = await obtenerEstatusCotizacionN(
+        cotizacion.EstatusCotizacion_idEstatusCotizacion
+      );
       estatus = estatus.data.body[0];
-      console.log(estatus);
 
-      var asesor = (await obtenerAsesor(cotizacion.AsesoresBAZ_idAsesoresBAZ));
+      var asesor = await obtenerAsesor(cotizacion.AsesoresBAZ_idAsesoresBAZ);
       asesor = asesor.data.body[0];
-      console.log(asesor);
 
       var motos = [];
       for (const moto of element.motos) {
-        var motoData = await obtenerUnModelo(moto.Moto_idMoto);
+        var motoData = await obtenerUnModelo(moto);
         motos.push(motoData.data.body);
       }
-      console.log(motos);
 
       // console.log(moto);
 
       //para juntar todo
       const objetoCotizacion = await {
-        "idCotizaciones": cotizacion.idCotizaciones,
-        "NoClienteBAZ": cliente.NoClienteBAZ,
-        "Nombre": cliente.Nombre,
-        "Apellido_Paterno": cliente.Apellido_Paterno,
-        "Apellido_Materno": cliente.Apellido_Materno,
-        "DescripcionCredito": tipoCredito.Descripcion,
-        "DescripcionEstatus": estatus.Descripcion,
-        "Modelo":motos,
-        "NombreAsesorBAZ": asesor.Nombre,
-        "Telefono": cliente.Telefono,
-        "Correo": cliente.Correo,
-        "PagoInicial": cotizacion.PagoInicial,
-        "Capacidad": cotizacion.Capacidad,
-        "FechaRegistro": cotizacion.FechaRegistro,
-        "FechaVisita": cotizacion.FechaVisita,
-        "HoraInicial": cotizacion.HoraInicial,
-        "HoraFinal": cotizacion.HoraFinal,
-        "FechaVenta": cotizacion.FechaVenta,
-        "Comentario": cotizacion.Comentario
-      }
+        idCotizaciones: cotizacion.idCotizaciones,
+        NoClienteBAZ: cliente.NoClienteBAZ,
+        Nombre: cliente.Nombre,
+        Apellido_Paterno: cliente.Apellido_Paterno,
+        Apellido_Materno: cliente.Apellido_Materno,
+        DescripcionCredito: tipoCredito.Descripcion,
+        DescripcionEstatus: estatus.Descripcion,
+        usuario: cotizacion.usuario,
+        Modelo: motos,
+        NombreAsesorBAZ: asesor.Nombre,
+        Telefono: cliente.Telefono,
+        Correo: cliente.Correo,
+        PagoInicial: cotizacion.PagoInicial,
+        Capacidad: cotizacion.Capacidad,
+        FechaRegistro: cotizacion.FechaRegistro,
+        FechaVisita: cotizacion.FechaVisita,
+        HoraInicial: cotizacion.HoraInicial,
+        HoraFinal: cotizacion.HoraFinal,
+        FechaVenta: cotizacion.FechaVenta,
+        Comentario: cotizacion.Comentario,
+      };
       console.log(objetoCotizacion);
       // console.log(objetoCotizacion);
       await cotizacionArray.value.push(objetoCotizacion); //agregar objeto al arreglo, lo hace una vez para cada objeto, a fin de cuentas termina haciendolo para todos los objetos
       console.log(cotizacionArray.value);
-
     });
     console.log(cotizacionArray.value);
-    
-  } catch (error) {
-
-  }
-};
-
-// const buscarCotizaciones = (idCotizacion) => {
-//   console.log(idCotizacion);
-
-//   cotizacionArray.value.forEach(cotizacion => {
-//     console.log(idCotizacion);
-//     console.log(cotizacion.idCotizaciones);
-//     if (cotizacion.idCotizaciones == idCotizacion) {
-//       return true;
-//     }
-//   });
-//   return false;
-
-// }
-
-
-
-
-const consultarCotizaciones = async () => {
-  try {
-    const cotizacionesArray = (await obtenerCotizaciones()).data.body;
-    console.log(cotizacionesArray);
-    cotizaciones.value = cotizacionesArray.reduce((acc, cur) => {
-      acc[cur.cotizacion] = cur;
-      return acc;
-    }, {});
-    cotizacionesFiltradas.value = cotizaciones.value;
+    cotizacionesMostradas.value = cotizacionArray.value;
+    console.log(
+      "-------------------------------------------------------------------------"
+    );
+    console.log(cotizacionesMostradas.value);
   } catch (error) {
     console.log(error);
   }
 };
-// const buscarRol = (idRol) => {
-//   const rolEncontrado = roles.value.find((rol) => rol.idRoles == idRol);
-//   console.log(rolEncontrado.Nombre);
-//   return rolEncontrado.Nombre;
-// };
-// const eliminarRoles = async (idRol) => {
-//   try {
-//     await eliminarPermisosDelRol(idRol);
-//     await eliminarRol(idRol);
-//     await consultarRoles();
-//   } catch (error) {
-//     console.log(error);
-//   }
-// };
-function myFunction() {
-  var input, filter, table, tr, td, i, txtValue;
-  input = document.getElementById("myInput");
-  filter = input.value.toUpperCase();
-  table = document.getElementById("myTable");
-  tr = table.getElementsByTagName("tr");
-  for (i = 0; i < tr.length; i++) {
-    td = tr[i].getElementsByTagName("td")[0];
-    if (td) {
-      txtValue = td.textContent || td.innerText;
-      if (txtValue.toUpperCase().indexOf(filter) > -1) {
-        tr[i].style.display = "";
-      } else {
-        tr[i].style.display = "none";
-      }
-    }
-  }
+
+function modificarCotizacion(idCotizaciones){
+  setIdCotizacion(idCotizaciones);
+  router.push({name:"actualizarCotizacion"})
+
 }
-
-
-const buscarCotizacion = () => {
-  const busquedaValor = busqueda.value.toLowerCase();
-  if (busquedaValor === "") {
-    asesoresFiltrados.value = cotizacion.value;
-  } else {
-    asesoresFiltrados.value = cotizacion.value.filter((asesor) => {
-      return (
-        cotizacion.Nombre.toLowerCase().includes(busquedaValor) ||
-        cotizacion.Apellido_Paterno.toLowerCase().includes(busquedaValor) ||
-        cotizacion.Apellido_Materno.toLowerCase().includes(busquedaValor)
-      );
-    });
-  }
-};
 
 function actualizarTabla() {
   let busquedaValor;
   if (busqueda.value.trim() == "") {
-    cotizacionArray.value = cotizacion.value;
+    cotizacionesMostradas.value = cotizacionArray.value;
   } else {
     busquedaValor = busqueda.value.replace(/ /g, "");
-    cotizacionArray.value = [];
+    cotizacionesMostradas.value = [];
     let nomAsesor;
-    cotizacion.value.forEach((element) => {
+    cotizacionArray.value.forEach((element) => {
       nomAsesor = element.Nombre + element.Apellido_Paterno + element.Apellido_Materno;
 
       if (nomAsesor.toLowerCase().includes(busquedaValor.toLowerCase())) {
-        cotizacionArray.value.push(element);
+        cotizacionesMostradas.value.push(element);
       }
     });
   }
 }
 
+async function eliminar(){
+  await eliminarCotizacion(idCotizacioneliminar.value);
+  await consultarTodo();
 
+}
 
-
-// const montarCotizacion = async () => {
-//     cotizacionFiltrados.value=[];
-
-//   cotizacion.value = await obtenerCotizacion();
-//   cotizacion.value = cotizaacion.value.data.body;
-//   console.log(cotizacion.value);
-
-//   let cliente;
-//   cotizacion.value.forEach(async (element) => {
-//     console.log(element.Empleados_idEmpleados)
-//     element.usuario = await obtenerUnUser(element.Empleados_idEmpleados)
-//     element.usuario = element.usuario.data.body[0].Usuario;
-
-//     element.moto = await obtenerUnModelo(element.Moto_idMoto);
-//     element.moto = element.moto.data.body[0].Modelo;
-
-//     element.medio = await obtenerMediosN(element.MedioDeContacto_idMedioDeContacto);
-//     element.medio = element.medio.data.body[0].Descripcion;
-
-//     cliente = await obtenerCliente(element.Clientes_idClientes);
-//     cliente = cliente.data.body[0];
-
-//     //en teoria estas lineas crean nuevas propiedades en el objeto
-//     element.nombre = cliente.Nombre;
-//     element.paterno = cliente.Apellido_Paterno;
-//     element.materno = cliente.Apellido_Materno;
-//     element.telefono = cliente.Telefono;
-//     element.noBAZ = cliente.NoClienteBAZ;
-//     element.correo = cliente.Correo;
-
-//     //borramos la propiedad del idClientes que ya no necesitamos
-
-//     delete element.idClientes;
-
-//     if (superUsuario.value || element.usuario.trim() == nickActual.value.trim()) {
-//         prospectosFiltrados.value.push(element)
-//     }
-//     prospectosDesplegados.value=prospectosFiltrados.value;
-//   });
-
-//   tablaLista.value = true;
-// };
-
-
-
-
-
-
+async function guardarIdEliminar(id){
+  idCotizacioneliminar.value = id;
+}
 </script>
 <template>
   <div class="container-fluid">
@@ -333,8 +235,11 @@ function actualizarTabla() {
     <div class="row">
       <div class="col-1 mb-3 pt-5 d-flex justify-content-end">
         <router-link to="/italika">
-          <img class="img-fluid mt-3" style="margin-top: 20px; width: 31.23px; height: 35.5px"
-            src="../assets/triangulito.png" />
+          <img
+            class="img-fluid mt-3"
+            style="margin-top: 20px; width: 31.23px; height: 35.5px"
+            src="../assets/triangulito.png"
+          />
         </router-link>
       </div>
       <div class="col-8 mb-3 pt-5">
@@ -367,14 +272,17 @@ function actualizarTabla() {
           </div>
 
           <div class="col">
-            <router-link to="../crearUsuario" style="text-decoration: none">
-              <button class="btn btn-primary btn-create mt-2 d-flex align-items-center justify-content-center"
-                type="button" style="
+            <router-link to="../crearCotizacion" style="text-decoration: none">
+              <button
+                class="btn btn-primary btn-create mt-2 d-flex align-items-center justify-content-center"
+                type="button"
+                style="
                   background-color: #66d054;
                   width: 40px;
                   height: 40px;
                   border-color: #5e5e5e;
-                ">
+                "
+              >
                 <h4>+</h4>
               </button>
             </router-link>
@@ -383,9 +291,8 @@ function actualizarTabla() {
         </div>
       </div>
     </div>
-    <div class="table-responsive-sm">
-      <table id="myTable" class="table table-hover table-striped text-center mt-4 mx-auto"
-        style="width: 950px; overflow-x: scroll">
+    <div style="height: auto; overflow: auto">
+      <table id="myTable" class="table-striped text-center mt-4 mx-auto">
         <thead>
           <tr style="background-color: #2b4677; color: white; vertical-align: middle">
             <th scope="col">No. Cliente BAZ</th>
@@ -415,7 +322,7 @@ function actualizarTabla() {
           </tr>
         </thead>
         <tbody>
-          <tr v-for="cotizacion in cotizacionArray">
+          <tr v-for="cotizacion in cotizacionesMostradas">
             <td>{{ cotizacion.NoClienteBAZ }}</td>
             <td>{{ cotizacion.Nombre }}</td>
             <td>{{ cotizacion.Apellido_Paterno }}</td>
@@ -423,7 +330,36 @@ function actualizarTabla() {
             <td>{{ cotizacion.DescripcionCredito }}</td>
             <td>{{ cotizacion.DescripcionEstatus }}</td>
             <td>
-                <p v-for="moto in cotizacion.Modelo">{{ moto[0].Modelo }} </p>
+              <div v-if="cotizacion.Modelo.length > 1" class="accordion-item">
+                <h2 class="accordion-header" id="flush-headingThree">
+                  <button
+                    class="accordion-button collapsed normalAccordion"
+                    type="button"
+                    data-bs-toggle="collapse"
+                    data-bs-target="#flush-collapseThree"
+                    aria-expanded="false"
+                    aria-controls="flush-collapseThree"
+                  >
+                    ver {{ cotizacion.Modelo.length }} motos
+                  </button>
+                </h2>
+                <div
+                  id="flush-collapseThree"
+                  class="accordion-collapse collapse normalAccordion"
+                  aria-labelledby="flush-headingThree"
+                  data-bs-parent="#accordionFlushExample"
+                >
+                  <div class="">
+                    <button
+                      v-for="moto in cotizacion.Modelo"
+                      class="noAccordionBtn normalAccordion"
+                    >
+                      {{ moto[0].Modelo }}
+                    </button>
+                  </div>
+                </div>
+              </div>
+              <p v-else><strong>{{ cotizacion.Modelo[0][0].Modelo }}</strong></p>
             </td>
             <td>{{ cotizacion.NombreAsesorBAZ }}</td>
             <td>{{ cotizacion.Telefono }}</td>
@@ -437,27 +373,40 @@ function actualizarTabla() {
             <td>{{ cotizacion.FechaVenta }}</td>
             <td>{{ cotizacion.Comentario }}</td>
 
-
             <td scope="row" class="sticky" style="position: sticky">
               <div class="container">
                 <div class="d-inline-flex">
-                  <button class="btn btn-primary d-inline-block mr-3 btn-spacer" type="submit" style="
+                  <button
+                    class="btn btn-primary d-inline-block mr-3 btn-spacer"
+                    type="submit"
+                    style="
                       background-color: #ffbe16;
                       border-color: #ffbe16;
                       height: 37px;
                       width: 45px;
-                    " @click="modificarCotizacion(usuario.idEmpleados)">
-                    <i class="fa-solid fa-pen-to-square" style="color: black;"></i>
+                    "
+                    @click="modificarCotizacion(cotizacion.idCotizaciones)"
+                  >
+                    <i class="fa-solid fa-pen-to-square" style="color: black"></i>
                   </button>
-                  <button class="btn btn-primary btn-delete d-inline-block" type="submit" style="
+                  <button
+                    class="btn btn-primary btn-delete d-inline-block"
+                    type="submit"
+                    data-bs-toggle="modal" data-bs-target="#modal"
+                    style="
                       background-color: #c01a1a;
                       border-color: #c01a1a;
                       height: 37px;
                       width: 45px;
                       margin-top: 0% !important;
-                    " @click="mostrarmodal(usuario.Usuario, usuario.idEmpleados)">
-                    <img class="img-fluid mb-1" style="width: 24.5px; height: 22.75px; margin-top: 0% !important"
-                      src="../assets/basura.png" />
+                    "
+                    @click="guardarIdEliminar(cotizacion.idCotizaciones)"
+                  >
+                    <img
+                      class="img-fluid mb-1"
+                      style="width: 24.5px; height: 22.75px; margin-top: 0% !important"
+                      src="../assets/basura.png"
+                    />
                   </button>
                 </div>
               </div>
@@ -469,19 +418,34 @@ function actualizarTabla() {
   </div>
 
   <!-- Modal  modalCon-->
-  <div class="modal fade" id="modal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div
+    class="modal fade"
+    id="modal"
+    tabindex="-1"
+    aria-labelledby="exampleModalLabel"
+    aria-hidden="true"
+  >
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title" id="exampleModalLabel">Eliminar Usuario</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          <h5 class="modal-title" id="exampleModalLabel">Eliminar Cotización</h5>
+          <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="modal"
+            aria-label="Close"
+          ></button>
         </div>
         <div class="modal-body">
-          <span>¿Está seguro de que quiere eliminar al Usuario {{ cotizacionAct }}?</span>
+          <span>¿Está seguro de que quiere eliminar esta cotización?</span>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-danger" data-bs-dismiss="modal"
-            @click="desactivarCotizacion(idUsuarioAct)">
+          <button
+            type="button"
+            class="btn btn-danger"
+            data-bs-dismiss="modal"
+            @click="eliminar()"
+          >
             Confirmar
           </button>
         </div>
@@ -490,6 +454,19 @@ function actualizarTabla() {
   </div>
 </template>
 <style>
+.normalAccordion {
+  font-family: "Fjalla One";
+  font-style: normal;
+  letter-spacing: 0.04em;
+  background-color: inherit !important;
+  color: black !important;
+  font-size: medium !important;
+  max-height: inherit !important;
+  border: none !important;
+  margin-bottom: 10px;
+  font-weight: inherit !important;
+}
+
 body {
   margin: 0;
   padding: 0;
