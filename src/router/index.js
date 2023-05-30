@@ -29,8 +29,8 @@ import ActualizarCotizacion from '../views/ActualizarCotizacion.vue'
 
 
 
-//const { reanudarSesion } = loginStore();
-//const {verificarPermisos} = loginStore();
+const { reanudarSesion } = loginStore();
+const {verificarPermisos} = loginStore();
 
 import Catalogo from '../views/Catalogo.vue'
 
@@ -225,49 +225,48 @@ const router = createRouter({
   ]
 })
 
-//router.beforeEach(async (to, from) => {
+router.beforeEach(async (to, from) => {
 
-//  const store = loginStore();
- // if (await store.reanudarSesion()) {
-  //  console.log("inciado");
-  //  if (to.name == 'login') {
-    //  return { name: 'home' }
-   // }
+  const store = loginStore();
+  if (await store.reanudarSesion()) {
+    console.log("inciado");
+    if (to.name == 'login') {
+      return { name: 'home' }
+    }
 
-    //const nombreInterfaz = to.name;
-    //const idInterfaz = interfaces[nombreInterfaz];
+    const nombreInterfaz = to.name;
+    const idInterfaz = interfaces[nombreInterfaz];
 
-    //if (await store.verificarPermisos(idInterfaz)) {
-      //return true
-    //} else {
-      //return { name: 'home' }
-    //}
+    if (await store.verificarPermisos(idInterfaz)) {
+      return true
+    } else {
+      return { name: 'home' }
+    }
 
 
     //En caso de no tener una sesión
-  //} else {
-    //console.log("no iniciado")
-    //if (from.name == 'login') {
-      //return false
-    //} else
-      //if (from.name != 'login' && to.name != 'login') {
-        //return { name: 'login' }
-      //}
+  } else {
+    console.log("no iniciado")
+    if (from.name == 'login') {
+      return false
+    } else
+      if (from.name != 'login' && to.name != 'login') {
+        return { name: 'login' }
+      }
 
-    //return true
+    return true
 
 
-  //}
+  }
 
-//}
-//)
+}
+)
 
 
 export default router
-/*
+
  const nombreInterfaz = to.name;
     const idInterfaz = interfaces[nombreInterfaz];
 
     if (await store.verificarPermisos(idInterfaz)) {}
 
-*/
