@@ -591,7 +591,7 @@ async function verServicios() {
       <!-----------------------    Row de titulo  --------------------------->
       <div class="row mb-1 pt-5">
         <div class="col-1 d-flex justify-content-end">
-          <router-link to="/prospectos">
+          <router-link to="/servicios">
             <img
               class="img-fluid"
               style="margin-top: 20px; width: 31.23px; height: 35.5px"

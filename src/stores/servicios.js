@@ -1,26 +1,42 @@
 import { defineStore } from "pinia";
 import axios from "axios";
 
-
-export const serviciosStore = defineStore("serviciosStore",{
+export const serviciosStore = defineStore("servicios",{
   state: ()=>({
-    token:"",
-    idServicioActual: ""
-
+    idServicios:null,
+    idClientes:null
   }), 
-
   actions:{
-
-    setToken(token){
-        this.token = token;
+    setIdServicios(id){
+        this.idServicios = id;
+        console.log(this.idServicios)
     },
 
-
-    getToken(){
-        return this.token;
+    getIdServicios(){
+        console.log(this.idServicios)
+        return this.idServicios;
+    },
+    setIdCliente(id){
+        this.idClientes = id;
+        console.log(this.idClientes)
     },
 
-    //trae todos los usuarios ACTIVOS
+    getIdCliente(){
+        console.log(this.idClientes)
+        return this.idClientes;
+    },
+    async servicioExiste(servicio){
+        try {
+            const res = await axios.post('http://localhost:4000/api/servicios/existe',servicio)
+            console.log(res.data.body)
+            return res.data.body;
+            
+        } catch (error) {
+            console.log(error)
+            throw(error);
+        }
+    },
+
     async obtenerServicios(){
         try {
             const res = await axios.get('http://localhost:4000/api/servicios')
@@ -34,71 +50,38 @@ export const serviciosStore = defineStore("serviciosStore",{
 
     async obtenerServicio(id){
         try {
-            console.log("OBTENIENDO SERVICIO");
-            console.log(id);
             const res = await axios.get('http://localhost:4000/api/servicios/'+id)
             return res;
-            
         } catch (error) {
             console.log(error)
             throw(error);
         }
     },
 
-//Trae TODOS los nombres de usuario que existen
-    async obtenerNicknames(){
+    async consultarServiciosActivas() {
         try {
-            const res = await axios.get('http://localhost:4000/api/servicios/nicks')
+            const res = await axios.get('http://localhost:4000/api/servicios/activas')
             return res;
-        } catch (error) {
+        }catch(error){
             console.log(error)
-        }
-    },
-//Trae los datos solo del usuario especificado, hay que mandarle el idEmpleados
-    async obtenerUnSer(idServicios){
-        try {
-            if (idServicios=="") {
-                throw error
-            }
-            console.log('http://localhost:4000/api/servicios/'+idServicios)
-            const res = await axios.get('http://localhost:4000/api/servicios/'+idServicios)
-            return res;
-        } catch (error) {
-            throw error
+            throw(error);
         }
     },
 
-
-
-    //metodos para resibir usuario y guardar el que se esta modificando
-
-    setIdServicios(idServicios){
-        this.idServicioActual = idServicios
-    },
-
-
-    getIdServicios(){
-        return this.idServicioActual
-    },
-    
-    //hay que mandarle el json ya creado
-    async agregarServicios(servicios){
+    async agregarServicio(servicio){
         try {
-            //nos retorna el id del usuario creado
-            const res = await axios.post('http://localhost:4000/api/servicios',servicios)
-           console.log(res)
-            return res;
-            
+            const res = await axios.post('http://localhost:4000/api/servicios',servicio)
+            console.log(res)
+            return ;
         } catch (error) {
             console.log(error)
-            return -1;
+            return ;
             
         }
     },
-    //hay que mandarle el json ya creado
-    async actualizarServicios(servicios){
+    async actualizarServicio(servicio){
         try {
-            const res = await axios.post('http://localhost:4000/api/servicios',servicios)
+            const res = await axios.post('http://localhost:4000/api/servicios',servicio)
            console.log(res)
             return ;
             
@@ -109,10 +92,20 @@ export const serviciosStore = defineStore("serviciosStore",{
         }
     },
 
-    
-    
+    async eliminarServicio(idServicios){
+        try {
+            const res = await axios.put('http://localhost:4000/api/servicios/',{
+                "idServicios":idServicios
+        });
+
+           console.log(res)
+            return ;
+            
+        } catch (error) {
+            console.log(error)
+            return ;
+            
+        }
+    },
   } 
 })
-
-
-  

@@ -277,10 +277,10 @@ async function desactivarUsuario(idEmpleado) {
       </div>
       <div class="col-8 mb-3 pt-5">
         <div class="row align-items-end">
-          <p class="italika" style="font-size: 50px">Usuarios</p>
+          <p class="italika" style="font-size: 50px">Servicios</p>
         </div>
         <div class="row align-items-end">
-          <h5 class="italika d-flex justify-content-start">Usuarios registrados</h5>
+          <h5 class="italika d-flex justify-content-start">Servicios registrados</h5>
         </div>
       </div>
       <div class="col-3 align-items-end">
@@ -300,7 +300,7 @@ async function desactivarUsuario(idEmpleado) {
           </div>
 
           <div class="col">
-            <router-link to="../crearUsuario" style="text-decoration: none">
+            <router-link to="../crearServicio" style="text-decoration: none">
               <button
                 class="btn btn-primary btn-create mt-2 d-flex align-items-center justify-content-center"
                 type="button"

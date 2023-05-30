@@ -120,11 +120,9 @@ const canActualizar = ref(false);
 
 //al cargar la pagina se consultan los permisos y roles que hay en la BD y se define el objeto relacionado al modal
 onMounted(async () => {
-  await obtenerServicioActualizar();
-
   idUser.value = await obtenerIdPorUser({ Usuario: getUser() });
-//  await  llenarCombos();
   const idServicioModal = getIdServicios();
+  
   if (idServicioModal == ""||idServicioModal ==null) {
     // router.push({name:"servicios"})
     //validar que el id del servicio sea null
@@ -136,6 +134,7 @@ onMounted(async () => {
     await modal.show();
     esNuevo.value = true;
   } else {
+    await obtenerServicioActualizar();
     bloqueado.value = true;
     esNuevo.value = false;
     //cargarDatosCliente();
@@ -295,20 +294,7 @@ console.log("antes")
   console.log("despues")
 }
 
-function validarEmail() {
-  email.value = email.value.trim();
-  var re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  var pswd = document.getElementById("emailInpt");
-  if (!re.test(email.value)) {
-    pswd.style.borderColor = "red";
-    pswd.style.borderWidth = "4px";
-    validado.value = false;
-    return false;
-  } else {
-    pswd.style.borderWidth = "0px";
-    return true;
-  }
-}
+
 
 function validarTlfn() {
   let tlfnInpt = document.getElementById("tlfn");
@@ -323,6 +309,7 @@ function validarTlfn() {
     return true;
   }
 }
+
 
 // function validarNumBAZ() {
 //   if (noBAZ.value == "") {
@@ -342,56 +329,38 @@ function validarTlfn() {
 //   }
 // }
 
-function validarImporte() {
-  let impInput = document.getElementById("tlfn");
-  var re = /^[0-9]+$/;
-  if (!(importe.value.length >= 3 && importe.value.match(re))) {
-    impInput.style.borderColor = "red";
-    impInput.style.borderWidth = "4px";
-    validado.value = false;
-    return false;
-  } else {
-    impInput.style.borderWidth = "0px";
-    return true;
-  }
-}
+
 
 
 function validarKilometraje() {
-  let kmInput = document.getElementById("tlfn");
-  var re = /^[0-9]+$/;
-  if (!(importe.value.length >= 3 && importe.value.match(re))) {
-    kmInput.style.borderColor = "red";
-    kmInput.style.borderWidth = "4px";
+  let klInpt = document.getElementById("kil");
+  const kilometrajeString = kilometraje.value.toString(); 
+  var rex = /^[0-9]+$/;
+  // if (!(kilometraje.value.length >= 4 && kilometraje.value.match(re))) {
+    console.log(kilometrajeString);
+    if (!( kilometrajeString.match(rex))) {
+    klInpt.style.borderColor = "red";
+    klInpt.style.borderWidth = "4px";
     validado.value = false;
     return false;
   } else {
-    kmInput.style.borderWidth = "0px";
+    klInpt.style.borderWidth = "0px";
     return true;
   }
 }
 
 
-function validaEstatus(){
-  
-}
 
 
-function validarTexto(input) {
-  input.value = input.value.trim();
-  var re = /^[a-zA-Z ]+$/;
-  var pswd = document.getElementById("emailInpt");
-  if (!re.test(input.value)) {
-    input.style.borderColor = "red";
-    input.style.borderWidth = "4px";
-    validado.value = false;
+function validarEstatus() {
+  if (tagEstatus.value.value == -1) {
+    estatusValido.value = "comboMedio";
     return false;
   } else {
-    input.style.borderWidth = "0px";
+    estatusValido.value = "";
     return true;
   }
 }
-
 // function validarMoto() {
 //   console.log(tagMoto.value.value);
 //   console.log(tagMoto.value.value == -1);
@@ -405,15 +374,7 @@ function validarTexto(input) {
 //   }
 // }
 
-function validarEstatus() {
-  if (tagEstatus.value.value == -1) {
-    estatusValido.value = "comboMedio";
-    return false;
-  } else {
-    estatusValido.value = "";
-    return true;
-  }
-}
+
 
 const revisarCliente = async () => {
   try {
@@ -575,14 +536,27 @@ async function crearMotoTaller() {
 };
 
 async function crearServicio() {
+  var idClienteAct =  servicio.value.Clientes_idClientes;
   try {
     console.log("creando servicio")
+
+  //   idServicio.value = getIdServicios();
+  // servicio.value=await obtenerServicio(idServicio.value);
+  // servicio.value=servicio.value.data.body[0];
+  // console.log(servicio.value);
+  // cliente.value=await obtenerCliente( servicio.value.Clientes_idClientes);
+  // cliente.value=cliente.value.data.body[0];
+  // moto.value=await   obtenerUnaMotoTaller(servicio.value.MotosTaller_idMotosTaller)
+  // moto.value=moto.value.data.body[0];
+
+
+
     const servicio = {
-      idServicios: 0,
+      idServicios: idServicio.value,
       MotosTaller_idMotosTaller: idMotoTaller.value.data.body,
       EstatusServicio_idEstatusServicio: tagEstatus.value.value,
       Empleados_idEmpleados: idUser.value,
-      Clientes_idClientes: idCliente.value,
+      Clientes_idClientes: idClienteAct,
       Importe: importe.value,
       cantidadServicio: 1,
       Descripcion: descripcion.value,
@@ -596,8 +570,8 @@ async function crearServicio() {
     setIdCliente(null);
     repetido.value = false;
 
-    const modal = new bootstrap.Modal(
-      document.getElementById("modal"),
+     modal = new bootstrap.Modal(
+      document.getElementById("modalActualizar"),
       {
         keyboard: false,
       }
@@ -611,47 +585,142 @@ async function crearServicio() {
   }
 }
 
-async function validarNSerie(){
 
-}
 
+  
 async function sbmtServicios() {
-  console.log("hola");
   repetido.value = false;
-  const validado =    
-    validarNSerie() &&
-    validarImporte()&&
-    validarKilometraje()&&
-    validarModelo()&&
-    validarFechaEntrega()&&
-    validaEstatus()
-
+  const validado =
+    validarEmail() &&
+    validarTlfn() &&
+    validarTexto(tagNombre.value) &&
+    validarTexto(tagPaterno.value) &&
+    validarTexto(tagMaterno.value) &&
+    validarKilometraje() &&
+    validarFecha() &&
+    validarNoSerie() &&
+    validarImporte() &&
+    validarModelo() &&
    // validarNumBAZ() &&
     // validarMoto() &&
-  
+    validarEstatus();
 
   if (validado) {
     alertaLlenado.value = false;
     await crearMotoTaller();
-    await revisarServicio();
+    await revisarCliente();
   } else {
-    // validarEmail();
-    // validarTlfn();
-    // validarTexto(tagNombre.value);
-    // validarTexto(tagPaterno.value);
-    // validarTexto(tagMaterno.value);
-    // validarNSerie();
+    alertaLlenado.value = true;
+    validarEmail();
+    validarTlfn();
+    validarTexto(tagNombre.value);
+    validarTexto(tagPaterno.value);
+    validarTexto(tagMaterno.value);
+    validarFecha();
+    validarKilometraje();
+    validarNoSerie();
+    validarImporte();
+    validarModelo();
   //  validarNumBAZ();
     // validarMoto();
-    // validarEstatus();
+    validarEstatus();
+    
+  }
+}
 
-    validarNSerie() &&
-    validarImporte()&&
-    validarKilometraje()&&
-    validarModelo()&&
-    validarFechaEntrega()&&
-    validarEstatus()
-    alertaLlenado.value = true;
+
+
+function validarModelo() {
+  let modInput = document.getElementById("modMot");
+  
+  if (modInput.value.trim() === "") {
+    modInput.style.borderColor = "red";
+    modInput.style.borderWidth = "4px";
+    validado.value = false;
+    return false;
+  } else {
+    modInput.style.borderWidth = "0px";
+    return true;
+  }
+}
+
+
+function validarImporte() {
+  let impInput = document.getElementById("imp");
+  
+  var rex = /^[0-9]+$/;
+  // if (!(kilometraje.value.length >= 4 && kilometraje.value.match(re))) {
+
+
+  if (impInput.value.trim() === ""||!( kilometrajeString.match(rex))) {
+    impInput.style.borderColor = "red";
+    impInput.style.borderWidth = "4px";
+    validado.value = false;
+    return false;
+  } else {
+    impInput.style.borderWidth = "0px";
+    return true;
+  }
+}
+
+
+function validarTexto(input) {
+  input.value = input.value.trim();
+  var re = /^[a-zA-Z ]+$/;
+  var pswd = document.getElementById("emailInpt");
+  if (!re.test(input.value)) {
+    input.style.borderColor = "red";
+    input.style.borderWidth = "4px";
+    validado.value = false;
+    return false;
+  } else {
+    input.style.borderWidth = "0px";
+    return true;
+  }
+}
+
+function validarNoSerie() {
+  let noSerInput = document.getElementById("noSr");
+  
+  if (noSerInput.value.trim() === "") {
+    noSerInput.style.borderColor = "red";
+    noSerInput.style.borderWidth = "4px";
+    validado.value = false;
+    return false;
+  } else {
+    noSerInput.style.borderWidth = "0px";
+    return true;
+  }
+}
+
+
+function validarEmail() {
+  email.value = email.value.trim();
+  var re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  var pswd = document.getElementById("emailInpt");
+  if (!re.test(email.value)) {
+    pswd.style.borderColor = "red";
+    pswd.style.borderWidth = "4px";
+    validado.value = false;
+    return false;
+  } else {
+    pswd.style.borderWidth = "0px";
+    return true;
+  }
+}
+
+
+function validarFecha() {
+  let fechaInput = document.getElementById("fechEn");
+  
+  if (fechaInput.value.trim() === "") {
+    fechaInput.style.borderColor = "red";
+    fechaInput.style.borderWidth = "4px";
+    validado.value = false;
+    return false;
+  } else {
+    fechaInput.style.borderWidth = "0px";
+    return true;
   }
 }
 
@@ -824,7 +893,7 @@ function verServicios() {
                   id="noSr"
                   type="text"
                   class="form-control inptElement base"
-
+                  @click="validarNoSerie()"
                   v-model.trim="noSerie"
                   
                  
@@ -841,7 +910,7 @@ function verServicios() {
                   id="modMot"
                   type="text"
                   class="form-control inptElement base"
-                  
+                  @click="validarModelo()"
                   v-model.trim="modeloTaller"
                   
                   
@@ -855,12 +924,13 @@ function verServicios() {
               <div class="row d-flex align-items-center">
                 <div class="col mt-2 me-5 pe-5">
                   <h5 class="italika">Kilometraje *</h5>
+
                 </div>
                 <input
                   id="kil"
                   type="text"
                   class="form-control inptElement base"
-                
+                  @click="validarKilometraje()"
                   v-model.trim="kilometraje"
                   
                 />
@@ -878,7 +948,7 @@ function verServicios() {
                   class="form-control inptElement base"
                 
                   v-model.trim="importe"
-                  
+                  @click="validarImporte()"
                   ref="tagSerie"
                   maxlength="16"
                 />
@@ -909,6 +979,7 @@ function verServicios() {
                      id="fechEn"
                      type="date"
                      class="form-control  base"
+                     @click="validarFecha()"
                       />
                 </div>
               </div>
@@ -982,6 +1053,7 @@ function verServicios() {
               style="height: 38px"
               role="alert"
             >
+
               ¡Alguien ya registró este servicio hoy!
             </div>
           </div>
@@ -1207,7 +1279,7 @@ function verServicios() {
           ></button>
         </div>
         <div class="modal-body">
-          El servicio {{ Nombre }} fue modificado exitosamente.
+          El servicio Nombre  fue modificado exitosamente.
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-success" @click="verServicios()">
