@@ -20,18 +20,12 @@ import Prospectos from '../views/Prospectos.vue';
 import ActualizarProspecto from '../views/ActualizarProspecto.vue';
 import SeleccionCliente from '../views/SeleccionCliente.vue'
 import EstatusCotizacion from '../views/EstatusCotizacion.vue'
-import Citas from '../views/Citas.vue'
-//import Reportes from '../views/Reportes.vue'
-import MetaVentas from '../views/MetasVentas.vue'
-import CrearCotizacion from '../views/CrearCotizacion.vue'
-import Cotizaciones from '../views/Cotizaciones.vue'
-import ActualizarCotizacion from '../views/ActualizarCotizacion.vue'
 
 
 
-const { reanudarSesion } = loginStore();
-const {verificarPermisos} = loginStore();
-
+//const { reanudarSesion } = loginStore();
+//const reanudarSesion = loginStore();
+//const {verificarPermisos} = loginStore();
 import Catalogo from '../views/Catalogo.vue'
 
 const interfaces = {
@@ -41,12 +35,9 @@ const interfaces = {
   crearProspecto: '1',
   prospectos:'1',
   actualizarProspecto:'1',
-  crearCotizacion:'2',
-  cotizaciones: '2',
-  actualizarCotizacion: '2',
   mediosContacto: '3',
-  metaVentas: '4',
   asesores: '5',
+  estatusCotizacion:'6',
   creditos:'7',
   crearUsuario: '9',
   usuarios: '9',
@@ -55,8 +46,6 @@ const interfaces = {
   clientes: '10',
   actualizarCliente:'10',
   catalogo:'11',
-  reportes:'12',
-  citas:'13',
   crearRol: '14',
   actualizarRol: '14',
   roles: '14',
@@ -192,36 +181,8 @@ const router = createRouter({
       name: 'estatusCotizacion',
       component: EstatusCotizacion
       
-    },
-    {
-      path: '/citas',
-      name: 'citas',
-      component: Citas
-      
-    },
-    {
-      path: '/metaVentas',
-      name: 'metaVentas',
-      component: MetaVentas
-      
-    },
-    {
-      path: '/crearCotizacion',
-      name: 'crearCotizacion',
-      component: CrearCotizacion
-      
-    },
-    {
-      path: '/cotizaciones',
-      name: 'cotizaciones',
-      component: Cotizaciones
-      
-    },
-    {
-      path: '/actualizarCotizacion',
-      name: 'actualizarCotizacion',
-      component: ActualizarCotizacion
     }
+
   ]
 })
 
@@ -259,14 +220,14 @@ router.beforeEach(async (to, from) => {
 
   }
 
-}
-)
+})
 
 
 export default router
-
+/*
  const nombreInterfaz = to.name;
     const idInterfaz = interfaces[nombreInterfaz];
 
     if (await store.verificarPermisos(idInterfaz)) {}
 
+*/
