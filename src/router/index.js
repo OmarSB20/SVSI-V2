@@ -30,8 +30,8 @@ import ActualizarCotizacion from '../views/ActualizarCotizacion.vue'
 
 
 //const { reanudarSesion } = loginStore();
-//const reanudarSesion = loginStore();
 //const {verificarPermisos} = loginStore();
+
 import Catalogo from '../views/Catalogo.vue'
 
 const interfaces = {
@@ -43,6 +43,7 @@ const interfaces = {
   actualizarProspecto:'1',
   crearCotizacion:'2',
   cotizaciones: '2',
+  actualizarCotizacion: '2',
   mediosContacto: '3',
   metaVentas: '4',
   asesores: '5',

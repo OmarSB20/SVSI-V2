@@ -17,7 +17,8 @@ const {
   getDia,
   setCita,
   getCita,
-  actualizarCita,eliminarCita
+  actualizarCita,
+  eliminarCita,
 } = CitasStore();
 const {
   obtenerCliente,
@@ -38,6 +39,9 @@ const date = ref(null);
 const daysContainer = ref(null);
 const prev = ref(null);
 const next = ref(null);
+const habilitado = ref(true);
+const tagCrear = ref(null);
+const alertarepetida = ref(false);
 
 const diasMostrados = ref([]);
 const eventosMostrados = ref([]);
@@ -55,8 +59,10 @@ const nickActual = ref("");
 const superUsuario = ref(false);
 const tagSelect = ref(null);
 const citaActualizar = ref(null);
+const citasHoy = ref(null);
 
 const idCitaEliminar = ref();
+const puedeCrear = ref(false);
 
 const tituloFecha = ref("");
 
@@ -117,10 +123,7 @@ const consultarUsuarioAct = async () => {
     let nivelUsuario = await obtenerRolesN(usuarioActual.Roles_idRoles);
     nivelUsuario = nivelUsuario.data.body[0].SuperRol;
 
-    console.log("super usuario? " + nivelUsuario);
-
     nivelUsuario == 1 ? (superUsuario.value = true) : (superUsuario.value = false);
-    console.log(superUsuario.value);
   } catch (error) {
     console.log(error);
   }
@@ -131,8 +134,6 @@ async function consultarCliente() {
   setIdCliente(null);
   setInterfazOrigen(null);
   cliente = cliente.data.body[0];
-  console.log(cliente);
-  console.log("SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS");
   const nombreCompleto =
     cliente.Nombre + " " + cliente.Apellido_Paterno + " " + cliente.Apellido_Materno;
   return { id: cliente.idClientes, nombre: nombreCompleto };
@@ -196,14 +197,12 @@ async function initCalendar() {
     citaFormat = ano + citaFormat + dia;
 
     let citaAprove = citasMes.value.filter((cita) => {
-      console.log(citaFormat);
-      console.log("sig cita");
-      console.log(cita.fecha.slice(0, -9));
       return cita.fecha.slice(0, -9) == citaFormat;
     });
 
     citaAprove.forEach(async (item) => {
       item.hora = item.fecha.slice(11, item.fecha.length - 3);
+      console.log(item.hora)
       item.fecha = item.fecha.slice(0, -9);
       const client = await obtenerCliente(item.Clientes_idClientes);
       item.Nombre = client.data.body[0].Nombre;
@@ -287,7 +286,6 @@ async function obtenerCitasMes() {
     emp = emp.data.body[0];
     if (superUsuario.value || emp.Usuario.trim() == nickActual.value.trim()) {
       citasMes.value.push(element);
-      console.log(element);
     }
   }
 }
@@ -313,7 +311,6 @@ async function cargarDatosGuardar() {
   printDate(indice);
   idCliente.value = clienteSeleccionado.id;
   nombreCliente.value = clienteSeleccionado.nombre;
-  console.log(nombreCliente.value);
   inptHora.value = "";
   await modal.show();
 }
@@ -327,7 +324,14 @@ async function guardarCita() {
     fechaTemp = fechaTemp.ano + "-" + mesAg + "-" + fechaTemp.dia;
     const user = getUser();
     const emp = await obtenerIdPorUser({ Usuario: user });
-    console.log(emp);
+    let citaRepetida=false;
+    citasHoy.value.forEach(element => {
+    if(element.hora==inptHora.value){
+      citaRepetida = true;
+    }
+  });
+  if (!citaRepetida) {
+    alertarepetida.value=false;
     const cita = {
       idCitas: 0,
       Clientes_idClientes: idCliente.value,
@@ -341,18 +345,19 @@ async function guardarCita() {
     printDate(indiceDia);
 
     modal.hide();
+  }else{
+    alertarepetida.value=true;
+  }
+    
   }
 }
 //----------------Metodos para proceso de actualizar ------------
-async function preActualizar(cita, pos,idEliminar) {
-  idCitaEliminar.value = idEliminar; 
-  console.log(cita);
-  console.log("ubicateeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee");
-  console.log(pos);
+async function preActualizar(cita, pos, idEliminar) {
+  idCitaEliminar.value = idEliminar;
   citaActualizar.value = cita;
   citaActualizar.value.posicion = posDiaActivo;
   idActualizar.value = cita.idCitas;
-  idCliente.value =cita.Clientes_idClientes;
+  idCliente.value = cita.Clientes_idClientes;
   let clienteAct = await obtenerCliente(cita.Clientes_idClientes);
   clienteAct = clienteAct.data.body[0];
   nombreClienteAct.value =
@@ -362,9 +367,7 @@ async function preActualizar(cita, pos,idEliminar) {
     " " +
     clienteAct.Apellido_Materno;
   inptHoraAct.value = cita.hora;
-  console.log(inptHoraAct.value);
   tagSelect.value.value = cita.estatusCita;
-  console.log(tagSelect.value.value);
   modal = new bootstrap.Modal(document.getElementById("ModalAct"), {
     keyboard: false,
   });
@@ -373,22 +376,16 @@ async function preActualizar(cita, pos,idEliminar) {
 
 async function cargarDatosAct() {
   citaActualizar.value = getCita();
-  console.log("cargaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaarrrrrrrrr");
-  console.log(citaActualizar.value);
   setCita(null);
   printDate(citaActualizar.value.posicion);
   const clienteSeleccionado = await consultarCliente();
-  console.log(clienteSeleccionado);
   if (clienteSeleccionado) {
     idCliente.value = clienteSeleccionado.id;
     nombreClienteAct.value = clienteSeleccionado.nombre;
-    console.log(nombreClienteAct.value);
-    console.log(idCliente.value);
   } else {
     idCliente.value = citaActualizar.value.Clientes_idClientes;
   }
-  console.log("IDDDDDDDDDDDCLIENTEEEEEEEEEE")
-  console.log(idCliente.value)
+
   // idCliente.value = clienteSeleccionado.id;
   // nombreClienteAct.value = clienteSeleccionado.nombre;
   inptHoraAct.value = citaActualizar.value.hora;
@@ -397,20 +394,23 @@ async function cargarDatosAct() {
 }
 
 async function actualizarCitas() {
-  console.log("POSIDACACITOVOO---");
-  console.log(posDiaActivo);
   if (inptHoraAct.value == "" || nombreClienteAct.value == "") {
     alertaLlenar.value = true;
   } else {
     let fechaTemp = diasMostrados.value[posDiaActivo];
-    console.log(fechaTemp);
     const mesAg = fechaTemp.mes + 1;
     fechaTemp = fechaTemp.ano + "-" + mesAg + "-" + fechaTemp.dia;
-    console.log(fechaTemp);
-    console.log("fechaAct");
-    console.log(citaActualizar.value.fecha);
-    console.log(citaActualizar.value.fecha + " " + inptHoraAct.value);
-    //idCliente.value = citaActualizar.value.Clientes_idClientes;
+
+
+    let citaRepetida=false;
+    citasHoy.value.forEach(element => {
+      console.log(element.hora==inptHoraAct.value)
+    if(element.hora==inptHoraAct.value){
+      citaRepetida = true;
+    }
+  });
+  if (!citaRepetida) {
+    alertarepetida.value=false;
     const cita = {
       idCitas: citaActualizar.value.idCitas,
       Clientes_idClientes: idCliente.value,
@@ -418,12 +418,15 @@ async function actualizarCitas() {
       fecha: fechaTemp + " " + inptHoraAct.value,
       estatusCita: tagSelect.value.value,
     };
-    console.log(cita);
     const indiceDia = posDiaActivo;
     await actualizarCita(cita);
     await initCalendar();
     printDate(indiceDia);
     await modal.hide();
+  }else{
+    alertarepetida.value=true;
+  }
+   
   }
 }
 
@@ -456,19 +459,35 @@ async function irHoy() {
 }
 //selecciona un día segun su indice y carga sus citas
 function printDate(indice) {
-  console.log(diasMostrados.value[indice]);
-  console.log(diasMostrados.value);
   diasMostrados.value[posDiaActivo].estilo = "day";
   diasMostrados.value[indice].estilo = "day today active ";
   posDiaActivo = indice;
-  console.log("-----------------------------PintDate posDiaActivo");
-  console.log(posDiaActivo);
   eventosMostrados.value = diasMostrados.value[posDiaActivo].citas;
-  console.log(eventosMostrados.value);
 
   alertaLlenar.value = false;
   nombreCliente.value = "";
   inptHora.value = "";
+
+  let hoy = new Date();
+  let seleccionada = new Date(
+    diasMostrados.value[posDiaActivo].ano +
+      "/" +
+      (diasMostrados.value[posDiaActivo].mes + 1) +
+      "/" +
+      diasMostrados.value[posDiaActivo].dia
+  );
+  hoy = hoy.toISOString().split("T")[0];
+  seleccionada = seleccionada.toISOString().split("T")[0];
+
+  citasHoy.value = diasMostrados.value[posDiaActivo].citas;
+
+  habilitado.value = hoy <= seleccionada;
+
+  if (!habilitado.value) {
+    tagCrear.value.style.backgroundColor = "gray";
+  } else {
+    tagCrear.value.style.backgroundColor = "#00ff1f";
+  }
 
   tituloFecha.value =
     diasMostrados.value[posDiaActivo].dia +
@@ -478,10 +497,10 @@ function printDate(indice) {
     diasMostrados.value[posDiaActivo].ano;
 }
 
-async function eliminar(){
+async function eliminar() {
   await eliminarCita(idCitaEliminar.value);
   await initCalendar();
-  printDate(posDiaActivo)
+  printDate(posDiaActivo);
 }
 </script>
 
@@ -537,7 +556,7 @@ async function eliminar(){
       <div class="events" v-for="(evento, index3) in eventosMostrados">
         <div
           class="event d-flex align-items-center"
-          @click="preActualizar(evento, index3,evento.idCitas)"
+          @click="preActualizar(evento, index3, evento.idCitas)"
         >
           <div>
             <i class="fa-solid fa-motorcycle" style="font-size: 50px"></i>
@@ -587,10 +606,27 @@ async function eliminar(){
       type="button"
       data-bs-toggle="modal"
       data-bs-target="#exampleModal"
+      :disabled="!habilitado"
+      ref="tagCrear"
     >
       <i class="fas fa-plus"></i>
     </button>
   </div>
+  <datalist id="listahorasdeseadas">
+    <option value="7:00"></option>
+    <option value="8:00"></option>
+    <option value="9:00"></option>
+    <option value="10:00"></option>
+    <option value="11:00"></option>
+    <option value="12:30"></option>
+    <option value="13:00"></option>
+    <option value="14:00"></option>
+    <option value="15:30"></option>
+    <option value="16:00"></option>
+    <option value="17:00"></option>
+    <option value="18:30"></option>
+    <option value="19:00"></option>
+  </datalist>
 
   <!-- Modal -->
   <div
@@ -645,12 +681,16 @@ async function eliminar(){
                 name="appt"
                 min="07:00"
                 max="19:00"
+                list="listahorasdeseadas"
                 required
               />
             </div>
           </div>
           <div v-if="alertaLlenar" class="alert alert-danger mt-2" role="alert">
             Por favor llene todos los campos.
+          </div>
+          <div v-if="alertarepetida" class="alert alert-danger mt-2" role="alert">
+            Ya hay una cita registrada a esta hora.
           </div>
         </div>
         <div class="modal-footer">
@@ -714,6 +754,7 @@ async function eliminar(){
                 id="appt"
                 name="appt"
                 min="07:00"
+                list="listahorasdeseadas"
                 max="19:00"
                 required
               />
@@ -733,9 +774,17 @@ async function eliminar(){
           <div v-if="alertaLlenar" class="alert alert-danger mt-2" role="alert">
             Por favor llene todos los campos.
           </div>
+          <div v-if="alertarepetida" class="alert alert-danger mt-2" role="alert">
+            Ya hay una cita registrada a esta hora.
+          </div>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#elimModal">
+          <button
+            type="button"
+            class="btn btn-danger"
+            data-bs-toggle="modal"
+            data-bs-target="#elimModal"
+          >
             Eliminar cita
           </button>
           <button type="button" class="btn btn-primary" @click="actualizarCitas()">
@@ -745,26 +794,43 @@ async function eliminar(){
       </div>
     </div>
   </div>
-  
-<!-- elimModal -->
-<div class="modal fade" id="elimModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="exampleModalLabel">Eliminar cita</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        ¿Está seguro de eliminar esta cita?
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-        <button type="button" class="btn btn-danger" @click="eliminar()" data-bs-dismiss="modal">Confirmar</button>
+
+  <!-- elimModal -->
+  <div
+    class="modal fade"
+    id="elimModal"
+    tabindex="-1"
+    aria-labelledby="exampleModalLabel"
+    aria-hidden="true"
+  >
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="exampleModalLabel">Eliminar cita</h5>
+          <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="modal"
+            aria-label="Close"
+          ></button>
+        </div>
+        <div class="modal-body">¿Está seguro de eliminar esta cita?</div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+            Cancelar
+          </button>
+          <button
+            type="button"
+            class="btn btn-danger"
+            @click="eliminar()"
+            data-bs-dismiss="modal"
+          >
+            Confirmar
+          </button>
+        </div>
       </div>
     </div>
   </div>
-</div>
-
 </template>
 <style scoped>
 .calendar {
