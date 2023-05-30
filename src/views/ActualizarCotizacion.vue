@@ -81,7 +81,7 @@ const horaIniValido = ref("");
 const horaFinValido = ref("");
 const horaIValida = ref("from-control");
 const horaFValida = ref("from-control");
-const displayCalendar = ref(false);
+const fechaVisita = ref("");
 
 var modal;
 var modalE;
@@ -117,13 +117,14 @@ const idHoraF = ref(null);
 
 onMounted(async () => {
   idUser.value = await obtenerIdPorUser({ Usuario: "Gerente" });
-  idCotizacion.value = 3;
+  idCotizacion.value = 4;
+  motosCotizacion.value = await traerCotizacionMotos();
   if (idCotizacion.value == null) {
     
   } else {
     console.log(idCotizacion.value);
     bloqueado.value = true;
-    
+  
     await cargarCotizacion();
     await cargarCliente();
   }
@@ -131,7 +132,7 @@ onMounted(async () => {
   await obtenerCreditos();
   await obtenerMotos();
   await obtenerAsesores();
-  motosCotizacion.value = await traerCotizacionMotos();
+  
 
   llenarCombos();
   fechaActual.value = new Date();
@@ -148,18 +149,26 @@ const cargarCotizacion = async () => {
     idCliente.value = cotizacion.Clientes_idClientes;
     idCredito.value = cotizacion.Tipos_De_Creditos_idTipos_De_Creditos;
     console.log(cotizacion.Tipos_De_Creditos_idTipos_De_Creditos);
-    motosCotizacion.value.forEach((element) => {
-        if(element.Cotizaciones_idCotizaciones == idCotizacion.value){
-            motosAgregadas.push(catalogo.value[(element.Moto_idMoto)].Modelo);
-            divs.value.push({});
-        }
-    });
+    console.log(motosCotizacion.value);
+    for (const element of motosCotizacion.value) {
+      if(element.Cotizaciones_idCotizaciones == idCotizacion.value){
+        let modelo = await obtenerUnModelo(element.Moto_idMoto);
+        modelo = modelo.data.body[0];
+        console.log(element.Moto_idMoto);
+        console.log(modelo.Modelo);
+      } 
+    }
+  
     idAsesor.value = cotizacion.AsesoresBAZ_idAsesoresBAZ;
     idEstatus.value = cotizacion.EstatusCotizacion_idEstatusCotizacion;
     console.log(idVisita.value);
     pagoInicial.value = cotizacion.PagoInicial;
     capacidad.value = cotizacion.Capacidad;
     comentario.value = cotizacion.Comentario;
+    console.log(cotizacion.FechaVisita);
+    
+    fechaVisita.value = cotizacion.FechaVisita;
+    console.log(fechaVisita.value);
     idHoraI.value = cotizacion.HoraInicial;
     idHoraF.value = cotizacion.HoraFinal;
 };
@@ -201,7 +210,7 @@ const validarEVisita = () => {
   estatusCotizaciones.value.forEach((option) => {
     if (option.Descripcion.toLowerCase() == "visita") {
       idVisita.value = option.idEstatusCotizacion;
-      console.log(cotizacion);
+      
     }
   });
 };
@@ -341,10 +350,7 @@ const validarGeneral = () => {
   validado.value =
     validarCredito() &&
     validarEstatus() &&
-    validarAsesor() &&
-    validarPagos(tagPi.value) &&
-    validarPagos(tagC.value) &&
-    validarNumBAZ();
+    validarAsesor();
 
   console.log(validado.value);
   return validado.value;
@@ -352,12 +358,10 @@ const validarGeneral = () => {
 
 const validarVisita = () => {
   validado.value =
+    revFechas() &&
     validarCredito() &&
     validarEstatus() &&
     validarAsesor() &&
-    validarPagos(tagPi.value) &&
-    validarPagos(tagC.value) &&
-    validarNumBAZ() &&
     validarHoraI() &&
     validarHoraF() &&
     validarHVisita();
@@ -413,9 +417,10 @@ const crearCotizacionV = async () => {
       FechaRegistro: fechaActual.value,
       PagoInicial: tagPi.value.value,
       Capacidad: tagC.value.value,
-      FechaVisita: fechaActual.value,
+      FechaVisita: fechaVisita.value,
       HoraInicial: tagInicio.value.value,
       HoraFinal: tagFin.value.value,
+      FechaVenta: null,
       Comentario: comentario.value,
     };
 
@@ -440,7 +445,10 @@ const crearCotizacion = async () => {
       FechaRegistro: fechaActual.value,
       PagoInicial: tagPi.value.value,
       Capacidad: tagC.value.value,
-      FechaVisita: fechaActual.value,
+      FechaVisita: null,
+      HoraInicial: null,
+      HoraFinal: null,
+      FechaVenta: null,
       Comentario: comentario.value,
     };
 
@@ -465,6 +473,7 @@ const reset = async () => {
     elemento.click();
   });
 
+  fechaVisita.value = "";
   creditoValido.value = "";
   estatusValido.value = "";
   asesorValido.value = "";
@@ -606,8 +615,29 @@ const verCotizaiones = async () => {
   router.push({ name: "cotizaciones" });
 };
 
-const showCalendar = () => {
+async function revFechas() {
+  console.log("llegue a rev fechas");
+  console.log(fechaVisita.value);
+  console.log(fechaActual.value);
+  if (fechaVisita.value == "") {
+    console.log("codigo rojo");
+    //alertIncDatos.value = true;
+    return false;
+  }
 
+  const hoy = new Date(fechaActual.value);
+  const visita = new Date(fechaVisita.value);
+  const resta = visita.getTime() - hoy.getTime();
+  console.log(resta);
+  if (resta >= 0) {
+    //alertFechaReporte.value = false;
+    console.log("SI valida fechas");
+    return true;
+  }else{
+    console.log("no valida fechas");
+    //alertFechaReporte.value = true;
+    return false;
+  }
 };
 
 </script>
@@ -897,20 +927,14 @@ const showCalendar = () => {
       <!-- Div Visita-->
       <div v-if="visita" class="row d-flex align-items-center mb-4">
         <div class="col-1"></div>
-        <div class="col-1">
-          <button
-            type="button"
-            class="btn btn-primary"
-            style="width: 100%"
-            @click="showCalendar()"
-          >
-            Dia
-          </button>
+        <div class="col-2">
+          <input class="form-control" type="date" v-model="fechaVisita" />
         </div>
+        <div class="col-1"></div>
         <div class="col-2 d-flex justify-content-end pt-2">
           <h5 class="italika d-flex justify-content-end pe-2">Hora Inicial de visita:</h5>
         </div>
-        <div class="col-2" ref="tagBordeMoto" id="motos">
+        <div class="col-1" ref="tagBordeMoto" id="motos">
           <input
             class="form-control"
             id="select6"
@@ -918,14 +942,13 @@ const showCalendar = () => {
             type="time"
             @change="validarHoraI()"
             ref="tagInicio"
-            style="height: 40px; width: 200px"
+            style="height: 40px; width: 100px"
           />
         </div>
-
         <div class="col-2 d-flex justify-content-end pt-2">
           <h5 class="italika d-flex justify-content-end pe-2">Hora Final de visita:</h5>
         </div>
-        <div class="col-2" ref="tagBordeMoto" id="motos">
+        <div class="col-1" ref="tagBordeMoto" id="motos">
           <input
             class="form-control"
             id="select7"
@@ -933,15 +956,9 @@ const showCalendar = () => {
             type="time"
             @change="validarHoraF()"
             ref="tagFin"
-            style="height: 40px; width: 200px"
+            style="height: 40px; width: 100px"
           />
         </div>
-      </div>
-
-      <!-- RowCalendario -->
-
-      <div class="row d-flex align-items-center mb3">
-        <Datepicker></Datepicker>
       </div>
 
       <!-- Row 8 -->
@@ -1003,25 +1020,12 @@ const showCalendar = () => {
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title" id="staticBackdropLabel">¡Cotizacion creada!</h5>
+          <h5 class="modal-title" id="staticBackdropLabel">¡Cotizacion actualizada!</h5>
         </div>
-        <div v-show="nuevo" class="modal-body">
-          El Cliente y la Cotizacion fueron creados exitosamente.
+        <div  class="modal-body">
+          La Cotizacion fue actualizada exitosamente.
         </div>
-        <div v-show="!nuevo" class="modal-body">
-          La Cotizacion fue creada exitosamente.
-        </div>
-
         <div class="modal-footer">
-          <button
-            type="button"
-            class="btn btn-primary"
-            @click="reset()"
-            data-bs-dismiss="modal"
-            ref="btnSeguirCreando"
-          >
-            Seguir creando cotizaciones
-          </button>
           <button type="button" class="btn btn-success" @click="verCotizaiones()">
             Ver cotizaciones
           </button>

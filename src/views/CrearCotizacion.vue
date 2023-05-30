@@ -68,6 +68,7 @@ const idCliente = ref(null);
 const idCotizacion = ref(null);
 const arregloIdMotos = ref([]);
 
+const fechaVisita = ref("");
 const motoValida1 = ref("");
 const motoValida2 = ref("");
 const creditoValido = ref("");
@@ -121,6 +122,7 @@ onMounted(async () => {
 
   llenarCombos();
   fechaActual.value = new Date();
+  console.log(fechaActual.value);
   fechaActual.value = fechaActual.value.toISOString().split('T')[0]
   console.log(fechaActual.value);
 });
@@ -444,6 +446,7 @@ const validarGeneral = () => {
 
 const validarVisita = () => {
   validado.value =
+    revFechas() &&
     validarTexto(tagNombre.value) &&
     validarTexto(tagAP.value) &&
     validarTexto(tagAM.value) &&
@@ -506,6 +509,7 @@ const submt = async () => {
 const crearCotizacionV = async () => {
   try {
     console.log("codigo ROJOV");
+    
     const cotizacion = {
       idCotizaciones: 0,
       Empleados_idEmpleados: idUser.value,
@@ -516,9 +520,10 @@ const crearCotizacionV = async () => {
       FechaRegistro: fechaActual.value,
       PagoInicial: tagPi.value.value,
       Capacidad: tagC.value.value,
-      FechaVisita: fechaActual.value,
+      FechaVisita: fechaVisita.value,
       HoraInicial: tagInicio.value.value,
       HoraFinal: tagFin.value.value,
+      FechaVenta: null,
       Comentario: comentario.value,
     };
 
@@ -544,7 +549,10 @@ const crearCotizacion = async () => {
       FechaRegistro: fechaActual.value,
       PagoInicial: tagPi.value.value,
       Capacidad: tagC.value.value,
-      FechaVisita: fechaActual.value,
+      FechaVisita: null,
+      HoraInicial: null,
+      HoraFinal: null,
+      FechaVenta: null,
       Comentario: comentario.value,
     };
 
@@ -604,6 +612,7 @@ const reset = async () => {
   capacidad.value = "";
   nBaz.value = "";
   comentario.value = "";
+  fechaVisita.value = "";
 
   tagMoto1.value.value = -1;
   tagCreditos.value.value = -1;
@@ -722,6 +731,31 @@ function llenarCombos() {
 const verCotizaiones = async () => {
   await modal.hide();
   router.push({ name: "cotizaciones" });
+};
+
+async function revFechas() {
+  console.log("llegue a rev fechas");
+  console.log(fechaVisita.value);
+  console.log(fechaActual.value);
+  if (fechaVisita.value == "") {
+    console.log("codigo rojo");
+    //alertIncDatos.value = true;
+    return false;
+  }
+
+  const hoy = new Date(fechaActual.value);
+  const visita = new Date(fechaVisita.value);
+  const resta = visita.getTime() - hoy.getTime();
+  console.log(resta);
+  if (resta >= 0) {
+    //alertFechaReporte.value = false;
+    console.log("SI valida fechas");
+    return true;
+  }else{
+    console.log("no valida fechas");
+    //alertFechaReporte.value = true;
+    return false;
+  }
 };
 
 </script>
@@ -1015,20 +1049,14 @@ const verCotizaiones = async () => {
       <!-- Div Visita-->
       <div v-if="visita" class="row d-flex align-items-center mb-4">
         <div class="col-1"></div>
-        <div class="col-1">
-          <button
-            type="button"
-            class="btn btn-primary"
-            style="width: 100%"
-            @click="showCalendar()"
-          >
-            Dia
-          </button>
+        <div class="col-2">
+          <input class="form-control" type="date" v-model="fechaVisita" />
         </div>
+        <div class="col-1"></div>
         <div class="col-2 d-flex justify-content-end pt-2">
           <h5 class="italika d-flex justify-content-end pe-2">Hora Inicial de visita:</h5>
         </div>
-        <div class="col-2" ref="tagBordeMoto" id="motos">
+        <div class="col-1" ref="tagBordeMoto" id="motos">
           <input
             class="form-control"
             id="select6"
@@ -1036,14 +1064,13 @@ const verCotizaiones = async () => {
             type="time"
             @change="validarHoraI()"
             ref="tagInicio"
-            style="height: 40px; width: 200px"
+            style="height: 40px; width: 100px"
           />
         </div>
-
         <div class="col-2 d-flex justify-content-end pt-2">
           <h5 class="italika d-flex justify-content-end pe-2">Hora Final de visita:</h5>
         </div>
-        <div class="col-2" ref="tagBordeMoto" id="motos">
+        <div class="col-1" ref="tagBordeMoto" id="motos">
           <input
             class="form-control"
             id="select7"
@@ -1051,7 +1078,7 @@ const verCotizaiones = async () => {
             type="time"
             @change="validarHoraF()"
             ref="tagFin"
-            style="height: 40px; width: 200px"
+            style="height: 40px; width: 100px"
           />
         </div>
       </div>
