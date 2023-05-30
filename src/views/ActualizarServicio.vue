@@ -67,6 +67,7 @@ const estatuServicio = ref([
 const deshabilitado = ref(false);
 const repetido = ref(false);
 const expermnt = ref(true);
+const bloqueado = ref(false);
 
 const idCliente = ref(null);
 const idMotoTaller = ref(null);
@@ -95,6 +96,8 @@ const servicio = ref(false);
 const cliente = ref(false);
 const moto= ref(false);
 
+const idEstatusRes = ref(null);
+
 const today = new Date();
 const year = today.getFullYear();
 const month = String(today.getMonth() + 1).padStart(2, "0"); // El mes se indexa desde 0, por lo que se suma 1
@@ -121,16 +124,21 @@ onMounted(async () => {
 
   idUser.value = await obtenerIdPorUser({ Usuario: getUser() });
 //  await  llenarCombos();
-  idCliente.value = getIdCliente();
-  if (idCliente.value == null) {
-    /*modal = new bootstrap.Modal(document.getElementById("modalSelect"), {
+  const idServicioModal = getIdServicios();
+  if (idServicioModal == ""||idServicioModal ==null) {
+    // router.push({name:"servicios"})
+    //validar que el id del servicio sea null
+
+   
+    modal = new bootstrap.Modal(document.getElementById("modalError"), {
       keyboard: false,
     });
-    await modal.show();*/
+    await modal.show();
     esNuevo.value = true;
   } else {
+    bloqueado.value = true;
     esNuevo.value = false;
-    cargarDatosCliente();
+    //cargarDatosCliente();
    //crearMotoTaller();
   }
 
@@ -167,7 +175,7 @@ onMounted(async () => {
   cantidadServicio.value=servicio.value.cantidadServicio;
   descripcion.value=servicio.value.Descripcion;
   modeloTaller.value=moto.value.Modelo;
-  estatusValido.value=servicio.value.EstatusServicio_idEstatusServicio;
+  idEstatusRes.value=servicio.value.EstatusServicio_idEstatusServicio;
   }
 
   async function cargarDatosCliente() {
@@ -178,6 +186,7 @@ onMounted(async () => {
   email.value = cliente.Correo;
   telefono.value = cliente.Telefono;
   let numBAZ;
+  tagEstatus.value.value = cliente.
   cliente.NoClienteBAZ == null ? (numBAZ = "") : (numBAZ = cliente.NoClienteBAZ);
   noBAZ.value = numBAZ;
   console.log(cliente);
@@ -207,12 +216,17 @@ function llenarCombos() {
     const optionElement = document.createElement("option");
     optionElement.text = option.Descripcion;
     optionElement.value = option.idEstatusServicio;
+    console.log(option.idEstatusServicio);
+    if(option.idEstatusServicio == idEstatusRes.value){
+        optionElement.selected = true;
+    }
     select.add(optionElement);
   });
 
   dselect(tagEstatus.value, config); //si jala, no mover xd
+
   console.log("acabando Llenar combos")
-}
+} 
 
 
 async function seleccionCliente() {
@@ -355,6 +369,11 @@ function validarKilometraje() {
     kmInput.style.borderWidth = "0px";
     return true;
   }
+}
+
+
+function validaEstatus(){
+  
 }
 
 
@@ -565,10 +584,10 @@ async function crearServicio() {
       Empleados_idEmpleados: idUser.value,
       Clientes_idClientes: idCliente.value,
       Importe: importe.value,
-      cantidadServicio: cantidadServicio.value,
+      cantidadServicio: 1,
       Descripcion: descripcion.value,
       Kilometraje: kilometraje.value,
-      FechaRegistro: formattedDate.value,
+      
       FechaEntrega: formattedDates.value,
     };
     console.log(formattedDate.value);
@@ -592,52 +611,74 @@ async function crearServicio() {
   }
 }
 
-async function sbmtUsuario() {
+async function validarNSerie(){
+
+}
+
+async function sbmtServicios() {
+  console.log("hola");
   repetido.value = false;
-  const validado =
-    validarEmail() &&
-    validarTlfn() &&
-    validarTexto(tagNombre.value) &&
-    validarTexto(tagPaterno.value) &&
-    validarTexto(tagMaterno.value) &&
+  const validado =    
+    validarNSerie() &&
+    validarImporte()&&
+    validarKilometraje()&&
+    validarModelo()&&
+    validarFechaEntrega()&&
+    validaEstatus()
+
    // validarNumBAZ() &&
     // validarMoto() &&
-    validarEstatus();
+  
 
   if (validado) {
     alertaLlenado.value = false;
     await crearMotoTaller();
-    await revisarCliente();
+    await revisarServicio();
   } else {
-    validarEmail();
-    validarTlfn();
-    validarTexto(tagNombre.value);
-    validarTexto(tagPaterno.value);
-    validarTexto(tagMaterno.value);
+    // validarEmail();
+    // validarTlfn();
+    // validarTexto(tagNombre.value);
+    // validarTexto(tagPaterno.value);
+    // validarTexto(tagMaterno.value);
+    // validarNSerie();
   //  validarNumBAZ();
     // validarMoto();
-    validarEstatus();
+    // validarEstatus();
+
+    validarNSerie() &&
+    validarImporte()&&
+    validarKilometraje()&&
+    validarModelo()&&
+    validarFechaEntrega()&&
+    validarEstatus()
     alertaLlenado.value = true;
   }
 }
 
-async function verServicios() {
-  await modal.hide();
-  console.log("escondido");
+// async function verServicios() {
+//   await modal.hide();
+//   console.log("escondido");
+//   router.push({ name: "servicios" });
+// }
+
+function verServicios() {
+  //router.push({ name: 'usuarioRegistrado'});
+  modal.hide();
   router.push({ name: "servicios" });
 }
+
 
 </script>
 
 <template>
   {{ estatusValido }}
-  <form @submit.prevent="sbmtUsuario()" class="needs-validation" novalidate>
+  <form @submit.prevent="sbmtServicios()" class="needs-validation" novalidate>
     <div class="container-fluid">
       <CompHeader />
       <!-----------------------    Row de titulo  --------------------------->
       <div class="row mb-1 pt-5">
         <div class="col-1 d-flex justify-content-end">
-          <router-link to="/prospectos">
+          <router-link to="/servicios">
             <img
               class="img-fluid"
               style="margin-top: 20px; width: 31.23px; height: 35.5px"
@@ -657,34 +698,36 @@ async function verServicios() {
           <!-----------------------    Row BOTONES   --------------------------->
           <div class="row mb-1 d-flex align-items-center justify-content-end">
             <div class="col-5"></div>
-            <div class="col d-flex align-items-center justify-content-end">
+            <!-- <div class="col d-flex align-items-center justify-content-end">
               <button type="button" class="btn btn-success" @click="seleccionCliente()">
                 Seleccionar cliente
               </button>
-            </div>
-            <div class="col d-flex align-items-center justify-content-end">
+            </div> -->
+            <!-- <div class="col d-flex align-items-center justify-content-end">
               <button type="button" class="btn btn-primary" @click="resetCampos()">
                 Limpiar campos
               </button>
-            </div>
+            </div> -->
           </div>
 
           <!-----------------------    Row 1 Formulario   --------------------------->
           <div class="row mb-2 pb-2 d-flex align-items-center">
-            <div class="col mt-2">
-              <h5 class="italika">Nombre *</h5>
-            </div>
-            <input
-              type="text"
-              class="form-control input-f inptElement base"
-              v-model.trim="nombre"
-              @input="validarTexto(tagNombre)"
-              ref="tagNombre"
-              :disabled="!esNuevo"
-              
-              required
-            />
-          </div>
+  <div class="col mt-2">
+    <h5 class="italika">Nombre *</h5>
+  </div>
+  <input
+    type="text"
+    class="form-control input-f inptElement base"
+    v-model.trim="nombre"
+    @input="validarTexto(tagNombre)"
+    ref="tagNombre"
+    :disabled="!esNuevo"
+    disabled
+    required
+    style="background-color: #aaa;"
+  />
+</div>
+
 
           <!-----------------------    Row 2 Formulario  --------------------------->
 
@@ -701,6 +744,8 @@ async function verServicios() {
                   ref="tagPaterno"
                   required
                   :disabled="!esNuevo"
+                  disabled
+                  style="background-color:#aaa;"
                   v-model.trim="paterno"
                 />
               </div>
@@ -717,6 +762,7 @@ async function verServicios() {
                   @input="validarTexto(tagMaterno)"
                   ref="tagMaterno"
                   v-model.trim="materno"
+                  style="background-color: #aaa;"
                   :disabled="!esNuevo"
                   required
                 />
@@ -735,6 +781,7 @@ async function verServicios() {
               class="form-control inptElement base"
               @input="validarEmail()"
               ref="tagEmail"
+              style="background-color:#aaa;"
               :disabled="!esNuevo"
               v-model.trim="email"
               required
@@ -755,6 +802,7 @@ async function verServicios() {
                   v-model.trim="telefono"
                   maxlength="10"
                   ref="tagTelefono"
+                  style="background-color:#aaa;"
                   :disabled="!esNuevo"
                   required
                 />
@@ -839,7 +887,7 @@ async function verServicios() {
           </div>
 <!-----------------------    Row 5 Formulario  --------------------------->
 <div class="row mb-2 pb-2">
-            <div class="col">
+            <!-- <div class="col">
               <div class="row d-flex align-items-center">
                 <div class="col mt-2 me-5 pe-5">
                   <h5 class="italika">Fecha de Registro *</h5>
@@ -849,12 +897,12 @@ async function verServicios() {
                      type="date"
                      class="form-control base"
                       />
-              </div>
-            </div>
-            <div class="col-1"></div>
-              <div class="col">
-                <div class="row d-flex align-items-center">
-                  <div class="col mt-2 me-5 pe-1">
+              </div> -->
+            <!-- </div> -->
+            <div class="col">
+              <div class="row d-flex align-items-center">
+              
+                <div class="col mt-2 me-5 pe-5">
                     <h5 class="italika">Fecha de Entrega*</h5>
                   </div>
                     <input v-model="formattedDates"
@@ -867,7 +915,7 @@ async function verServicios() {
             </div>
           <!-----------------------    Row 5 Formulario  --------------------------->
 <div class="row mb-2 pb-2">
-            <div class="col">
+            <!-- <div class="col">
               <div class="row d-flex align-items-center">
                 <div class="col mt-2 me-5 pe-5">
                   <h5 class="italika">Cantidad *</h5>
@@ -883,7 +931,7 @@ async function verServicios() {
                   maxlength="16"
                 />
               </div>
-            </div>
+            </div> -->
             <div class="col-1"></div>
             <div class="col">
               <div class="row d-flex align-items-center">
@@ -956,7 +1004,7 @@ async function verServicios() {
   </form>
 
   <!-- Modal actualizar cliente -->
-  <div
+  <!-- <div
     class="modal fade"
     id="modalAct"
     data-bs-backdrop="static"
@@ -989,9 +1037,9 @@ async function verServicios() {
         </div>
       </div>
     </div>
-  </div>
+  </div> -->
   <!-- Modal Seleccion tipo de cliente -->
-  <div
+  <!-- <div
     class="modal fade"
     id="modalSelect"
     data-bs-backdrop="static"
@@ -1018,9 +1066,9 @@ async function verServicios() {
         </div>
       </div>
     </div>
-  </div>
+  </div> -->
   <!-- Modal creacion -->
-  <div
+  <!-- <div
     class="modal fade"
     id="modal"
     data-bs-backdrop="static"
@@ -1028,8 +1076,8 @@ async function verServicios() {
     tabindex="-1"
     aria-labelledby="staticBackdropLabel"
     aria-hidden="true"
-  >
-    <div class="modal-dialog">
+  > -->
+    <!-- <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title" id="staticBackdropLabel">¡Servicio creado!</h5>
@@ -1048,8 +1096,12 @@ async function verServicios() {
         <div v-show="canActualizar || !esNuevo" class="modal-body">
           El servicio fue creado exitosamente.
         </div>
+        </div>
+        </div>
+        </div> -->
         
-        <div class="modal-footer">
+        
+        <!-- <div class="modal-footer">
           <button
             type="button"
             class="btn btn-primary"
@@ -1061,40 +1113,44 @@ async function verServicios() {
           </button>
           <button type="button" class="btn btn-success" @click="verServicios()">
             Ver servicios
-          </button>
-        </div>
+          </button> -->
+        <!-- </div>
       </div>
     </div>
-  </div>
+  </div> -->
   <!-- Modal Cliente inhabilitado -->
-  <div
+  <!-- <div
     class="modal fade"
-    id="modalClienteInhab"
+    id="modalSinDatos"
     data-bs-backdrop="static"
     data-bs-keyboard="false"
     tabindex="-1"
     aria-labelledby="staticBackdropLabel"
     aria-hidden="true"
-  >
-    <div class="modal-dialog">
+  > -->
+    <!-- <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title" id="staticBackdropLabel">Imposible crear servicios</h5>
+          <h5 class="modal-title" id="staticBackdropLabel">Imposible Cargar Datos</h5>
         </div>
         <div class="modal-body">
-          El cliente {{ nombre }} {{ paterno }} {{ materno }} está inhabilitado en el
-          sistema. El servicios no se generará. Consulte con su gerente.
+         No se encontraron Datos,por Favor intentalo de nuevo.
         </div>
         <div class="modal-footer">
+        
+         <router-link to="/servicios">
           <button type="button" class="btn btn-danger" data-bs-dismiss="modal">
-            Cancelar
+            Volver a Servicios
           </button>
+          </router-link>
+
+
         </div>
       </div>
     </div>
-  </div>
+  </div> -->
   <!---------Modal Cliente actualizado----->
-  <div
+  <!-- <div
     class="modal fade"
     id="modalActualizado"
     data-bs-backdrop="static"
@@ -1126,7 +1182,67 @@ async function verServicios() {
       </div>
     </div>
   </div>
-  <pre>{{ modeloTaller }} {{ noSerie }}</pre>
+
+  <pre>{{ modeloTaller }} {{ noSerie }}</pre> -->
+
+ <!-- Modal -->
+ <div
+    class="modal fade"
+    id="modalActualizar"
+    data-bs-backdrop="static"
+    data-bs-keyboard="false"
+    tabindex="-1"
+    aria-labelledby="staticBackdropLabel"
+    aria-hidden="true"
+  >
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="staticBackdropLabel">¡Servicio actualizado!</h5>
+          <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="modal"
+            aria-label="Close"
+          ></button>
+        </div>
+        <div class="modal-body">
+          El servicio {{ Nombre }} fue modificado exitosamente.
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-success" @click="verServicios()">
+            Volver a Servicios
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div
+    class="modal fade"
+    id="modalError"
+    data-bs-backdrop="static"
+    data-bs-keyboard="false"
+    tabindex="-1"
+    aria-labelledby="staticBackdropLabel"
+    aria-hidden="true"
+  >
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="staticBackdropLabel">Error al cargar los datos</h5>
+        </div>
+        <div class="modal-body">Vuelva a cargar el servicio</div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-success" @click="verServicios()"  data-bs-toggle="modal" data-bs-target="#modalError">
+
+            
+            Volver a Servicios
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
   
 </template>
 
