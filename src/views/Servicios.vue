@@ -178,6 +178,7 @@ function mostrarmodal(unnombreServicio) {
   modal.show();
   console.log(nombreServicioAct.value);
 }
+
 async function desactivarServicio(nombreServicioAct) {
   console.log(nombreServicioAct);
   const servicioActualizar = {
@@ -186,11 +187,11 @@ async function desactivarServicio(nombreServicioAct) {
   };
     try {
     await actualizarServicio(servicioActualizar);
-    const index = arrayServicios.value.findIndex(
+    const index = serviciosFiltrados.value.findIndex(
       (servicio) => servicio.idServicios === nombreServicioAct
     );
     if (index > -1) {
-      arrayServicios.value.splice(index, 1);
+      serviciosFiltrados.value.splice(index, 1);
     }
     
   } catch (error) {

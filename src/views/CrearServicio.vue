@@ -2,10 +2,7 @@
 //TODO ACTUALIZAR COMBOBOX
 import { ref } from "vue"; //para usar variables reactivas
 import { onMounted } from "vue"; //para poder usar el onMounted, que ejecuta todo lo que tenga adentro cada que cargue la pagina
-import { catalogoStore } from "../stores/catalogo";
 import { loginStore } from "../stores/login";
-import { prospectosStore } from "../stores/prospectos";
-import { mediosContactoStore } from '../stores/mediosContacto';
 
 import { motosTallerStore } from "../stores/motosTaller";
 import { estatusServicioStore } from "../stores/estatusServicio";
@@ -15,11 +12,6 @@ import { serviciosStore } from "../stores/servicios";
 import CompHeader from "../components/Header.vue";
 import router from "../router";
 
-//declaramos como constantes los metodos exactos que vamos a usar de las stores y lo igualamos a la store de donde vienen
-//           metodo    =     store de la que viene
-const { consultarMotocicletasActivas } = catalogoStore();
-const { prospectoExiste, agregarProspecto } = prospectosStore();
-const { obtenerMedios } = mediosContactoStore();
 
 //Metodos de la Store para Servicios
 
@@ -33,7 +25,7 @@ const {
   actualizarCliente, getInterfazOrigen
 } = clientesStore();
 const { obtenerIdPorUser } = usuariosStore();
-const {agregarMotoTaller,consultarMotosTaller,obtenerMotoTaller} = motosTallerStore();
+const {agregarMotoTaller,consultarMotosTaller,obtenerUnaMotoTaller} = motosTallerStore();
 const { getUser } = loginStore();
 const { servicioExiste, agregarServicio,obtenerServicio } = serviciosStore();
 const {obtenerEstatusServicioN,obtenerNombresEstatusServicio, agregarEstatusServicio} = estatusServicioStore();
@@ -97,13 +89,19 @@ var modal;
 var tried = false;
 const validado = ref(true);
 const alertaLlenado = ref(false);
+const alertaNoSerie = ref(false);
 const esNuevo = ref();
 const canActualizar = ref(false);
+const existeNoSerie=ref("");
 
 //al cargar la pagina se consultan los permisos y roles que hay en la BD y se define el objeto relacionado al modal
 onMounted(async () => {
   idUser.value = await obtenerIdPorUser({ Usuario: getUser() });
   idCliente.value = getIdCliente();
+  existeNoSerie.value= await consultarMotosTaller();
+  existeNoSerie.value= existeNoSerie.value.data.body;
+  console.log(existeNoSerie.value);
+
   if (idCliente.value == null) {
     /*modal = new bootstrap.Modal(document.getElementById("modalSelect"), {
       keyboard: false,
@@ -273,23 +271,6 @@ function validarKilometraje() {
   }
 }
 
-// function validarNumBAZ() {
-//   if (noBAZ.value == "") {
-//     tagSerie.value.style.borderWidth = "0px";
-//     return true;
-//   } else {
-//     var re = /^[0-9-]+$/;
-//     if (!(noBAZ.value.length <= 16 && noBAZ.value.match(re))) {
-//       tagSerie.value.style.borderColor = "red";
-//       tagSerie.value.style.borderWidth = "4px";
-//       validado.value = false;
-//       return false;
-//     } else {
-//       tagSerie.value.style.borderWidth = "0px";
-//       return true;
-//     }
-//   }
-// }
 
 function validarFecha() {
   let fechaInput = document.getElementById("fechEn");
@@ -307,15 +288,26 @@ function validarFecha() {
 
 function validarNoSerie() {
   let noSerInput = document.getElementById("noSr");
-  
+  var j=0;
   if (noSerInput.value.trim() === "") {
+
     noSerInput.style.borderColor = "red";
     noSerInput.style.borderWidth = "4px";
     validado.value = false;
     return false;
   } else {
+for(j;j<existeNoSerie.value.length;j++){
+    if(existeNoSerie.value[j].NoSerie==noSerie.value) {
+    noSerInput.style.borderColor = "red";
+    noSerInput.style.borderWidth = "4px";
+    validado.value = false;
+    alertaNoSerie.value=true;
+    return false;
+     }
+  }
     noSerInput.style.borderWidth = "0px";
     return true;
+
   }
 }
 
@@ -363,19 +355,6 @@ function validarTexto(input) {
     return true;
   }
 }
-
-// function validarMoto() {
-//   console.log(tagMoto.value.value);
-//   console.log(tagMoto.value.value == -1);
-//   if (tagMoto.value.value == -1) {
-//     motoValida.value = "comboMoto";
-
-//     return false;
-//   } else {
-//     motoValida.value = "";
-//     return true;
-//   }
-// }
 
 function validarEstatus() {
   if (tagEstatus.value.value == -1) {
@@ -547,6 +526,11 @@ async function crearMotoTaller() {
   }
 };
 
+
+
+
+
+
 async function crearServicio() {
   try {
     console.log("creando servicio")
@@ -625,6 +609,11 @@ async function sbmtUsuario() {
 }
 
 async function verServicios() {
+
+  modal = new bootstrap.Modal(document.getElementById("modal"), {
+      keyboard: false,
+    });
+
   await modal.hide();
   console.log("escondido");
   router.push({ name: "servicios" });
@@ -778,7 +767,7 @@ async function verServicios() {
                   id="noSr"
                   type="text"
                   class="form-control inptElement base"
-
+                  @input="validarNoSerie()"
                   v-model.trim="noSerie"
                   
                  
@@ -795,7 +784,7 @@ async function verServicios() {
                   id="modMot"
                   type="text"
                   class="form-control inptElement base"
-                  
+                  @input="validarModelo()"
                   v-model.trim="modeloTaller"
                   
                   
@@ -814,7 +803,7 @@ async function verServicios() {
                   id="kil"
                   type="text"
                   class="form-control inptElement base"
-                
+                  @input="validarKilometraje()"
                   v-model.trim="kilometraje"
                   
                 />
@@ -830,7 +819,7 @@ async function verServicios() {
                   id="imp"
                   type="text"
                   class="form-control inptElement base"
-                
+                  @input="validarImporte()"
                   v-model.trim="importe"
                   
                   ref="tagSerie"
@@ -895,6 +884,7 @@ async function verServicios() {
                      id="fechEn"
                      type="date"
                      class="form-control  base"
+                     @input="validarFecha()"
                       />
                 </div>
               </div>
@@ -933,12 +923,20 @@ async function verServicios() {
           <!-----------------------    Row 7 Formulario  --------------------------->
           <div class="row">
             <div
-              v-if="alertaLlenado"
+              v-if="alertaLlenado && !alertaNoSerie"
               class="alert alert-danger mt-2 d-flex align-items-center"
               style="height: 38px"
               role="alert"
             >
               Por favor, llene correctamente todos los campos obligatorios
+            </div>
+            <div
+              v-if="alertaNoSerie"
+              class="alert alert-danger mt-2 d-flex align-items-center"
+              style="height: 38px"
+              role="alert"
+            >
+              Este número e serie ya existe, verifique el número de serie
             </div>
           </div>
           <div class="row">
@@ -1073,7 +1071,7 @@ async function verServicios() {
           >
             Seguir creando servicios
           </button>
-          <button type="button" class="btn btn-success" @click="verServicios()">
+          <button type="button" class="btn btn-success" @click="verServicios()" data-bs-dismiss="modal">
             Ver servicios
           </button>
         </div>
