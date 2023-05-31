@@ -60,6 +60,10 @@ const interfaces = {
   crearRol: '14',
   actualizarRol: '14',
   roles: '14',
+  crearServicio:'8',
+  actualizarServicio:'8',
+  servicios: '8',
+
 }
 
 const router = createRouter({

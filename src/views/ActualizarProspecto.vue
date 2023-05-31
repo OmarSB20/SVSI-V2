@@ -356,7 +356,6 @@ async function actualizarProspecto() {
 async function sbmtUsuario() {
   repetido.value = false;
   const validado = validarMoto() && validarMedio();
-
   if (validado) {
     alertaLlenado.value = false;
     await revisarProspecto();

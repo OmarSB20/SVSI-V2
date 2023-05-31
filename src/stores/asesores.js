@@ -43,7 +43,6 @@ export const asesoresStore = defineStore("asesores",{
         }
     },
 
-
     async agregarAsesor(asesor){
         try {
             const res = await axios.post('http://localhost:4000/api/asesoresBAZ',asesor)
