@@ -21,7 +21,7 @@ import ActualizarProspecto from '../views/ActualizarProspecto.vue';
 import SeleccionCliente from '../views/SeleccionCliente.vue'
 import EstatusCotizacion from '../views/EstatusCotizacion.vue'
 import Citas from '../views/Citas.vue'
-//import Reportes from '../views/Reportes.vue'
+import Reportes from '../views/Reportes.vue'
 import MetaVentas from '../views/MetasVentas.vue'
 import CrearCotizacion from '../views/CrearCotizacion.vue'
 import Cotizaciones from '../views/Cotizaciones.vue'
@@ -221,6 +221,11 @@ const router = createRouter({
       path: '/actualizarCotizacion',
       name: 'actualizarCotizacion',
       component: ActualizarCotizacion
+    },
+    {
+      path: '/reportes',
+      name: 'reportes',
+      component: Reportes
     }
   ]
 })

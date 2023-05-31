@@ -60,7 +60,7 @@ onMounted(async () => {
 
   containerTag.value.style.height = altoPantalla.value + "px";
   definirBotones();
-  if (await verificarPermisos(3)) {
+  if (await verificarPermisos(8)) {
     await revisarMeta();
   } 
   mostrarTodo.value = true;
