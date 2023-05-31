@@ -243,16 +243,7 @@ function verRoles() {
             Guardar
           </button>
         </div>
-        <div class="col-2 mt-2 ms-5">
-          <h5 class="italika d-flex justify-content-end">SuperRol:</h5>
-        </div>
-        <div class="col-1 pb-2">
-          <input
-            class="form-check-input"
-            type="checkbox"
-            style="width: 35px; height: 35px;"
-          />
-        </div>
+        
       </div>
 
       <div class="row">
