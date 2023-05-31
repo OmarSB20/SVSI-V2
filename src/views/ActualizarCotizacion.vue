@@ -319,18 +319,32 @@ const validarEstatus = async () => {
   if (tagEstatus.value.value == idVisita.value) {
     //Poner el id del estatus visita, el mio es el 12
     visita.value = true;
+    vendida.value = false;
+
+    console.log("si valida Estatus");
+    tagEstatus.value.style.borderWidth = "0px";
+    estatusValido.value = "";
+    return true;
   } 
   else if(tagEstatus.value.value == idVendida.value){
     vendida.value = true;
+    visita.value = false;
+    console.log(visita.value);
+
+    console.log("si valida Estatus");
+    tagEstatus.value.style.borderWidth = "0px";
+    estatusValido.value = "";
+    return true;
   } 
   else {
     vendida.value = false;
     visita.value = false;
+
+    console.log("si valida Estatus");
+    tagEstatus.value.style.borderWidth = "0px";
+    estatusValido.value = "";
+    return true;
   }
-  console.log("si valida Estatus");
-  tagEstatus.value.style.borderWidth = "0px";
-  estatusValido.value = "";
-  return true;
 };
 
 const validarAsesor = () => {

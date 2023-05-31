@@ -198,7 +198,8 @@ const eliminarMoto = async (index) => {
 function validarEmail() {
   var pswd = document.getElementById("emailInpt");
   if (correo.value == "") {
-    pswd.style.borderWidth = "0px";
+    pswd.style.borderColor = "red";
+    pswd.style.borderWidth = "4px";
     validado.value = false;
     return false;
   } else {
@@ -218,7 +219,8 @@ function validarEmail() {
 function validarTlfn() {
   let tlfnInpt = document.getElementById("tlfn");
   if (telefono.value == "") {
-    tlfnInpt.style.borderWidth = "0px";
+    tlfnInpt.style.borderColor = "red";
+    tlfnInpt.style.borderWidth = "4px";
     validado.value = false;
     return false;
   } else {
@@ -238,9 +240,10 @@ function validarTlfn() {
 const validarHVisita = () => {
   if(tagInicio.value.value < tagFin.value.value){
     validado.value = true;
-
+    return true;
   }else{
     validado.value = false;
+    return false;
   }
   console.log(validado.value);
 };
@@ -248,7 +251,6 @@ const validarHVisita = () => {
 function validarNumBAZ() {
   if (nBaz.value == "") {
     tagBaz.value.style.borderWidth = "0px";
-    validado.value = false;
     return true;
   } else {
     var re = /^[0-9-]+$/;
@@ -268,7 +270,8 @@ function validarTexto(input) {
   //input.value = input.value.trim();
   var re = /^[a-zA-Z ]+$/;
   if (input.value == "") {
-    input.style.borderWidth = "0px";
+    input.style.borderColor = "red";
+    input.style.borderWidth = "4px";
     validado.value = false;
     return false;
   } else {
@@ -288,7 +291,8 @@ function validarTexto(input) {
 const validarPagos = (input) => {
   var re = /^[0-9]+$/;
   if (input.value == "") {
-    input.style.borderWidth = "0px";
+    input.style.borderColor = "red";
+    input.style.borderWidth = "4px";
     validado.value = false;
     return false;
   } else {
@@ -310,9 +314,14 @@ function validarMoto1() {
   if (tagMoto1.value.value == -1) {
     motoValida1.value = "comboMoto";
     console.log("el error es aqui motos");
+
+    tagMoto1.value.style.borderColor = "red";
+    tagMoto1.value.style.borderWidth = "4px";
     return false;
   } else {
     motoValida1.value = "";
+
+    tagMoto1.value.style.borderWidth = "0px";
     return true;
   }
 }
@@ -322,18 +331,26 @@ const validarCredito = () => {
   if (tagCreditos.value.value == -1) {
     creditoValido.value = "comboCredito";
 
+    tagCreditos.value.style.borderColor = "red";
+    tagCreditos.value.style.borderWidth = "4px";
     return false;
   } else {
     creditoValido.value = "";
+
+    tagCreditos.value.style.borderWidth = "0px";
     return true;
   }
 };
 
 const validarEstatus = async () => {
-    console.log(tagEstatus.value.value)
+  console.log(tagEstatus.value.value)
+
   if (tagEstatus.value.value == -1) {
     estatusValido.value = "comboEstatus";
     visita.value = false;
+
+    tagEstatus.value.style.borderColor = "red";
+    tagEstatus.value.style.borderWidth = "4px";
     return false;
   }
 
@@ -343,7 +360,9 @@ const validarEstatus = async () => {
   } else {
     visita.value = false;
   }
+
   estatusValido.value = "";
+  tagEstatus.value.style.borderWidth = "0px";
   return true;
 };
 
@@ -351,10 +370,13 @@ const validarAsesor = () => {
   if (tagAsesores.value.value == -1) {
     asesorValido.value = "comboEstatus";
 
+    tagAsesores.value.style.borderColor = "red";
+    tagAsesores.value.style.borderWidth = "4px";
     return false;
   } else {
     console.log("ta bien");
     asesorValido.value = "form-control";
+    tagAsesores.value.style.borderWidth = "0px";
     return true;
   }
 };
@@ -415,7 +437,7 @@ const revisarCliente = async () => {
       idCliente.value = exists.value.idClientes;
       nuevo.value = false;
       console.log(idCliente.value);
-      //await submt();
+      //Mostrar modal
     } else {
       await crearCliente();
     }
@@ -467,43 +489,57 @@ const validarVisita = () => {
   return validado.value;
 };
 
+const validarCliente = () => {
+  validado.value =
+    validarTexto(tagNombre.value) &&
+    validarTexto(tagAP.value) &&
+    validarTexto(tagAM.value) &&
+    validarTlfn() &&
+    validarEmail() &&
+    validarNumBAZ();
+
+  console.log(validado.value);
+  return validado.value;
+};
+
 const validar = async () => {
   console.log(visita.value);
   try {
-    if (visita.value) {
+    if(visita.value){
       validarVisita() == true ? submt() : (alertaLlenado.value = true);
-    } else {
+    }
+    else{
       validarGeneral() == true ? submt() : (alertaLlenado.value = true);
     }
   } catch (error) {
     console.log(error);
   }
-};
+}
 
 const submt = async () => {
+  console.log(nuevo.value);
+  console.log(visita.value);
   try {
-    if (validado.value) {
-      console.log("codigo amarillo");
+      alertaLlenado.value = false;
       if (nuevo.value) {
         await revisarCliente();
-      } else {
-        alertaLlenado.value = false;
-        if (visita.value) {
-          await crearCotizacionV();
-        } else {
-          await crearCotizacion();
-        }
       }
-    } else {
-      alertaLlenado.value = true;
-      modalE = new bootstrap.Modal(document.getElementById("modalEr"), {
-        keyboard: false,
-      });
-      await modalE.show();
-    }
+      else if(visita.value){
+        await crearCotizacionV();
+      } 
+      else {
+        await crearCotizacion();
+      }
   } catch (error) {
     console.log(error);
   }
+};
+
+const modalError = async () => {
+    modalE = new bootstrap.Modal(document.getElementById("modalEr"), {
+        keyboard: false,
+      });
+    await modalE.show();
 };
 
 const crearCotizacionV = async () => {
