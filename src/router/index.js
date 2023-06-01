@@ -1,6 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { loginStore } from "../stores/login";
-
 import HomeView from '../views/HomeView.vue'
 import Roles from '../views/Roles.vue'
 import CrearRol from '../views/CrearRol.vue'
@@ -48,6 +47,9 @@ const interfaces = {
   metaVentas: '4',
   asesores: '5',
   creditos:'7',
+  crearServicio:'8',
+  estatusServicio:'8',
+  servicios: '8',
   crearUsuario: '9',
   usuarios: '9',
   actualizarUsuario: '9',

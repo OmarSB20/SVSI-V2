@@ -19,7 +19,7 @@ const {
   obtenerNombresEstatusCotizacion,
   obtenerEstatusCotizacion,
 } = estatusCotizacionStore();
-const { consultarMotocicletasActivas } = catalogoStore();
+const { consultarMotocicletasActivas, obtenerUnModelo } = catalogoStore();
 const { obtenerAsesoresActivos } = asesoresStore();
 const { obtenerProspectos, setIdProspecto } = prospectosStore();
 const { obtenerIdPorUser, getIdUsuario } = usuariosStore();
@@ -37,7 +37,7 @@ const { agregarMotosACotizacion } = cotizacionMotoStore();
 
 //Variables
 
-const motosAgregadas = [];
+const motosAgregadas = ref([]);
 const noNBAZ = ref(true);
 const exists = ref(false);
 const idVisita = ref("");
@@ -85,7 +85,7 @@ var modalE;
 var tried = false;
 const validado = ref(true);
 const alertaLlenado = ref(false);
-const nuevo = ref(false);
+const nuevo = ref(true);
 const canActualizar = ref(false);
 
 const fechaActual = ref(null);
@@ -104,6 +104,7 @@ const tagC = ref(null);
 const tagPi = ref(null);
 const tagCorreo = ref(null);
 const tagTlfn = ref(null);
+const i = ref(0);
 
 onMounted(async () => {
   idUser.value = await obtenerIdPorUser({ Usuario: "Gerente" });
@@ -180,19 +181,22 @@ const obtenerAsesores = async () => {
 const agregarMoto = async () => {
   if (tagMoto1.value.value!=-1) {
     arregloIdMotos.value.push(tagMoto1.value.value);
-    divs.value.push({});
-    console.log(divs.value);
-    motosAgregadas.push(catalogo.value[(tagMoto1.value.value -1)].Modelo);
-  console.log(arregloIdMotos.value);
+    let modelo = await obtenerUnModelo(tagMoto1.value.value);
+    modelo = modelo.data.body[0];
+    console.log(modelo);
+        
+    motosAgregadas.value.push({id: i.value, Modelo: modelo.Modelo});
+    console.log(motosAgregadas.value);
+    i.value = i.value + 1;
   }
  
 };
 const eliminarMoto = async (index) => {
   console.log(index);
   arregloIdMotos.value.splice(index, 1);
-  divs.value.splice(index, 1);
-  motosAgregadas.splice(index, 1);
+  motosAgregadas.value.splice(index, 1);
   console.log(arregloIdMotos.value);
+  i.value = i.value - 1;
 };
 
 function validarEmail() {
@@ -405,6 +409,19 @@ const validarHoraF = () => {
   }
 };
 
+const validarMotoAgregada = () => {
+  if(arregloIdMotos.value.length <= 0){
+    tagMoto1.value.style.borderColor = "red";
+    tagMoto1.value.style.borderWidth = "4px";
+    console.log(arregloIdMotos.value.length);
+    return false;
+  }else{
+    tagMoto1.value.style.borderWidth = "0px";
+    console.log(arregloIdMotos.value.length);
+    return true;
+  }
+};
+
 const crearCliente = async () => {
   try {
     const cliente = {
@@ -449,6 +466,7 @@ const revisarCliente = async () => {
 const validarGeneral = () => {
   console.log("validarG");
   validado.value =
+    validarMotoAgregada() &&
     validarTexto(tagNombre.value) &&
     validarTexto(tagAP.value) &&
     validarTexto(tagAM.value) &&
@@ -468,6 +486,7 @@ const validarGeneral = () => {
 
 const validarVisita = () => {
   validado.value =
+    validarMotoAgregada() &&
     revFechas() &&
     validarTexto(tagNombre.value) &&
     validarTexto(tagAP.value) &&
@@ -638,7 +657,6 @@ const reset = async () => {
   noNBAZ.value = true;
   exists.value = false;
   visita.value = false;
-  divs.value = [];
   nombre.value = "";
   aPaterno.value = "";
   aMaterno.value = "";
@@ -1016,15 +1034,15 @@ async function revFechas() {
       <!--  Div Motos -->
       <div
         class="row d-flex align-items-center mb-4"
-        v-for="(div, index) in divs"
-        :key="index"
+        v-for="motos in motosAgregadas" :key="motos.id"
+        
       >
         <div class="col-1" id="motos"></div>
         <div class="col-1" id="motos">
-          <h5 class="italika d-flex justify-content-end pe-2">Modelo {{ index +1 }}:</h5>
+          <h5 class="italika d-flex justify-content-end pe-2">Modelo {{ motos.id +1 }}:</h5>
         </div>
         <div class="col-3" ref="tagBordeMoto" id="motos">
-          <input type="text" v-model="motosAgregadas[index]" class="form-control" disabled/>
+          <input type="text" v-model="motosAgregadas[motos.id].Modelo" class="form-control" disabled/>
         </div>
         <!-- Boton agregar mas motos-->
         <div class="col-1 d-flex justify-content-center" id="motos">
@@ -1032,7 +1050,7 @@ async function revFechas() {
             class="btn btn-primary"
             style="width: 100%"
             type="button"
-            @click="eliminarMoto(index)"
+            @click="eliminarMoto(motos.id)"
           >
             Eliminar
           </button>

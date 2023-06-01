@@ -2,10 +2,7 @@
 //TODO ACTUALIZAR COMBOBOX
 import { ref } from "vue"; //para usar variables reactivas
 import { onMounted } from "vue"; //para poder usar el onMounted, que ejecuta todo lo que tenga adentro cada que cargue la pagina
-import { catalogoStore } from "../stores/catalogo";
 import { loginStore } from "../stores/login";
-import { prospectosStore } from "../stores/prospectos";
-import { mediosContactoStore } from '../stores/mediosContacto';
 
 import { motosTallerStore } from "../stores/motosTaller";
 import { estatusServicioStore } from "../stores/estatusServicio";
@@ -15,11 +12,6 @@ import { serviciosStore } from "../stores/servicios";
 import CompHeader from "../components/Header.vue";
 import router from "../router";
 
-//declaramos como constantes los metodos exactos que vamos a usar de las stores y lo igualamos a la store de donde vienen
-//           metodo    =     store de la que viene
-const { consultarMotocicletasActivas } = catalogoStore();
-const { prospectoExiste, agregarProspecto } = prospectosStore();
-const { obtenerMedios } = mediosContactoStore();
 
 //Metodos de la Store para Servicios
 
@@ -33,7 +25,7 @@ const {
   actualizarCliente, getInterfazOrigen
 } = clientesStore();
 const { obtenerIdPorUser } = usuariosStore();
-const {agregarMotoTaller,consultarMotosTaller,obtenerMotoTaller} = motosTallerStore();
+const {agregarMotoTaller,consultarMotosTaller,obtenerUnaMotoTaller} = motosTallerStore();
 const { getUser } = loginStore();
 const { servicioExiste, agregarServicio,obtenerServicio } = serviciosStore();
 const {obtenerEstatusServicioN,obtenerNombresEstatusServicio, agregarEstatusServicio} = estatusServicioStore();
@@ -53,13 +45,8 @@ const kilometraje = ref("");
 const cantidadServicio = ref("");
 const estatusServicio = ref();
 const descripcion = ref("");
+const idEstAct= ref("");
 
-const catalogo = ref();
-const mediosContacto = ref([
-  { idMedioDeContacto: 1, Descripcion: "df" },
-  { idMedioDeContacto: 2, Descripcion: "fd" },
-  { idMedioDeContacto: 3, Descripcion: "df" },
-]);
 
 
 const deshabilitado = ref(false);
@@ -77,10 +64,6 @@ const tagMaterno = ref(null);
 const tagTelefono = ref(null);
 const tagEmail = ref(null);
 const tagSerie = ref(null);
-const tagkilometraje = ref(null);
-const tagMoto = ref(null);
-const tagImporte = ref(null);
-const tagCantidad = ref(null);
 const tagEstatus = ref(null);
 
 const motoValida = ref("");
@@ -94,10 +77,10 @@ const year = today.getFullYear();
 const month = String(today.getMonth() + 1).padStart(2, "0"); // El mes se indexa desde 0, por lo que se suma 1
 const day = String(today.getDate()).padStart(2, "0");
 
-// const formattedDate = `${year}-${month}-${day}`;
+const formattedDate = `${year}-${month}-${day}`;
 // const formattedDates = `${year}-${month}-${day}`;
 
-const formattedDate = ref ("");
+//const formattedDate = ref ("");
 const formattedDates = ref ("");
 console.log(formattedDate);
 
@@ -106,13 +89,19 @@ var modal;
 var tried = false;
 const validado = ref(true);
 const alertaLlenado = ref(false);
+const alertaNoSerie = ref(false);
 const esNuevo = ref();
 const canActualizar = ref(false);
+const existeNoSerie=ref("");
 
 //al cargar la pagina se consultan los permisos y roles que hay en la BD y se define el objeto relacionado al modal
 onMounted(async () => {
   idUser.value = await obtenerIdPorUser({ Usuario: getUser() });
   idCliente.value = getIdCliente();
+  existeNoSerie.value= await consultarMotosTaller();
+  existeNoSerie.value= existeNoSerie.value.data.body;
+  console.log(existeNoSerie.value);
+
   if (idCliente.value == null) {
     /*modal = new bootstrap.Modal(document.getElementById("modalSelect"), {
       keyboard: false,
@@ -132,6 +121,8 @@ onMounted(async () => {
   materno.value = cliente.Apellido_Materno;
   email.value = cliente.Correo;
   telefono.value = cliente.Telefono;
+  idEstAct.value = cliente.EstatusActividad_idEstatusActividad;
+
   let numBAZ;
   cliente.NoClienteBAZ == null ? (numBAZ = "") : (numBAZ = cliente.NoClienteBAZ);
   noBAZ.value = numBAZ;
@@ -217,7 +208,7 @@ async function resetCampos() {
   exists.value = false;
   existeIgual.value = false;
   esNuevo.value = true;
-  formattedDate.value="";
+  // formattedDate="";
   formattedDates.value="";
 
   setIdCliente(null);
@@ -265,28 +256,79 @@ function validarTlfn() {
   }
 }
 
-// function validarNumBAZ() {
-//   if (noBAZ.value == "") {
-//     tagSerie.value.style.borderWidth = "0px";
-//     return true;
-//   } else {
-//     var re = /^[0-9-]+$/;
-//     if (!(noBAZ.value.length <= 16 && noBAZ.value.match(re))) {
-//       tagSerie.value.style.borderColor = "red";
-//       tagSerie.value.style.borderWidth = "4px";
-//       validado.value = false;
-//       return false;
-//     } else {
-//       tagSerie.value.style.borderWidth = "0px";
-//       return true;
-//     }
-//   }
-// }
+function validarKilometraje() {
+  let klInpt = document.getElementById("kil");
+  var re = /^[0-9]+$/;
+  // if (!(kilometraje.value.length >= 4 && kilometraje.value.match(re))) {
+    if (!( kilometraje.value.match(re))) {
+    klInpt.style.borderColor = "red";
+    klInpt.style.borderWidth = "4px";
+    validado.value = false;
+    return false;
+  } else {
+    klInpt.style.borderWidth = "0px";
+    return true;
+  }
+}
+
+
+function validarFecha() {
+  let fechaInput = document.getElementById("fechEn");
+  
+  if (fechaInput.value.trim() === "") {
+    fechaInput.style.borderColor = "red";
+    fechaInput.style.borderWidth = "4px";
+    validado.value = false;
+    return false;
+  } else {
+    fechaInput.style.borderWidth = "0px";
+    return true;
+  }
+}
+
+function validarNoSerie() {
+  let noSerInput = document.getElementById("noSr");
+  var j=0;
+  if (noSerInput.value.trim() === "") {
+
+    noSerInput.style.borderColor = "red";
+    noSerInput.style.borderWidth = "4px";
+    validado.value = false;
+    return false;
+  } else {
+for(j;j<existeNoSerie.value.length;j++){
+    if(existeNoSerie.value[j].NoSerie==noSerie.value) {
+    noSerInput.style.borderColor = "red";
+    noSerInput.style.borderWidth = "4px";
+    validado.value = false;
+    alertaNoSerie.value=true;
+    return false;
+     }
+  }
+    noSerInput.style.borderWidth = "0px";
+    return true;
+
+  }
+}
+
+function validarModelo() {
+  let modInput = document.getElementById("modMot");
+  
+  if (modInput.value.trim() === "") {
+    modInput.style.borderColor = "red";
+    modInput.style.borderWidth = "4px";
+    validado.value = false;
+    return false;
+  } else {
+    modInput.style.borderWidth = "0px";
+    return true;
+  }
+}
 
 function validarImporte() {
-  let impInput = document.getElementById("tlfn");
-  var re = /^[0-9]+$/;
-  if (!(importe.value.length >= 3 && importe.value.match(re))) {
+  let impInput = document.getElementById("imp");
+  
+  if (impInput.value.trim() === "") {
     impInput.style.borderColor = "red";
     impInput.style.borderWidth = "4px";
     validado.value = false;
@@ -297,20 +339,6 @@ function validarImporte() {
   }
 }
 
-
-function validarKilometraje() {
-  let kmInput = document.getElementById("tlfn");
-  var re = /^[0-9]+$/;
-  if (!(importe.value.length >= 3 && importe.value.match(re))) {
-    kmInput.style.borderColor = "red";
-    kmInput.style.borderWidth = "4px";
-    validado.value = false;
-    return false;
-  } else {
-    kmInput.style.borderWidth = "0px";
-    return true;
-  }
-}
 
 
 function validarTexto(input) {
@@ -327,19 +355,6 @@ function validarTexto(input) {
     return true;
   }
 }
-
-// function validarMoto() {
-//   console.log(tagMoto.value.value);
-//   console.log(tagMoto.value.value == -1);
-//   if (tagMoto.value.value == -1) {
-//     motoValida.value = "comboMoto";
-
-//     return false;
-//   } else {
-//     motoValida.value = "";
-//     return true;
-//   }
-// }
 
 function validarEstatus() {
   if (tagEstatus.value.value == -1) {
@@ -472,8 +487,9 @@ async function revisarServicio() {
     const servicio = {
       MotosTaller_idMotosTaller: tagEstatus.value.value,
       Clientes_idClientes: idCliente.value,
-      FechaRegistro: formattedDate.value,
+      FechaRegistro: formattedDate,
       FechaEntrega: formattedDates.value,
+      idEstatusActividad: 1
     };
     console.log(await servicioExiste(servicio));
     if (await servicioExiste(servicio)) {
@@ -510,6 +526,11 @@ async function crearMotoTaller() {
   }
 };
 
+
+
+
+
+
 async function crearServicio() {
   try {
     console.log("creando servicio")
@@ -520,13 +541,14 @@ async function crearServicio() {
       Empleados_idEmpleados: idUser.value,
       Clientes_idClientes: idCliente.value,
       Importe: importe.value,
-      cantidadServicio: cantidadServicio.value,
+     // cantidadServicio: cantidadServicio.value,
       Descripcion: descripcion.value,
       Kilometraje: kilometraje.value,
-      FechaRegistro: formattedDate.value,
+      FechaRegistro: formattedDate,
       FechaEntrega: formattedDates.value,
+      idEstatusActividad:1
     };
-    console.log(formattedDate.value);
+    console.log(formattedDate);
     console.log(formattedDates.value);
     await agregarServicio(servicio);
     setIdCliente(null);
@@ -555,6 +577,11 @@ async function sbmtUsuario() {
     validarTexto(tagNombre.value) &&
     validarTexto(tagPaterno.value) &&
     validarTexto(tagMaterno.value) &&
+    validarKilometraje() &&
+    validarFecha() &&
+    validarNoSerie() &&
+    validarImporte() &&
+    validarModelo() &&
    // validarNumBAZ() &&
     // validarMoto() &&
     validarEstatus();
@@ -569,6 +596,11 @@ async function sbmtUsuario() {
     validarTexto(tagNombre.value);
     validarTexto(tagPaterno.value);
     validarTexto(tagMaterno.value);
+    validarFecha();
+    validarKilometraje();
+    validarNoSerie();
+    validarImporte();
+    validarModelo();
   //  validarNumBAZ();
     // validarMoto();
     validarEstatus();
@@ -577,6 +609,11 @@ async function sbmtUsuario() {
 }
 
 async function verServicios() {
+
+  modal = new bootstrap.Modal(document.getElementById("modal"), {
+      keyboard: false,
+    });
+
   await modal.hide();
   console.log("escondido");
   router.push({ name: "servicios" });
@@ -724,13 +761,13 @@ async function verServicios() {
             <div class="col">
               <div class="row d-flex align-items-center">
                 <div class="col mt-2 me-5 pe-5">
-                <h5 class="italika">No. Serie</h5>
+                <h5 class="italika">No. Serie*</h5>
                 </div>
                 <input
                   id="noSr"
                   type="text"
                   class="form-control inptElement base"
-
+                  @input="validarNoSerie()"
                   v-model.trim="noSerie"
                   
                  
@@ -747,7 +784,7 @@ async function verServicios() {
                   id="modMot"
                   type="text"
                   class="form-control inptElement base"
-                  
+                  @input="validarModelo()"
                   v-model.trim="modeloTaller"
                   
                   
@@ -766,7 +803,7 @@ async function verServicios() {
                   id="kil"
                   type="text"
                   class="form-control inptElement base"
-                
+                  @input="validarKilometraje()"
                   v-model.trim="kilometraje"
                   
                 />
@@ -782,7 +819,7 @@ async function verServicios() {
                   id="imp"
                   type="text"
                   class="form-control inptElement base"
-                
+                  @input="validarImporte()"
                   v-model.trim="importe"
                   
                   ref="tagSerie"
@@ -792,8 +829,8 @@ async function verServicios() {
             </div>
           </div>
 <!-----------------------    Row 5 Formulario  --------------------------->
-<div class="row mb-2 pb-2">
-            <div class="col">
+<!-- <div class="row mb-2 pb-2"> -->
+            <!-- <div class="col">
               <div class="row d-flex align-items-center">
                 <div class="col mt-2 me-5 pe-5">
                   <h5 class="italika">Fecha de Registro *</h5>
@@ -804,11 +841,11 @@ async function verServicios() {
                      class="form-control base"
                       />
               </div>
-            </div>
-            <div class="col-1"></div>
-              <div class="col">
-                <div class="row d-flex align-items-center">
-                  <div class="col mt-2 me-5 pe-1">
+            </div> -->
+            <!-- <div class="col-1"></div>
+            <div class="col">
+              <div class="row d-flex align-items-center">
+                <div class="col mt-2 me-5 pe-5">
                     <h5 class="italika">Fecha de Entrega*</h5>
                   </div>
                     <input v-model="formattedDates"
@@ -818,10 +855,10 @@ async function verServicios() {
                       />
                 </div>
               </div>
-            </div>
+            </div> -->
           <!-----------------------    Row 5 Formulario  --------------------------->
 <div class="row mb-2 pb-2">
-            <div class="col">
+            <!-- <div class="col">
               <div class="row d-flex align-items-center">
                 <div class="col mt-2 me-5 pe-5">
                   <h5 class="italika">Cantidad *</h5>
@@ -837,11 +874,24 @@ async function verServicios() {
                   maxlength="16"
                 />
               </div>
-            </div>
+            </div> -->
+            <div class="col">
+              <div class="row d-flex align-items-center">
+                <div class="col mt-2 me-5 pe-5">
+                    <h5 class="italika">Fecha de Entrega*</h5>
+                  </div>
+                    <input v-model="formattedDates"
+                     id="fechEn"
+                     type="date"
+                     class="form-control  base"
+                     @input="validarFecha()"
+                      />
+                </div>
+              </div>
             <div class="col-1"></div>
             <div class="col">
               <div class="row d-flex align-items-center">
-                <div class="col mt-2 me-5 pe-1">
+                <div class="col mt-2 me-5 pe-5">
                   <h5 class="italika">Estatus de Servicio *</h5>
                 </div>
                 <select
@@ -873,12 +923,20 @@ async function verServicios() {
           <!-----------------------    Row 7 Formulario  --------------------------->
           <div class="row">
             <div
-              v-if="alertaLlenado"
+              v-if="alertaLlenado && !alertaNoSerie"
               class="alert alert-danger mt-2 d-flex align-items-center"
               style="height: 38px"
               role="alert"
             >
               Por favor, llene correctamente todos los campos obligatorios
+            </div>
+            <div
+              v-if="alertaNoSerie"
+              class="alert alert-danger mt-2 d-flex align-items-center"
+              style="height: 38px"
+              role="alert"
+            >
+              Este número e serie ya existe, verifique el número de serie
             </div>
           </div>
           <div class="row">
@@ -1013,7 +1071,7 @@ async function verServicios() {
           >
             Seguir creando servicios
           </button>
-          <button type="button" class="btn btn-success" @click="verServicios()">
+          <button type="button" class="btn btn-success" @click="verServicios()" data-bs-dismiss="modal">
             Ver servicios
           </button>
         </div>

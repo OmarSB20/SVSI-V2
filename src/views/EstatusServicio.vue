@@ -2,31 +2,31 @@
 import { ref } from "vue";
 import { onMounted } from "vue";
 import router from "../router/index";
-import { estatusCotizacionStore } from "../stores/estatusCotizacion";
+import { estatusServicioStore } from "../stores/estatusServicio";
 
 import CompHeader from "../components/Header.vue";
 
 const {
-  obtenerEstatusCotizacion,
-  agregarEstatusCotizacion,
-  actualizarEstatusCotizacion,
- obtenerNombresEstatusCotizacion,
-} = estatusCotizacionStore();
+  obtenerEstatusServicio,
+  agregarEstatusServicio,
+  actualizarEstatusServicio,
+  obtenerNombresEstatusServicio,
+} = estatusServicioStore();
 
-const estCotArray = ref([]);
-const estCotDesplegados = ref([]);
-const estCotNuevo = ref("");
+const estSerArray = ref([]);
+const estSerDesplegados = ref([]);
+const estSerNuevo = ref("");
 const repetido = ref(false);
 const deshabilitado = ref(false);
 const botonActualizar = ref(false);
 const idBotonActualizar = ref(0);
-const estCotAgregado = ref("");
+const estSerAgregado = ref("");
 
 const arrayNombres = ref([]);
 const nombreActualizado = ref("");
 const nombreAntiguo = ref("");
-const idEstCotEl = ref("");
-const nombreEstCotEl = ref("");
+const idEstSerEl = ref("");
+const nombreEstSerEl = ref("");
 
 var nombreActual;
 
@@ -37,31 +37,31 @@ var modalConfirmacion;
 var nombre;
 
 onMounted(async () => {
-  revisarEstCotExistente();
-  await consultarEstCot();
+  revisarEstSerExistente();
+  await consultarEstSer();
 });
 
 const consultarNombres = async () => {
-  arrayNombres.value = (await obtenerNombresEstatusCotizacion()).data.body;
+  arrayNombres.value = (await obtenerNombresEstatusServicio()).data.body;
   console.log(arrayNombres.value);
 };
 
-const consultarEstCot = async () => {
+const consultarEstSer = async () => {
   try {
     await consultarNombres();
-    const estCot = await obtenerEstatusCotizacion();
-    console.log(estCot.data.body);
-    estCotArray.value = estCot.data.body; //guardo tofo
-    estCotDesplegados.value = estCot.data.body; //filtrado
+    const estSer = await obtenerEstatusServicio();
+    console.log(estSer.data.body);
+    estSerArray.value = estSer.data.body; //guardo tofo
+    estSerDesplegados.value = estSer.data.body; //filtrado
   } catch (error) {
     console.log(error);
   }
 };
 
-function modificarNombreEstCot(Descripcion, idEstatusCotizacion) {
-  estCotNuevo.value = Descripcion;
+function modificarNombreEstSer(Descripcion, idEstatusServicio) {
+  estSerNuevo.value = Descripcion;
 
-  idBotonActualizar.value = idEstatusCotizacion;
+  idBotonActualizar.value = idEstatusServicio;
   if (!botonActualizar.value) {
     nombreActual = Descripcion;
     console.log(nombreActual);
@@ -69,39 +69,39 @@ function modificarNombreEstCot(Descripcion, idEstatusCotizacion) {
   } else {
     botonActualizar.value = false;
     idBotonActualizar.value = -1;
-    estCotNuevo.value = "";
+    estSerNuevo.value = "";
     nombreActual = "";
     console.log(nombreActual);
   }
   repetido.value = false;
 }
 
-async function guardarEstCot(Descripcion) {
+async function guardarEstSer(Descripcion) {
   try {
     console.log(Descripcion);
-    await agregarEstatusCotizacion(Descripcion);
-    await consultarEstCot();
+    await agregarEstatusServicio(Descripcion);
+    await consultarEstSer();
     modal1 = new bootstrap.Modal(document.getElementById("modal1"), {
       keyboard: false,
     });
     modal1.show();
-    estCotAgregado.value = estCotNuevo.value;
-    console.log(estCotAgregado.value);
-    estCotNuevo.value = "";
+    estSerAgregado.value = estSerNuevo.value;
+    console.log(estSerAgregado.value);
+    estSerNuevo.value = "";
   } catch (error) {
     console.log(error);
   }
 }
 
-async function modificarEstCot(idEstatusCotizacion, Descripcion) {
+async function modificarEstSer(idEstatusServicio, Descripcion) {
   try {
     nombreAntiguo.value = nombreActual;
     nombreActualizado.value = Descripcion;
     console.log(Descripcion + "Es el que recibira");
     console.log(nombreActual + "es el original");
-    await actualizarEstatusCotizacion(idEstatusCotizacion, Descripcion.trim(), 1);
-    await consultarEstCot();
-    estCotNuevo.value = "";
+    await actualizarEstatusServicio(idEstatusServicio, Descripcion.trim(), 1);
+    await consultarEstSer();
+    estSerNuevo.value = "";
     botonActualizar.value = false;
     idBotonActualizar.value = -1;
     modal1 = new bootstrap.Modal(document.getElementById("modalAct"), {
@@ -118,24 +118,24 @@ function actualizarTabla(nombre) {
   console.log(nombre);
   if (nombre.trim() == "") {
     //recorta los espacios
-    estCotDesplegados.value = estCotArray.value;
+    estSerDesplegados.value = estSerArray.value;
   } else {
-    estCotDesplegados.value = []; //inicializa vacio deja limpio
-    estCotArray.value.forEach((element) => {
+    estSerDesplegados.value = []; //inicializa vacio deja limpio
+    estSerArray.value.forEach((element) => {
       //recorre el elemento
       if (element.Descripcion.trim().toLowerCase().includes(nombre.trim().toLowerCase())) {
         //checa si  coincide
-        estCotDesplegados.value.push(element); //aqui lo va a grefgar a creditosDesplegaados
+        estSerDesplegados.value.push(element); //aqui lo va a grefgar a creditosDesplegaados
       }
     });
   }
 }
 
-async function eliminarEstCot() {
+async function eliminarEstSer() {
   try {
-    await actualizarEstatusCotizacion(idEstCotEl.value, nombreEstCotEl.value, 2);
-    await consultarEstCot();
-    estCotNuevo.value = "";
+    await actualizarEstatusServicio(idEstSerEl.value, nombreEstSerEl.value, 2);
+    await consultarEstSer();
+    estSerNuevo.value = "";
     botonActualizar.value = false;
     idBotonActualizar.value = -1;
   } catch (error) {
@@ -143,17 +143,17 @@ async function eliminarEstCot() {
   }
 }
 
-function mostrarModalEliminar(idEstatusCotizacion, Descripcion) {
-  idEstCotEl.value = idEstatusCotizacion;
-  nombreEstCotEl.value = Descripcion;
+function mostrarModalEliminar(idEstatusServicio, Descripcion) {
+  idEstSerEl.value = idEstatusServicio;
+  nombreEstSerEl.value = Descripcion;
   modal1 = new bootstrap.Modal(document.getElementById("modal"), {
     keyboard: false,
   });
   modal1.show();
 }
 
-const revisarEstCotExistente = () => {
-  if (estCotNuevo.value.trim() == "" || estCotNuevo.value.trim() == nombreActual) {
+const revisarEstSerExistente = () => {
+  if (estSerNuevo.value.trim() == "" || estSerNuevo.value.trim() == nombreActual) {
     deshabilitado.value = true;
     return;
   }
@@ -161,11 +161,11 @@ const revisarEstCotExistente = () => {
     for (var j in arrayNombres.value) {
       if (
         arrayNombres.value[j].Descripcion.toLowerCase() ==
-        estCotNuevo.value.trim().toLowerCase()
+        estSerNuevo.value.trim().toLowerCase()
       ) {
         repetido.value = true;
         deshabilitado.value = true;
-        console.log(estCotNuevo.value);
+        console.log(estSerNuevo.value);
         console.log(arrayNombres.value[j].Descripcion);
         return true;
       }
@@ -196,7 +196,7 @@ const revisarEstCotExistente = () => {
       </div>
       <div class="col-8 mb-3 pt-5">
         <div class="row align-items-end">
-          <p class="italika ms-4" style="font-size: 50px">Estatus de cotización</p>
+          <p class="italika ms-4" style="font-size: 50px">Estatus de servicio</p>
         </div>
 
         <!-- cambiar el tamaño a 5 si lo quiero mas lejos de la tabla -->
@@ -216,15 +216,15 @@ const revisarEstCotExistente = () => {
     </div>
     <div class="row mb-5">
       <div class="col-2 mt-2 ms-5">
-        <h5 class="italika d-flex justify-content-end">Nombre del estatus:</h5>
+        <h5 class="italika d-flex justify-content-end">Nombre de estatus de servicio:</h5>
       </div>
       <div class="col-6 ms-4">
         <input
           type="text"
           ref="inputRol"
           class="form-control"
-          @input="revisarEstCotExistente()"
-          v-model="estCotNuevo"
+          @input="revisarEstSerExistente()"
+          v-model="estSerNuevo"
         />
         <div
           v-if="repetido"
@@ -232,7 +232,7 @@ const revisarEstCotExistente = () => {
           style="height: 38px"
           role="alert"
         >
-          "{{ estCotNuevo }}" ya existe
+          "{{ estSerNuevo }}" ya existe
         </div>
       </div>
       <div class="col">
@@ -241,7 +241,7 @@ const revisarEstCotExistente = () => {
           class="btn btn-primary"
           type="submit"
           :disabled="deshabilitado"
-          @click="guardarEstCot(estCotNuevo)"
+          @click="guardarEstSer(estSerNuevo)"
         >
           Guardar
         </button>
@@ -251,7 +251,7 @@ const revisarEstCotExistente = () => {
           class="btn btn-success"
           type="submit"
           :disabled="deshabilitado"
-          @click="modificarEstCot(idBotonActualizar, estCotNuevo)"
+          @click="modificarEstSer(idBotonActualizar, estSerNuevo)"
         >
           Actualizar
         </button>
@@ -263,14 +263,14 @@ const revisarEstCotExistente = () => {
     >
       <thead>
         <tr style="background-color: #2b4677; color: white">
-          <th scope="col">Estatus</th>
+          <th scope="col">Estatus de Servicio</th>
           <th scope="col" style="width: 200px"></th>
         </tr>
       </thead>
       <tbody>
-        <tr v-for="estCot in estCotDesplegados">
+        <tr v-for="estSer in estSerDesplegados">
           <td>
-            {{ estCot.Descripcion }}
+            {{ estSer.Descripcion }}
           </td>
           <th scope="row">
             <div class="align-items-center">
@@ -288,21 +288,21 @@ const revisarEstCotExistente = () => {
               </button> -->
 
               <button
-                :id="estCot.idEstatusCotizacion"
+                :id="estSer.idEstatusServicio"
                 :class="[
-                  botonActualizar && idBotonActualizar == estCot.idEstatusCotizacion
+                  botonActualizar && idBotonActualizar == estSer.idEstatusServicio
                     ? 'btn btn-primary mx-1'
                     : 'btn btn-warning btn-spacer mx-1',
                 ]"
                 type="submit"
                 style="border-color: #ffbe16; height: 37px"
                 @click="
-                  modificarNombreEstCot(estCot.Descripcion, estCot.idEstatusCotizacion)
+                  modificarNombreEstSer(estSer.Descripcion, estSer.idEstatusServicio)
                 "
               >
                 <i
                   :class="[
-                    botonActualizar && idBotonActualizar == estCot.idEstatusCotizacion
+                    botonActualizar && idBotonActualizar == estSer.idEstatusServicio
                       ? 'fa-solid fa-clock-rotate-left'
                       : 'fa-solid fa-pen-to-square',
                   ]"
@@ -317,7 +317,7 @@ const revisarEstCotExistente = () => {
                 type="submit"
                 style="background-color: #c01a1a; border-color: #c01a1a; height: 37px"
                 @click="
-                  mostrarModalEliminar(estCot.idEstatusCotizacion, estCot.Descripcion)
+                  mostrarModalEliminar(estSer.idEstatusServicio, estSer.Descripcion)
                 "
               >
                 <img
@@ -345,7 +345,7 @@ const revisarEstCotExistente = () => {
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title" id="exampleModalLabel">Estatus de cotización</h5>
+          <h5 class="modal-title" id="exampleModalLabel">Estatus de servicio</h5>
 
           <button
             type="button"
@@ -355,7 +355,7 @@ const revisarEstCotExistente = () => {
           ></button>
         </div>
         <div class="modal-body">
-          <h5>¡Estatus de cotización "{{ estCotAgregado }}" guardado exitosamente!</h5>
+          <h5>¡Estatus de servicio "{{ estSerAgregado }}" guardado exitosamente!</h5>
         </div>
 
         <div class="modal-footer">
@@ -377,7 +377,7 @@ const revisarEstCotExistente = () => {
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title" id="exampleModalLabel">Elminar estatus de cotización</h5>
+          <h5 class="modal-title" id="exampleModalLabel">Elminar estatus de servicio</h5>
           <button
             type="button"
             class="btn-close"
@@ -387,8 +387,8 @@ const revisarEstCotExistente = () => {
         </div>
         <div class="modal-body">
           <span
-            >¿Está seguro de que quiere eliminar el estatus de cotizacion "{{
-              nombreEstCotEl
+            >¿Está seguro de que quiere eliminar el estatus de servicio "{{
+              nombreEstSerEl
             }}"?</span
           >
         </div>
@@ -397,7 +397,7 @@ const revisarEstCotExistente = () => {
             type="button"
             class="btn btn-danger"
             data-bs-dismiss="modal"
-            @click="eliminarEstCot()"
+            @click="eliminarEstSer()"
           >
             Confirmar
           </button>
@@ -417,7 +417,7 @@ const revisarEstCotExistente = () => {
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title" id="exampleModalLabel">Estatus de cotización</h5>
+          <h5 class="modal-title" id="exampleModalLabel">Estatus de servicio</h5>
 
           <button
             type="button"
@@ -428,7 +428,7 @@ const revisarEstCotExistente = () => {
         </div>
         <div class="modal-body">
           <h5>
-            ¡Estatus de cotización "{{ nombreAntiguo }}" actualizado a "{{ nombreActualizado }}" con
+            ¡Estatus de servicio "{{ nombreAntiguo }}" actualizado a "{{ nombreActualizado }}" con
             exito!
           </h5>
         </div>

@@ -154,6 +154,8 @@ async function cargarDatosCliente() {
   paterno.value = cliente.Apellido_Paterno;
   materno.value = cliente.Apellido_Materno;
   email.value = cliente.Correo;
+
+  
   telefono.value = cliente.Telefono;
   let numBAZ;
   cliente.NoClienteBAZ == null ? (numBAZ = "") : (numBAZ = cliente.NoClienteBAZ);

@@ -145,6 +145,7 @@ onMounted(async () => {
 
 const cargarCotizacion = async () => {
     console.log("llegue aqui");
+    let i = 0;
     let cotizacion = await obtenerCotizacion(idCotizacion.value);
     console.log(cotizacion);
     cotizacion = cotizacion.data.body[0];
@@ -159,7 +160,8 @@ const cargarCotizacion = async () => {
         modelo = modelo.data.body[0];
         console.log(element.Moto_idMoto);
         console.log(modelo.Modelo);
-        arregloMotos.value.push(modelo.Modelo);
+        arregloMotos.value.push({id: i, Modelo: modelo.Modelo});
+        i++;
       } 
     }
     console.log(arregloMotos.value);
@@ -920,7 +922,7 @@ const mostar = (valor) =>{
       <!--  Div Motos -->
       <div
         class="row d-flex align-items-center mb-4"
-        v-for="motos in arregloMotos"
+        v-for="motos in arregloMotos" :key="motos.id"
         
       >
         <div class="col-1" id="motos"></div>
@@ -928,7 +930,7 @@ const mostar = (valor) =>{
           <h5 class="italika d-flex justify-content-end pe-2">Moto: </h5>
         </div>
         <div class="col-3" ref="tagBordeMoto" id="motos">
-          <input type="text" v-model="arregloMotos[motos]" class="form-control" @load="mostar(motos)" disabled/>
+          <input type="text" v-model="arregloMotos[motos.id].Modelo" class="form-control" @load="mostar(motos)" disabled/>
         </div>
       </div>
       

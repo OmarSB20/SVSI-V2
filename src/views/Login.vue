@@ -3,10 +3,8 @@ import { ref } from "vue"; //para usar variables reactivas
 import { onMounted } from "vue"; //para poder usar el onMounted, que ejecuta todo lo que tenga adentro cada que cargue la pagina
 import { loginStore } from "../stores/login";
 import router from "../router/index";
-
 const { login } = loginStore();
 const { reanudarSesion } = loginStore();
-
 const nickname = ref("");
 const contrasena = ref("");
 const deshabilitado = ref(true);
@@ -14,9 +12,7 @@ const aceptado = ref(true);
 const vacios = ref(false);
 const tipoInput = ref("password");
 var tried = false;
-
 var screenHeight = window.innerHeight;
-
 window.addEventListener("resize", ajustarAlto);
 function ajustarAlto() {
   screenHeight = window.innerHeight;
@@ -24,27 +20,22 @@ function ajustarAlto() {
   screenHeight -= 140;
   container.style.height = screenHeight + "px";
 }
-
 onMounted(async() => {
  
     deshabilitado.value = true;
     ajustarAlto();
   
 });
-
 function mostrarTexto(){
   tipoInput.value = "text";
 }
-
 function ocultarTexto(){
   tipoInput.value = "password";
 }
-
 function quitarEspacios() {
   nickname.value = nickname.value.trim();
   console.log(nickname.value);
 }
-
 function camposVacios() {
   if (tried && (nickname.value == "" || contrasena.value == "")) {
     vacios.value = true;
@@ -54,7 +45,6 @@ function camposVacios() {
   }
   return false;
 }
-
 async function iniciarSesion() {
   tried = true;
   quitarEspacios();
@@ -76,7 +66,6 @@ async function iniciarSesion() {
     }
   }
 }
-
 function irMenu() {
   router.push({ name: "home" });
 }
@@ -216,7 +205,6 @@ function irMenu() {
                   />
                 </button>
               </div>
-
               <div
                 v-if="!aceptado"
                 class="alert alert-danger d-flex align-items-center"
@@ -268,7 +256,6 @@ body {
   letter-spacing: 0.04em;
   color: #ffffff;
 }
-
 .inptDrk {
   height: 50px;
   font-size: 20px;
@@ -276,32 +263,26 @@ body {
   color: white;
   border-color: #2D2F37;
 }
-
 .inptDrk:focus {
   background-color: #2D2F37;
   border-color: #213ee2;
   color: white;
 }
-
-
 .eyeBtn {
   height: 50px;
   font-size: 20px;
   background-color: #2D2F37;
   border-color: #2D2F37;
 }
-
 .eyeBtn:hover {
   height: 50px;
   font-size: 20px;
   background-color: #2D2F37;
   border-color: #2D2F37;
 }
-
 .table-striped tbody tr:nth-of-type(even) {
   background-color: #ccc9c9;
 }
-
 .table-striped tbody tr:nth-of-type(odd) {
   background-color: #ffffff;
 }

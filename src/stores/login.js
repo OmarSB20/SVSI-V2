@@ -69,8 +69,3 @@ export const loginStore = defineStore("login",{
     }
   } 
 })
-
-
-
-
-

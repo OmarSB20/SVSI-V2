@@ -110,6 +110,3 @@ export const usuariosStore = defineStore("usuarios",{
     
   } 
 })
-
-
-  

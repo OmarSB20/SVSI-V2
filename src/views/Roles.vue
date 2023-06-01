@@ -4,10 +4,8 @@ import { permisosRolesStore } from "../stores/permisosRoles";
 import { rolesStore } from "../stores/roles";
 import { onMounted } from "vue";
 import router  from '../router/index'
-
 import CompHeader from '../components/Header.vue'
 import { loginStore } from "../stores/login";
-
 const { reanudarSesion } = loginStore();
 const {verificarPermisos} = loginStore();
 const { obtenerPermisosDelRol } = permisosRolesStore();
@@ -15,7 +13,6 @@ const { eliminarPermisosDelRol } = permisosRolesStore();
 const { obtenerRoles } = rolesStore();
 const { eliminarRol } = rolesStore();
 const { setRol } = rolesStore();
-
 const rolDir = ref({});
 const buscador = ref({});
 const roles = ref([]);
@@ -26,20 +23,16 @@ const idRolEliminar = ref();
 var modal;
 var modalConfirmacion;
 var nombre;
-
 onMounted(async() => {
   
     consultarRoles();
   modal = new bootstrap.Modal(document.getElementById("modal"), {
     keyboard: false,
   });
-
   modalConfirmacion = new bootstrap.Modal(document.getElementById("modalCon"), {
     keyboard: false,
   });
-
 });
-
 const consultarRoles = async () => {
   buscador.value = [];
   rolesArray.value = [];
@@ -59,7 +52,6 @@ const consultarRoles = async () => {
     console.log(error);
   }
 };
-
 const consultarPermisosDeRol = async (idRol) => {
   permisosDeRolArray.value = [];
   try {
@@ -73,7 +65,6 @@ const consultarPermisosDeRol = async (idRol) => {
     console.log(error);
   }
 };
-
 const eliminarRoles = async (idEmpleados) => {
   try {
     await eliminarPermisosDelRol(idEmpleados);
@@ -83,19 +74,16 @@ const eliminarRoles = async (idEmpleados) => {
     console.log(error);
   }
 };
-
 const modificarRol = async (idRol) => {
   try {
     setRol(idRol);
     router.push({ name: 'actualizarRol', params: { idRolAct: idRol }});
-
     //window.location.href = "http://localhost:5173/registroRol";
     //this.$router.push("http://localhost:5173/crearRol");
   } catch (error) {
     console.log(error);
   }
 };
-
 function actualizarTabla(nombre) {
   console.log(nombre)
   if (nombre.trim() == "") {
@@ -109,7 +97,6 @@ function actualizarTabla(nombre) {
     });
   }
 }
-
 function confirmar(idRol) {
   idRolEliminar.value = idRol;
   modalConfirmacion.show();
