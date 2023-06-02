@@ -26,6 +26,9 @@ import MetaVentas from '../views/MetasVentas.vue'
 import CrearCotizacion from '../views/CrearCotizacion.vue'
 import Cotizaciones from '../views/Cotizaciones.vue'
 import ActualizarCotizacion from '../views/ActualizarCotizacion.vue'
+import Servicios from '../views/Servicios.vue'
+import CrearServicio from '../views/CrearServicio.vue'
+import ActualizarServicio from '../views/ActualizarServicio.vue'
 
 
 //const { reanudarSesion } = loginStore();
@@ -60,6 +63,9 @@ const interfaces = {
   crearRol: '14',
   actualizarRol: '14',
   roles: '14',
+  crearServicio:'8',
+  actualizarServicio:'8',
+  servicios: '8',
 }
 
 const router = createRouter({
@@ -227,6 +233,26 @@ const router = createRouter({
       path: '/actualizarCotizacion',
       name: 'actualizarCotizacion',
       component: ActualizarCotizacion
+      
+    },
+    {
+      path: '/servicios',
+      name: 'servicios',
+      component: Servicios
+      
+    },
+
+    {
+      path: '/crearServicio',
+      name: 'crearServicio',
+      component: CrearServicio
+      
+    },
+
+    {
+      path: '/actualizarServicio',
+      name: 'actualizarServicio',
+      component: ActualizarServicio
       
     }
 

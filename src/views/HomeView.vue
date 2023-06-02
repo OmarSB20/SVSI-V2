@@ -62,6 +62,11 @@ onMounted(async () => {
   definirBotones();
   if (await verificarPermisos(3)) {
     await revisarMeta();
+  }else{
+    const res = await obtenerMetaActual();
+    objMeta.value = res;
+    cantMeta.value = objMeta.value.Meta;
+    metaVentas.value = cantMeta.value;
   } 
   mostrarTodo.value = true;
 });
@@ -544,10 +549,10 @@ function redirigir(interfaz) {
         </div>
         <div class="modal-body">
           <div>Meta de la semana</div>
-          <div><input class="form-control" type="number" v-model="cantMeta" /></div>
+          <div><input class="form-control" type="number" v-model.trim="cantMeta" /></div>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-primary" @click="crearMeta()" data-bs-dismiss="modal">
+          <button type="button" class="btn btn-primary" @click="crearMeta()" :disabled="cantMeta<1" data-bs-dismiss="modal">
             Guardar
           </button>
         </div>
@@ -582,7 +587,7 @@ function redirigir(interfaz) {
           <button type="button" class="btn btn-primary" @click="redirigir('metaVentas')" data-bs-dismiss="modal">
             ver metas
           </button>
-          <button type="button" class="btn btn-success" @click="actMeta()" data-bs-dismiss="modal">
+          <button type="button" class="btn btn-success" @click="actMeta()" :disabled="cantMeta<1" data-bs-dismiss="modal">
             Actualizar
           </button>
         </div>

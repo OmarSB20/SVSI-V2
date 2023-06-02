@@ -68,6 +68,7 @@ const idCliente = ref(null);
 const idCotizacion = ref(null);
 const arregloIdMotos = ref([]);
 
+const fechaVisita = ref("");
 const motoValida1 = ref("");
 const motoValida2 = ref("");
 const creditoValido = ref("");
@@ -77,6 +78,7 @@ const horaIniValido = ref("");
 const horaFinValido = ref("");
 const horaIValida = ref("from-control");
 const horaFValida = ref("from-control");
+const displayCalendar = ref(false);
 
 var modal;
 var modalE;
@@ -120,9 +122,11 @@ onMounted(async () => {
 
   llenarCombos();
   fechaActual.value = new Date();
+  console.log(fechaActual.value);
   fechaActual.value = fechaActual.value.toISOString().split('T')[0]
   console.log(fechaActual.value);
 });
+
 
 const obtenerCreditos = async () => {
   try {
@@ -176,22 +180,26 @@ const obtenerAsesores = async () => {
 const agregarMoto = async () => {
   if (tagMoto1.value.value!=-1) {
     arregloIdMotos.value.push(tagMoto1.value.value);
-    motosAgregadas.push(catalogo.value[(tagMoto1.value.value -1)].Modelo)
-  divs.value.push("");
+    divs.value.push({});
+    console.log(divs.value);
+    motosAgregadas.push(catalogo.value[(tagMoto1.value.value -1)].Modelo);
   console.log(arregloIdMotos.value);
   }
  
 };
 const eliminarMoto = async (index) => {
+  console.log(index);
   arregloIdMotos.value.splice(index, 1);
   divs.value.splice(index, 1);
+  motosAgregadas.splice(index, 1);
   console.log(arregloIdMotos.value);
 };
 
 function validarEmail() {
   var pswd = document.getElementById("emailInpt");
   if (correo.value == "") {
-    pswd.style.borderWidth = "0px";
+    pswd.style.borderColor = "red";
+    pswd.style.borderWidth = "4px";
     validado.value = false;
     return false;
   } else {
@@ -211,7 +219,8 @@ function validarEmail() {
 function validarTlfn() {
   let tlfnInpt = document.getElementById("tlfn");
   if (telefono.value == "") {
-    tlfnInpt.style.borderWidth = "0px";
+    tlfnInpt.style.borderColor = "red";
+    tlfnInpt.style.borderWidth = "4px";
     validado.value = false;
     return false;
   } else {
@@ -228,10 +237,20 @@ function validarTlfn() {
   }
 }
 
+const validarHVisita = () => {
+  if(tagInicio.value.value < tagFin.value.value){
+    validado.value = true;
+    return true;
+  }else{
+    validado.value = false;
+    return false;
+  }
+  console.log(validado.value);
+};
+
 function validarNumBAZ() {
   if (nBaz.value == "") {
     tagBaz.value.style.borderWidth = "0px";
-    validado.value = false;
     return true;
   } else {
     var re = /^[0-9-]+$/;
@@ -251,7 +270,8 @@ function validarTexto(input) {
   //input.value = input.value.trim();
   var re = /^[a-zA-Z ]+$/;
   if (input.value == "") {
-    input.style.borderWidth = "0px";
+    input.style.borderColor = "red";
+    input.style.borderWidth = "4px";
     validado.value = false;
     return false;
   } else {
@@ -271,7 +291,8 @@ function validarTexto(input) {
 const validarPagos = (input) => {
   var re = /^[0-9]+$/;
   if (input.value == "") {
-    input.style.borderWidth = "0px";
+    input.style.borderColor = "red";
+    input.style.borderWidth = "4px";
     validado.value = false;
     return false;
   } else {
@@ -292,23 +313,15 @@ function validarMoto1() {
   console.log(tagMoto1.value.value == -1);
   if (tagMoto1.value.value == -1) {
     motoValida1.value = "comboMoto";
+    console.log("el error es aqui motos");
 
+    tagMoto1.value.style.borderColor = "red";
+    tagMoto1.value.style.borderWidth = "4px";
     return false;
   } else {
     motoValida1.value = "";
-    return true;
-  }
-}
 
-function validarMoto2() {
-  console.log(tagMoto2.value.value);
-  console.log(tagMoto2.value.value == -1);
-  if (tagMoto1.value.value == -1) {
-    motoValida2.value = "comboMoto";
-
-    return false;
-  } else {
-    motoValida2.value = "";
+    tagMoto1.value.style.borderWidth = "0px";
     return true;
   }
 }
@@ -318,28 +331,38 @@ const validarCredito = () => {
   if (tagCreditos.value.value == -1) {
     creditoValido.value = "comboCredito";
 
+    tagCreditos.value.style.borderColor = "red";
+    tagCreditos.value.style.borderWidth = "4px";
     return false;
   } else {
     creditoValido.value = "";
+
+    tagCreditos.value.style.borderWidth = "0px";
     return true;
   }
 };
 
 const validarEstatus = async () => {
-    console.log(tagEstatus.value.value)
+  console.log(tagEstatus.value.value)
+
   if (tagEstatus.value.value == -1) {
     estatusValido.value = "comboEstatus";
     visita.value = false;
+
+    tagEstatus.value.style.borderColor = "red";
+    tagEstatus.value.style.borderWidth = "4px";
     return false;
   }
 
-  if (tagEstatus.value.value == 12) {
+  if (tagEstatus.value.value == idVisita.value) {
     //Poner el id del estatus visita, el mio es el 12
     visita.value = true;
   } else {
     visita.value = false;
   }
+
   estatusValido.value = "";
+  tagEstatus.value.style.borderWidth = "0px";
   return true;
 };
 
@@ -347,10 +370,13 @@ const validarAsesor = () => {
   if (tagAsesores.value.value == -1) {
     asesorValido.value = "comboEstatus";
 
+    tagAsesores.value.style.borderColor = "red";
+    tagAsesores.value.style.borderWidth = "4px";
     return false;
   } else {
     console.log("ta bien");
     asesorValido.value = "form-control";
+    tagAsesores.value.style.borderWidth = "0px";
     return true;
   }
 };
@@ -362,6 +388,7 @@ const validarHoraI = () => {
     return false;
   } else {
     horaIValida.value = "";
+    console.log(horaIniValido.value);
     return true;
   }
 };
@@ -373,6 +400,7 @@ const validarHoraF = () => {
     return false;
   } else {
     horaFValida.value = "";
+    console.log(tagFin.value.value);
     return true;
   }
 };
@@ -409,7 +437,7 @@ const revisarCliente = async () => {
       idCliente.value = exists.value.idClientes;
       nuevo.value = false;
       console.log(idCliente.value);
-      //await submt();
+      //Mostrar modal
     } else {
       await crearCliente();
     }
@@ -440,6 +468,7 @@ const validarGeneral = () => {
 
 const validarVisita = () => {
   validado.value =
+    revFechas() &&
     validarTexto(tagNombre.value) &&
     validarTexto(tagAP.value) &&
     validarTexto(tagAM.value) &&
@@ -453,7 +482,21 @@ const validarVisita = () => {
     validarPagos(tagC.value) &&
     validarNumBAZ() &&
     validarHoraI() &&
-    validarHoraF();
+    validarHoraF() &&
+    validarHVisita();
+
+  console.log(validado.value);
+  return validado.value;
+};
+
+const validarCliente = () => {
+  validado.value =
+    validarTexto(tagNombre.value) &&
+    validarTexto(tagAP.value) &&
+    validarTexto(tagAM.value) &&
+    validarTlfn() &&
+    validarEmail() &&
+    validarNumBAZ();
 
   console.log(validado.value);
   return validado.value;
@@ -462,45 +505,49 @@ const validarVisita = () => {
 const validar = async () => {
   console.log(visita.value);
   try {
-    if (visita.value) {
+    if(visita.value){
       validarVisita() == true ? submt() : (alertaLlenado.value = true);
-    } else {
+    }
+    else{
       validarGeneral() == true ? submt() : (alertaLlenado.value = true);
     }
   } catch (error) {
     console.log(error);
   }
-};
+}
 
 const submt = async () => {
+  console.log(nuevo.value);
+  console.log(visita.value);
   try {
-    if (validado.value) {
-      console.log("codigo amarillo");
+      alertaLlenado.value = false;
       if (nuevo.value) {
         await revisarCliente();
-      } else {
-        alertaLlenado.value = false;
-        if (visita.value) {
-          await crearCotizacionV();
-        } else {
-          await crearCotizacion();
-        }
       }
-    } else {
-      alertaLlenado.value = true;
-      modalE = new bootstrap.Modal(document.getElementById("modalEr"), {
-        keyboard: false,
-      });
-      await modalE.show();
-    }
+      else if(visita.value){
+        await crearCotizacionV();
+        setIdCliente(null);
+      } 
+      else {
+        await crearCotizacion();
+        setIdCliente(null);
+      }
   } catch (error) {
     console.log(error);
   }
 };
 
+const modalError = async () => {
+    modalE = new bootstrap.Modal(document.getElementById("modalEr"), {
+        keyboard: false,
+      });
+    await modalE.show();
+};
+
 const crearCotizacionV = async () => {
   try {
     console.log("codigo ROJOV");
+    
     const cotizacion = {
       idCotizaciones: 0,
       Empleados_idEmpleados: idUser.value,
@@ -511,9 +558,10 @@ const crearCotizacionV = async () => {
       FechaRegistro: fechaActual.value,
       PagoInicial: tagPi.value.value,
       Capacidad: tagC.value.value,
-      FechaVisita: fechaActual.value,
+      FechaVisita: fechaVisita.value,
       HoraInicial: tagInicio.value.value,
       HoraFinal: tagFin.value.value,
+      FechaVenta: null,
       Comentario: comentario.value,
     };
 
@@ -539,7 +587,10 @@ const crearCotizacion = async () => {
       FechaRegistro: fechaActual.value,
       PagoInicial: tagPi.value.value,
       Capacidad: tagC.value.value,
-      FechaVisita: fechaActual.value,
+      FechaVisita: null,
+      HoraInicial: null,
+      HoraFinal: null,
+      FechaVenta: null,
       Comentario: comentario.value,
     };
 
@@ -599,6 +650,7 @@ const reset = async () => {
   capacidad.value = "";
   nBaz.value = "";
   comentario.value = "";
+  fechaVisita.value = "";
 
   tagMoto1.value.value = -1;
   tagCreditos.value.value = -1;
@@ -637,10 +689,6 @@ const reset = async () => {
   console.log("despues");
 };
 
-const mandarACrear = () => {
-  router.push({ name: "crearCliente" });
-};
-
 const cargarCliente = async () => {
   const cliente = (await obtenerCliente(idCliente.value)).data.body[0];
   nombre.value = cliente.Nombre;
@@ -668,28 +716,8 @@ const seleccionarCliente = async () => {
   router.push({ name: "seleccionCliente" });
 };
 
-function llenarmotos() {
-  console.log("llenando motos");
-  const config = {
-    search: true,
-    clearable: true,
-  };
-  console.log(tagMoto2);
-  tagMoto2.value.forEach((optionM) => {
-    console.log(optionM);
-    //let select = document.getElementById("option");
-    catalogo.value.forEach((option) => {
-      const optionElement = document.createElement("option");
-      optionElement.text = option.Modelo;
-      optionElement.value = option.idMoto;
-      select.add(optionElement);
-    });
-    dselect(optionM, config); //si jala, no mover xd
-  });
-}
-
 function llenarCombos() {
-  console.log("llenando combos");
+  console.log("llenando combos");;
   const config = {
     search: true,
     clearable: true,
@@ -742,6 +770,32 @@ const verCotizaiones = async () => {
   await modal.hide();
   router.push({ name: "cotizaciones" });
 };
+
+async function revFechas() {
+  console.log("llegue a rev fechas");
+  console.log(fechaVisita.value);
+  console.log(fechaActual.value);
+  if (fechaVisita.value == "") {
+    console.log("codigo rojo");
+    //alertIncDatos.value = true;
+    return false;
+  }
+
+  const hoy = new Date(fechaActual.value);
+  const visita = new Date(fechaVisita.value);
+  const resta = visita.getTime() - hoy.getTime();
+  console.log(resta);
+  if (resta >= 0) {
+    //alertFechaReporte.value = false;
+    console.log("SI valida fechas");
+    return true;
+  }else{
+    console.log("no valida fechas");
+    //alertFechaReporte.value = true;
+    return false;
+  }
+};
+
 </script>
 <template>
   <form @submit.prevent="validar()" class="needs-validation" novalidate>
@@ -850,6 +904,39 @@ const verCotizaiones = async () => {
           />
         </div>
       </div>
+      <!-- Row6 -->
+      <div class="row d-flex align-items-center mb-3">
+        <div class="col-1"></div>
+        <div class="col-1 d-flex justify-content-end pt-2">
+          <h5 class="italika d-flex justify-content-end pe-2">Telefono:</h5>
+        </div>
+        <div class="col-3">
+          <input
+            type="text"
+            class="form-control input-f inptElement"
+            v-model.trim="telefono"
+            @input="validarTlfn()"
+            ref="tagTlfn"
+            id="tlfn"
+            :disabled="!nuevo"
+          />
+        </div>
+        <div class="col-1"></div>
+        <div class="col-1 d-flex justify-content-end pt-2">
+          <h5 class="italika d-flex justify-content-end pe-2">Correo:</h5>
+        </div>
+        <div class="col-3">
+          <input
+            type="text"
+            class="form-control input-f inptElement"
+            v-model.trim="correo"
+            @input="validarEmail()"
+            ref="tagCorreo"
+            id="emailInpt"
+            :disabled="!nuevo"
+          />
+        </div>
+      </div>
       <!-- Row4 -->
       <div class="row d-flex align-items-center mb-2">
         <div class="col-1"></div>
@@ -953,39 +1040,7 @@ const verCotizaiones = async () => {
           </button>
         </div>
       </div>
-      <!-- Row6 -->
-      <div class="row d-flex align-items-center mb-3">
-        <div class="col-1"></div>
-        <div class="col-1 d-flex justify-content-end pt-2">
-          <h5 class="italika d-flex justify-content-end pe-2">Telefono:</h5>
-        </div>
-        <div class="col-3">
-          <input
-            type="text"
-            class="form-control input-f inptElement"
-            v-model.trim="telefono"
-            @input="validarTlfn()"
-            ref="tagTlfn"
-            id="tlfn"
-            :disabled="!nuevo"
-          />
-        </div>
-        <div class="col-1"></div>
-        <div class="col-1 d-flex justify-content-end pt-2">
-          <h5 class="italika d-flex justify-content-end pe-2">Correo:</h5>
-        </div>
-        <div class="col-3">
-          <input
-            type="text"
-            class="form-control input-f inptElement"
-            v-model.trim="correo"
-            @input="validarEmail()"
-            ref="tagCorreo"
-            id="emailInpt"
-            :disabled="!nuevo"
-          />
-        </div>
-      </div>
+      
       <!-- Row7 -->
       <div class="row d-flex align-items-center mb-3">
         <div class="col-1"></div>
@@ -1031,11 +1086,18 @@ const verCotizaiones = async () => {
       </div>
       <!-- Div Visita-->
       <div v-if="visita" class="row d-flex align-items-center mb-4">
-        <div class="col-1"></div>
-        <div class="col-2 d-flex justify-content-end pt-2">
+      <div class="col-1">
+      </div>
+        <div class="col-1">
+          <h5 class="italika d-flex justify-content-end pe-2">Fecha de visita:</h5>
+        </div>
+        <div class="col-2">
+          <input class="form-control" type="date" v-model="fechaVisita" />
+        </div>
+        <div class="col-1 d-flex justify-content-end pt-2">
           <h5 class="italika d-flex justify-content-end pe-2">Hora Inicial de visita:</h5>
         </div>
-        <div class="col-3" ref="tagBordeMoto" id="motos">
+        <div class="col-2" ref="tagBordeMoto" id="motos">
           <input
             class="form-control"
             id="select6"
@@ -1043,14 +1105,13 @@ const verCotizaiones = async () => {
             type="time"
             @change="validarHoraI()"
             ref="tagInicio"
-            style="height: 40px; width: 200px"
+            style="height: 40px; "
           />
         </div>
-
-        <div class="col-2 d-flex justify-content-end pt-2">
+        <div class="col-1 d-flex justify-content-end pt-2">
           <h5 class="italika d-flex justify-content-end pe-2">Hora Final de visita:</h5>
         </div>
-        <div class="col-3" ref="tagBordeMoto" id="motos">
+        <div class="col-2" ref="tagBordeMoto" id="motos">
           <input
             class="form-control"
             id="select7"
@@ -1058,8 +1119,16 @@ const verCotizaiones = async () => {
             type="time"
             @change="validarHoraF()"
             ref="tagFin"
-            style="height: 40px; width: 200px"
+            style="height: 40px; "
           />
+        </div>
+      </div>
+
+      <!-- RowCalendario -->
+
+      <div class="row d-flex align-items-center mb3">
+        <div class="wrapper">
+          
         </div>
       </div>
 

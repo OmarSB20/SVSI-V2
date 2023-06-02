@@ -37,13 +37,15 @@ const { agregarMotosACotizacion, traerCotizacionMotos } = cotizacionMotoStore();
 
 //Variables
 
-const idMC = ref([]);
+const idVendida = ref("");
+const arregloMotos = ref([]);
 const motosCotizacion = ref([]);
 const motosAgregadas = [];
 const noNBAZ = ref(true);
 const exists = ref(false);
 const idVisita = ref("");
 const visita = ref(false);
+const vendida = ref(false);
 const divs = ref([]);
 const nombre = ref("");
 const aPaterno = ref("");
@@ -81,7 +83,7 @@ const horaIniValido = ref("");
 const horaFinValido = ref("");
 const horaIValida = ref("from-control");
 const horaFValida = ref("from-control");
-const displayCalendar = ref(false);
+const fechaVisita = ref("");
 
 var modal;
 var modalE;
@@ -91,6 +93,7 @@ const alertaLlenado = ref(false);
 const nuevo = ref(false);
 const canActualizar = ref(false);
 
+const fechaRegistro = ref(null);
 const fechaActual = ref(null);
 const tagMoto1 = ref(null);
 const tagCreditos = ref(null);
@@ -117,13 +120,14 @@ const idHoraF = ref(null);
 
 onMounted(async () => {
   idUser.value = await obtenerIdPorUser({ Usuario: "Gerente" });
-  idCotizacion.value = 15;
+  idCotizacion.value = getIdCotizacion();
+  motosCotizacion.value = await traerCotizacionMotos();
   if (idCotizacion.value == null) {
     
   } else {
     console.log(idCotizacion.value);
     bloqueado.value = true;
-    
+  
     await cargarCotizacion();
     await cargarCliente();
   }
@@ -131,6 +135,7 @@ onMounted(async () => {
   await obtenerCreditos();
   await obtenerMotos();
   await obtenerAsesores();
+  
 
   llenarCombos();
   fechaActual.value = new Date();
@@ -139,9 +144,8 @@ onMounted(async () => {
 });
 
 const cargarCotizacion = async () => {
-    motosCotizacion.value = await traerCotizacionMotos();
-
     console.log("llegue aqui");
+    let i = 0;
     let cotizacion = await obtenerCotizacion(idCotizacion.value);
     console.log(cotizacion);
     cotizacion = cotizacion.data.body[0];
@@ -149,20 +153,35 @@ const cargarCotizacion = async () => {
     idCliente.value = cotizacion.Clientes_idClientes;
     idCredito.value = cotizacion.Tipos_De_Creditos_idTipos_De_Creditos;
     console.log(cotizacion.Tipos_De_Creditos_idTipos_De_Creditos);
-    motosCotizacion.value.forEach((element) => {
-        if(element.Cotizaciones_idCotizaciones == idCotizacion.value){
-            motosAgregadas.push(catalogo.value[(element.Moto_idMoto)].Modelo);
-            divs.value.push({});
-        }
-    });
+    console.log(motosCotizacion.value);
+    for (const element of motosCotizacion.value) {
+      if(element.Cotizaciones_idCotizaciones == idCotizacion.value){
+        let modelo = await obtenerUnModelo(element.Moto_idMoto);
+        modelo = modelo.data.body[0];
+        console.log(element.Moto_idMoto);
+        console.log(modelo.Modelo);
+        arregloMotos.value.push({id: i, Modelo: modelo.Modelo});
+        i++;
+      } 
+    }
+    console.log(arregloMotos.value);
     idAsesor.value = cotizacion.AsesoresBAZ_idAsesoresBAZ;
     idEstatus.value = cotizacion.EstatusCotizacion_idEstatusCotizacion;
     console.log(idVisita.value);
     pagoInicial.value = cotizacion.PagoInicial;
     capacidad.value = cotizacion.Capacidad;
     comentario.value = cotizacion.Comentario;
+    console.log(cotizacion.FechaVisita);
+    
+    const fechaE = new Date(cotizacion.FechaVisita);
+    const fecahFormateada = fechaE.getUTCFullYear() + "-" + (fechaE.getUTCMonth() + 1).toString().padStart(2, "0") + "-" + fechaE.getUTCDate().toString().padStart(2, "0");
+    console.log(fecahFormateada);
+    fechaVisita.value = fecahFormateada;
+    console.log(fechaVisita.value);
     idHoraI.value = cotizacion.HoraInicial;
     idHoraF.value = cotizacion.HoraFinal;
+    fechaRegistro.value = cotizacion.FechaRegistro;
+    console.log(fechaRegistro.value);
 };
 
 const obtenerCreditos = async () => {
@@ -202,7 +221,11 @@ const validarEVisita = () => {
   estatusCotizaciones.value.forEach((option) => {
     if (option.Descripcion.toLowerCase() == "visita") {
       idVisita.value = option.idEstatusCotizacion;
-      console.log(cotizacion);
+      
+    }
+    else if (option.Descripcion.toLowerCase() == "vendida"){
+      idVendida.value = option.idEstatusCotizacion;
+      console.log(idVendida.value);
     }
   });
 };
@@ -216,20 +239,15 @@ const obtenerAsesores = async () => {
   }
 };
 
-const eliminarMoto = async (index) => {
-  console.log(index);
-  arregloIdMotos.value.splice(index, 1);
-  divs.value.splice(index, 1);
-  motosAgregadas.splice(index, 1);
-  console.log(arregloIdMotos.value);
-};
-
 const validarHVisita = () => {
   if(tagInicio.value.value < tagFin.value.value){
     validado.value = true;
-
+    console.log("si valida ambas horas");
+    return true;
   }else{
     validado.value = false;
+    console.log("trono en las horas");
+    return false;
   }
   console.log(validado.value);
 };
@@ -273,13 +291,18 @@ const validarPagos = (input) => {
 };
 
 const validarCredito = () => {
-    console.log(tagCreditos.value)
+    console.log(tagCreditos.value.value)
   if (tagCreditos.value.value == -1) {
     creditoValido.value = "comboCredito";
 
+    tagCreditos.value.style.borderColor = "red";
+    tagCreditos.value.style.borderWidth = "4px";
+    console.log("trono en validarCredito");
     return false;
   } else {
     creditoValido.value = "";
+    console.log("si valida creditos");
+    tagCreditos.value.style.borderWidth = "0px";
     return true;
   }
 };
@@ -289,27 +312,53 @@ const validarEstatus = async () => {
   if (tagEstatus.value.value == -1) {
     estatusValido.value = "comboEstatus";
     visita.value = false;
+    console.log("trono en estatus");
+    tagEstatus.value.style.borderColor = "red";
+    tagEstatus.value.style.borderWidth = "4px";
     return false;
   }
 
   if (tagEstatus.value.value == idVisita.value) {
     //Poner el id del estatus visita, el mio es el 12
     visita.value = true;
-  } else {
+    vendida.value = false;
+
+    console.log("si valida Estatus");
+    tagEstatus.value.style.borderWidth = "0px";
+    estatusValido.value = "";
+    return true;
+  } 
+  else if(tagEstatus.value.value == idVendida.value){
+    vendida.value = true;
     visita.value = false;
+    console.log(visita.value);
+
+    console.log("si valida Estatus");
+    tagEstatus.value.style.borderWidth = "0px";
+    estatusValido.value = "";
+    return true;
+  } 
+  else {
+    vendida.value = false;
+    visita.value = false;
+
+    console.log("si valida Estatus");
+    tagEstatus.value.style.borderWidth = "0px";
+    estatusValido.value = "";
+    return true;
   }
-  estatusValido.value = "";
-  return true;
 };
 
 const validarAsesor = () => {
   if (tagAsesores.value.value == -1) {
     asesorValido.value = "comboEstatus";
-
+    tagAsesores.value.style.borderColor = "red";
+    tagAsesores.value.style.borderWidth = "4px";
     return false;
   } else {
     console.log("ta bien");
     asesorValido.value = "form-control";
+    tagAsesores.value.style.borderWidth = "0px";
     return true;
   }
 };
@@ -317,9 +366,10 @@ const validarAsesor = () => {
 const validarHoraI = () => {
   if (tagInicio.value.value == -1) {
     horaIValida.value = "from-control comboHInicio";
-
+    console.log("trono en hora inicial");
     return false;
   } else {
+    console.log("si valida hora i");
     horaIValida.value = "";
     return true;
   }
@@ -328,10 +378,11 @@ const validarHoraI = () => {
 const validarHoraF = () => {
   if (tagFin.value.value == -1) {
     horaFValida.value = "from-control comboHFin";
-
+    console.log("trono en hora iniial");
     return false;
   } else {
     horaFValida.value = "";
+    console.log("si valida hora f");
     console.log(tagFin.value.value);
     return true;
   }
@@ -342,10 +393,7 @@ const validarGeneral = () => {
   validado.value =
     validarCredito() &&
     validarEstatus() &&
-    validarAsesor() &&
-    validarPagos(tagPi.value) &&
-    validarPagos(tagC.value) &&
-    validarNumBAZ();
+    validarAsesor();
 
   console.log(validado.value);
   return validado.value;
@@ -353,12 +401,10 @@ const validarGeneral = () => {
 
 const validarVisita = () => {
   validado.value =
+    revFechas() &&
     validarCredito() &&
     validarEstatus() &&
     validarAsesor() &&
-    validarPagos(tagPi.value) &&
-    validarPagos(tagC.value) &&
-    validarNumBAZ() &&
     validarHoraI() &&
     validarHoraF() &&
     validarHVisita();
@@ -367,12 +413,30 @@ const validarVisita = () => {
   return validado.value;
 };
 
+const validarVendida = () => {
+  validado.value =
+    revFechasV() &&
+    validarCredito() &&
+    validarEstatus() &&
+    validarAsesor();
+
+  console.log(validado.value);
+  return validado.value;
+};
+
 const validar = async () => {
   console.log(visita.value);
+  console.log(vendida.value);
   try {
     if (visita.value) {
       validarVisita() == true ? submt() : (alertaLlenado.value = true);
-    } else {
+      console.log(validarVisita());
+    } 
+    else if(vendida.value){
+      validarVendida() == true ? submt() : (alertaLlenado.value = true);
+      console.log(validarVendida());
+    }
+    else {
       validarGeneral() == true ? submt() : (alertaLlenado.value = true);
     }
   } catch (error) {
@@ -382,27 +446,71 @@ const validar = async () => {
 
 const submt = async () => {
   try {
-    if (validado.value) {
-        
+    console.log(visita.value);
+    console.log(vendida.value);
         alertaLlenado.value = false;
         if (visita.value) {
           await crearCotizacionV();
-        } else {
+        } 
+        else if(vendida.value){
+          await cotizacionVendida();
+        }
+        else {
           await crearCotizacion();
         }
-    } else {
-      alertaLlenado.value = true;
-      modalE = new bootstrap.Modal(document.getElementById("modalEr"), {
+
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+const mostrarModalError = async() => {
+  modalE = new bootstrap.Modal(document.getElementById("modalEr"), {
         keyboard: false,
-      });
-      await modalE.show();
-    }
+  });
+  await modalE.show();
+}
+
+const cotizacionVendida = async () => {
+  try {
+    console.log("si llegue a cotizacion");
+    let fechaV, horaInicio, horaFin;
+    fechaVisita.value == "" ? (fechaV = null) : (fechaV = fechaVisita.value);
+    inptHoraIni.value == null ? (horaInicio = null) : (horaInicio = inptHoraIni.value);
+    inptHoraFin.value == null ? (horaFin = null) : (horaFin = inptHoraFin.value);
+    
+    const cotizacion = {
+      idCotizaciones: idCotizacion.value,
+      Empleados_idEmpleados: idUser.value,
+      Tipos_De_Creditos_idTipos_De_Creditos: tagCreditos.value.value,
+      Clientes_idClientes: idCliente.value,
+      AsesoresBAZ_idAsesoresBAZ: tagAsesores.value.value,
+      EstatusCotizacion_idEstatusCotizacion: tagEstatus.value.value,
+      FechaRegistro: fechaRegistro.value,
+      PagoInicial: tagPi.value.value,
+      Capacidad: tagC.value.value,
+      FechaVisita: fechaV,
+      HoraInicial: horaInicio,
+      HoraFinal: horaFin,
+      FechaVenta: fechaActual.value,
+      Comentario: comentario.value,
+    };
+    console.log(cotizacion);
+
+    idCotizacion.value = await actualizarCotizacion(cotizacion);
+    setIdCliente(null);
+
+    modal = new bootstrap.Modal(document.getElementById("modalCrear"), {
+      keyboard: false,
+    });
+    await modal.show();
   } catch (error) {
     console.log(error);
   }
 };
 
 const crearCotizacionV = async () => {
+  console.log("llegue a validar visita");
   try {
     const cotizacion = {
       idCotizaciones: idCotizacion.value,
@@ -411,17 +519,23 @@ const crearCotizacionV = async () => {
       Clientes_idClientes: idCliente.value,
       AsesoresBAZ_idAsesoresBAZ: tagAsesores.value.value,
       EstatusCotizacion_idEstatusCotizacion: tagEstatus.value.value,
-      FechaRegistro: fechaActual.value,
+      FechaRegistro: fechaRegistro.value,
       PagoInicial: tagPi.value.value,
       Capacidad: tagC.value.value,
-      FechaVisita: fechaActual.value,
+      FechaVisita: fechaVisita.value,
       HoraInicial: tagInicio.value.value,
       HoraFinal: tagFin.value.value,
+      FechaVenta: null,
       Comentario: comentario.value,
     };
-
+    console.log(cotizacion);
     idCotizacion.value = await actualizarCotizacion(cotizacion);
     setIdCliente(null);
+
+    modal = new bootstrap.Modal(document.getElementById("modalCrear"), {
+      keyboard: false,
+    });
+    await modal.show();
   } catch (error) {
     console.log(error);
   }
@@ -438,88 +552,27 @@ const crearCotizacion = async () => {
       Clientes_idClientes: idCliente.value,
       AsesoresBAZ_idAsesoresBAZ: tagAsesores.value.value,
       EstatusCotizacion_idEstatusCotizacion: tagEstatus.value.value,
-      FechaRegistro: fechaActual.value,
+      FechaRegistro: fechaRegistro.value,
       PagoInicial: tagPi.value.value,
       Capacidad: tagC.value.value,
-      FechaVisita: fechaActual.value,
+      FechaVisita: null,
+      HoraInicial: null,
+      HoraFinal: null,
+      FechaVenta: null,
       Comentario: comentario.value,
     };
 
     idCotizacion.value = await actualizarCotizacion(cotizacion);
     console.log(idCotizacion.value)
     setIdCliente(null);
+
+    modal = new bootstrap.Modal(document.getElementById("modalCrear"), {
+      keyboard: false,
+    });
+    await modal.show();
   } catch (error) {
     console.log(error);
   }
-};
-
-const reset = async () => {
-  modal = new bootstrap.Modal(document.getElementById("modalCrear"), {
-    keyboard: false,
-  });
-  await modal.hide();
-  await modal.dispose();
-
-  const botones = document.getElementsByClassName("dselect-clear");
-  var elementosArray = Array.from(botones);
-  elementosArray.forEach((elemento) => {
-    elemento.click();
-  });
-
-  creditoValido.value = "";
-  estatusValido.value = "";
-  asesorValido.value = "";
-  horaIValida.value = "from-control";
-  horaFValida.value = "from-control";
-
-  noNBAZ.value = true;
-  visita.value = false;
-  divs.value = [];
-  nombre.value = "";
-  aPaterno.value = "";
-  aMaterno.value = "";
-  telefono.value = "";
-  correo.value = "";
-  pagoInicial.value = "";
-  capacidad.value = "";
-  nBaz.value = "";
-  comentario.value = "";
-
-  tagCreditos.value.value = -1;
-  tagEstatus.value.value = -1;
-  tagAsesores.value.value = -1;
-  tagInicio.value.value = -1;
-  tagFin.value.value = -1;
-  tagAM.value.value = -1;
-  tagAP.value.value = -1;
-  tagNombre.value.value = -1;
-  tagBaz.value.value = -1;
-  tagC.value.value = -1;
-  tagPi.value.value = -1;
-  tagCorreo.value.value = -1;
-  tagTlfn.value.value = -1;
-
-  inptHoraIni.value = null;
-  inptHoraFin.value = null;
-  validado.value = true;
-  idCotizacion.value = null;
-  nuevo.value = false;
-  alertaLlenado.value = false;
-
-  var inputs = document.querySelectorAll(".base");
-  Array.prototype.slice.call(inputs).forEach(function (input) {
-    input.style.backgroundColor = "#FFFFFF";
-  });
-
-  //idUser.value = await obtenerIdPorUser({ Usuario: getUser() });
-
-  console.log("antes");
-  await obtenerCreditos();
-  await obtenerMotos();
-  await obtenerCotizaciones();
-  await obtenerAsesores();
-  //llenarCombos();
-  console.log("despues");
 };
 
 const cargarCliente = async () => {
@@ -607,9 +660,60 @@ const verCotizaiones = async () => {
   router.push({ name: "cotizaciones" });
 };
 
-const showCalendar = () => {
+async function revFechas() {
+  console.log("llegue a rev fechas");
+  console.log(fechaVisita.value);
+  console.log(fechaActual.value);
+  if (fechaVisita.value == "") {
+    console.log("codigo rojo");
+    //alertIncDatos.value = true;
+    
+    return false;
+  }
 
+  const hoy = new Date(fechaActual.value);
+  const visita = new Date(fechaVisita.value);
+  const resta = visita.getTime() - hoy.getTime();
+  console.log(resta);
+  if (resta >= 0) {
+    //alertFechaReporte.value = false;
+    console.log("SI valida fechas");
+    return true;
+  }else{
+    console.log("no valida fechas");
+    //alertFechaReporte.value = true;
+    return false;
+  }
 };
+
+async function revFechasV() {
+  console.log("llegue a rev fechas");
+  console.log(fechaVisita.value);
+  console.log(fechaActual.value);
+  if (fechaVisita.value == "") {
+    console.log("codigo rojo");
+    //alertIncDatos.value = true;
+    return true;
+  }
+
+  const hoy = new Date(fechaActual.value);
+  const visita = new Date(fechaVisita.value);
+  const resta = visita.getTime() - hoy.getTime();
+  console.log(resta);
+  if (resta >= 0) {
+    //alertFechaReporte.value = false;
+    console.log("SI valida fechas");
+    return true;
+  }else{
+    console.log("no valida fechas");
+    //alertFechaReporte.value = true;
+    return false;
+  }
+};
+
+const mostar = (valor) =>{
+  console.log(valor);
+}
 
 </script>
 <template>
@@ -654,16 +758,7 @@ const showCalendar = () => {
           </button> -->
         </div>
         <div class="col-1"></div>
-        <div class="col-2 d-flex align-items-center justify-content-center">
-          <button
-            type="button"
-            class="btn btn-success"
-            @click="reset()"
-            style="height: 50px; width: 180px"
-          >
-            Limpiar
-          </button>
-        </div>
+        
       </div>
       <!-- Row2 -->
       <div class="row d-flex align-items-center mb-3">
@@ -780,32 +875,7 @@ const showCalendar = () => {
       </div>
       <!-- Row5 -->
       <div class="row d-flex align-items-center mb-3">
-        <div class="col-1"></div>
-        <div class="col-1 d-flex justify-content-end pt-2">
-          <h5 class="italika d-flex justify-content-end pe-2">Motocicleta:</h5>
-        </div>
-        <div class="col-3" ref="tagBordeMoto">
-          <select
-            :class="motoValida1"
-            id="select3"
-            @change="validarMoto1()"
-            ref="tagMoto1"
-            style="height: 40px; width: 310px"
-            :disabled = true
-          >
-            <option value="-1">Seleccionar</option>
-          </select>
-        </div>
-        <!-- Boton agregar mas motos-->
-        <div class="col-1 d-flex justify-content-center">
-          <button
-            type="button"
-            class="btn btn-primary"
-            style="width: 100%"
-            :disabled=true
-          >
-            Agregar
-          </button>
+        <div class="col-1">
         </div>
         <div class="col-1 d-flex justify-content-end pt-2">
           <h5 class="italika d-flex justify-content-end ps-3" style="font-size: medium">
@@ -827,26 +897,15 @@ const showCalendar = () => {
       <!--  Div Motos -->
       <div
         class="row d-flex align-items-center mb-4"
-        v-for="(div, index) in divs"
-        :key="index"
+        v-for="motos in arregloMotos" :key="motos.id"
+        
       >
         <div class="col-1" id="motos"></div>
         <div class="col-1" id="motos">
-          <h5 class="italika d-flex justify-content-end pe-2">Modelo {{ index +1 }}:</h5>
+          <h5 class="italika d-flex justify-content-end pe-2">Moto: </h5>
         </div>
         <div class="col-3" ref="tagBordeMoto" id="motos">
-          <input type="text" v-model="motosAgregadas[index]" class="form-control" disabled/>
-        </div>
-        <!-- Boton agregar mas motos-->
-        <div class="col-1 d-flex justify-content-center" id="motos">
-          <button
-            class="btn btn-primary"
-            style="width: 100%"
-            type="button"
-            @click="eliminarMoto(index)"
-          >
-            Eliminar
-          </button>
+          <input type="text" v-model="arregloMotos[motos.id].Modelo" class="form-control" @load="mostar(motos)" disabled/>
         </div>
       </div>
       
@@ -895,20 +954,16 @@ const showCalendar = () => {
           />
         </div>
       </div>
-      <!-- Div Visita-->
       <div v-if="visita" class="row d-flex align-items-center mb-4">
-        <div class="col-1"></div>
+      <div class="col-1">
+      </div>
         <div class="col-1">
-          <button
-            type="button"
-            class="btn btn-primary"
-            style="width: 100%"
-            @click="showCalendar()"
-          >
-            Dia
-          </button>
+          <h5 class="italika d-flex justify-content-end pe-2">Fecha de visita:</h5>
         </div>
-        <div class="col-2 d-flex justify-content-end pt-2">
+        <div class="col-2">
+          <input class="form-control" type="date" v-model="fechaVisita" />
+        </div>
+        <div class="col-1 d-flex justify-content-end pt-2">
           <h5 class="italika d-flex justify-content-end pe-2">Hora Inicial de visita:</h5>
         </div>
         <div class="col-2" ref="tagBordeMoto" id="motos">
@@ -919,11 +974,10 @@ const showCalendar = () => {
             type="time"
             @change="validarHoraI()"
             ref="tagInicio"
-            style="height: 40px; width: 200px"
+            style="height: 40px; "
           />
         </div>
-
-        <div class="col-2 d-flex justify-content-end pt-2">
+        <div class="col-1 d-flex justify-content-end pt-2">
           <h5 class="italika d-flex justify-content-end pe-2">Hora Final de visita:</h5>
         </div>
         <div class="col-2" ref="tagBordeMoto" id="motos">
@@ -934,17 +988,10 @@ const showCalendar = () => {
             type="time"
             @change="validarHoraF()"
             ref="tagFin"
-            style="height: 40px; width: 200px"
+            style="height: 40px; "
           />
         </div>
       </div>
-
-      <!-- RowCalendario -->
-
-      <div class="row d-flex align-items-center mb3">
-        <Datepicker></Datepicker>
-      </div>
-
       <!-- Row 8 -->
       <div class="row d-flex align-items-center mb-3">
         <div class="col-1"></div>
@@ -1004,25 +1051,12 @@ const showCalendar = () => {
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title" id="staticBackdropLabel">¡Cotizacion creada!</h5>
+          <h5 class="modal-title" id="staticBackdropLabel">¡Cotizacion actualizada!</h5>
         </div>
-        <div v-show="nuevo" class="modal-body">
-          El Cliente y la Cotizacion fueron creados exitosamente.
+        <div  class="modal-body">
+          La Cotizacion fue actualizada exitosamente.
         </div>
-        <div v-show="!nuevo" class="modal-body">
-          La Cotizacion fue creada exitosamente.
-        </div>
-
         <div class="modal-footer">
-          <button
-            type="button"
-            class="btn btn-primary"
-            @click="reset()"
-            data-bs-dismiss="modal"
-            ref="btnSeguirCreando"
-          >
-            Seguir creando cotizaciones
-          </button>
           <button type="button" class="btn btn-success" @click="verCotizaiones()">
             Ver cotizaciones
           </button>
