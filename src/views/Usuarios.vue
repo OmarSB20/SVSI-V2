@@ -68,7 +68,7 @@ const consultarUsuarios = async () => {
 };
 const buscarRol = (idRol) => {
   const rolEncontrado = roles.value.find((rol) => rol.idRoles == idRol);
-  //console.log(rolEncontrado.Nombre);
+  console.log(rolEncontrado.Nombre);
   return rolEncontrado.Nombre;
 };
 const eliminarRoles = async (idRol) => {
