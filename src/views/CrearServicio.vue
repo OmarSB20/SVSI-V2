@@ -258,7 +258,7 @@ function validarTlfn() {
 
 function validarKilometraje() {
   let klInpt = document.getElementById("kil");
-  var re = /^[0-9]+$/;
+  var re = /^\d+$/;
   // if (!(kilometraje.value.length >= 4 && kilometraje.value.match(re))) {
     if (!( kilometraje.value.match(re))) {
     klInpt.style.borderColor = "red";
@@ -271,6 +271,19 @@ function validarKilometraje() {
   }
 }
 
+function validarImporte() {
+  let impInput = document.getElementById("imp");
+  var re = /^\d+$/;
+  if (impInput.value.trim() === "" || !( impInput.value.match(re))) {
+    impInput.style.borderColor = "red";
+    impInput.style.borderWidth = "4px";
+    validado.value = false;
+    return false;
+  } else {
+    impInput.style.borderWidth = "0px";
+    return true;
+  }
+}
 
 function validarFecha() {
   let fechaInput = document.getElementById("fechEn");
@@ -321,20 +334,6 @@ function validarModelo() {
     return false;
   } else {
     modInput.style.borderWidth = "0px";
-    return true;
-  }
-}
-
-function validarImporte() {
-  let impInput = document.getElementById("imp");
-  
-  if (impInput.value.trim() === "") {
-    impInput.style.borderColor = "red";
-    impInput.style.borderWidth = "4px";
-    validado.value = false;
-    return false;
-  } else {
-    impInput.style.borderWidth = "0px";
     return true;
   }
 }
@@ -525,10 +524,6 @@ async function crearMotoTaller() {
     console.log(error);
   }
 };
-
-
-
-
 
 
 async function crearServicio() {
@@ -770,7 +765,6 @@ async function verServicios() {
                   @input="validarNoSerie()"
                   v-model.trim="noSerie"
                   
-                 
                 />
               </div>
             </div>
@@ -936,7 +930,7 @@ async function verServicios() {
               style="height: 38px"
               role="alert"
             >
-              Este número e serie ya existe, verifique el número de serie
+              Este número de serie ya existe, verifique el número de serie
             </div>
           </div>
           <div class="row">
