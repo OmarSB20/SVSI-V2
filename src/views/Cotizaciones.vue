@@ -157,6 +157,7 @@ const consultarTodo = async () => {
         motos.push(motoData.data.body);
       }
       cotizacion.FechaVisita = new Date(cotizacion.FechaVisita).toISOString().split('T')[0];
+      cotizacion.FechaVenta = new Date(cotizacion.FechaVenta).toISOString().split('T')[0];
       // console.log(moto);
 
       //para juntar todo

@@ -66,11 +66,7 @@ const consultarUsuarios = async () => {
     console.log(error);
   }
 };
-const buscarRol = (idRol) => {
-  const rolEncontrado = roles.value.find((rol) => rol.idRoles == idRol);
-  console.log(rolEncontrado.Nombre);
-  return rolEncontrado.Nombre;
-};
+
 const eliminarRoles = async (idRol) => {
   try {
     await eliminarPermisosDelRol(idRol);

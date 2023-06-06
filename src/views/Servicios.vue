@@ -320,7 +320,7 @@ watch(valorBusqueda, () => {
             <th scope="col">Importe</th>
             <!-- <th scope="col">Capacidad</th> -->
             <th scope="col">Fecha de Registro</th>
-            <th scope="col">Fecha de Ingreso</th>
+            <th scope="col">Fecha de Entrega</th>
             <th scope="col">Comentario</th>
             <!-- <th scope="col" style="width: 200px"></th> -->
             <th scope="col" class="sticky" style="position: sticky; right: 0">

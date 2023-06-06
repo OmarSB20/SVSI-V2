@@ -766,7 +766,7 @@ async function verServicios() {
                 <input
                   id="noSr"
                   type="text"
-                  class="form-control inptElement base"
+                  class="form-control inptElement"
                   @input="validarNoSerie()"
                   v-model.trim="noSerie"
                   
@@ -783,7 +783,7 @@ async function verServicios() {
                 <input
                   id="modMot"
                   type="text"
-                  class="form-control inptElement base"
+                  class="form-control inptElement"
                   @input="validarModelo()"
                   v-model.trim="modeloTaller"
                   
@@ -802,7 +802,7 @@ async function verServicios() {
                 <input
                   id="kil"
                   type="text"
-                  class="form-control inptElement base"
+                  class="form-control inptElement"
                   @input="validarKilometraje()"
                   v-model.trim="kilometraje"
                   
@@ -818,7 +818,7 @@ async function verServicios() {
                 <input
                   id="imp"
                   type="text"
-                  class="form-control inptElement base"
+                  class="form-control inptElement"
                   @input="validarImporte()"
                   v-model.trim="importe"
                   
@@ -883,7 +883,7 @@ async function verServicios() {
                     <input v-model="formattedDates"
                      id="fechEn"
                      type="date"
-                     class="form-control  base"
+                     class="form-control "
                      @input="validarFecha()"
                       />
                 </div>

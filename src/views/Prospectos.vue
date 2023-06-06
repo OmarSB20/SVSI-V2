@@ -160,9 +160,14 @@ function filtrarFecha() {
 }
 
 function cambiarBusqueda() {
-  buscarPor.value == "Nombre"
-    ? (buscarPor.value = "Fecha")
-    : (buscarPor.value = "Nombre");
+  if(buscarPor.value == "Nombre"){
+    buscarPor.value = "Fecha";
+  }else{
+    buscarPor.value = "Nombre";
+    prospectosFiltrados.value = prospectosDesplegados.value;
+
+  }
+
 }
 
 const modificarProspecto = (idProspecto) => {
@@ -209,7 +214,7 @@ const mostrarModal = (idProspecto) => {
       <div class="col-6 pt-4 d-flex align-elements-end">
         <div class="row d-flex align-elements-end pt-2">
           <button
-            class="btn btn-primary mt-4"
+            class="btn btn-primary rounded-pill mt-4"
             type="button"
             style="width: 100px; height: 50px"
             @click="cambiarBusqueda()"

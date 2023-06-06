@@ -69,6 +69,7 @@ const idCotizacion = ref(null);
 const arregloIdMotos = ref([]);
 
 const fechaVisita = ref("");
+const fechaVisita = ref("");
 const motoValida1 = ref("");
 const motoValida2 = ref("");
 const creditoValido = ref("");
@@ -194,6 +195,7 @@ const agregarMoto = async () => {
 };
 const eliminarMoto = async (index) => {
   console.log(index);
+  console.log(index);
   arregloIdMotos.value.splice(index, 1);
   motosAgregadas.value.splice(index, 1);
   console.log(arregloIdMotos.value);
@@ -203,6 +205,8 @@ const eliminarMoto = async (index) => {
 function validarEmail() {
   var pswd = document.getElementById("emailInpt");
   if (correo.value == "") {
+    pswd.style.borderColor = "red";
+    pswd.style.borderWidth = "4px";
     pswd.style.borderColor = "red";
     pswd.style.borderWidth = "4px";
     validado.value = false;
@@ -224,6 +228,8 @@ function validarEmail() {
 function validarTlfn() {
   let tlfnInpt = document.getElementById("tlfn");
   if (telefono.value == "") {
+    tlfnInpt.style.borderColor = "red";
+    tlfnInpt.style.borderWidth = "4px";
     tlfnInpt.style.borderColor = "red";
     tlfnInpt.style.borderWidth = "4px";
     validado.value = false;
@@ -277,6 +283,8 @@ function validarTexto(input) {
   if (input.value == "") {
     input.style.borderColor = "red";
     input.style.borderWidth = "4px";
+    input.style.borderColor = "red";
+    input.style.borderWidth = "4px";
     validado.value = false;
     return false;
   } else {
@@ -296,6 +304,8 @@ function validarTexto(input) {
 const validarPagos = (input) => {
   var re = /^[0-9]+$/;
   if (input.value == "") {
+    input.style.borderColor = "red";
+    input.style.borderWidth = "4px";
     input.style.borderColor = "red";
     input.style.borderWidth = "4px";
     validado.value = false;
@@ -319,7 +329,10 @@ function validarMoto1() {
   if (tagMoto1.value.value == -1) {
     motoValida1.value = "comboMoto";
     console.log("el error es aqui motos");
+    console.log("el error es aqui motos");
 
+    tagMoto1.value.style.borderColor = "red";
+    tagMoto1.value.style.borderWidth = "4px";
     tagMoto1.value.style.borderColor = "red";
     tagMoto1.value.style.borderWidth = "4px";
     return false;
@@ -338,9 +351,13 @@ const validarCredito = () => {
 
     tagCreditos.value.style.borderColor = "red";
     tagCreditos.value.style.borderWidth = "4px";
+    tagCreditos.value.style.borderColor = "red";
+    tagCreditos.value.style.borderWidth = "4px";
     return false;
   } else {
     creditoValido.value = "";
+
+    tagCreditos.value.style.borderWidth = "0px";
 
     tagCreditos.value.style.borderWidth = "0px";
     return true;
@@ -356,9 +373,13 @@ const validarEstatus = async () => {
 
     tagEstatus.value.style.borderColor = "red";
     tagEstatus.value.style.borderWidth = "4px";
+
+    tagEstatus.value.style.borderColor = "red";
+    tagEstatus.value.style.borderWidth = "4px";
     return false;
   }
 
+  if (tagEstatus.value.value == idVisita.value) {
   if (tagEstatus.value.value == idVisita.value) {
     //Poner el id del estatus visita, el mio es el 12
     visita.value = true;
@@ -366,7 +387,9 @@ const validarEstatus = async () => {
     visita.value = false;
   }
 
+
   estatusValido.value = "";
+  tagEstatus.value.style.borderWidth = "0px";
   tagEstatus.value.style.borderWidth = "0px";
   return true;
 };
@@ -377,10 +400,13 @@ const validarAsesor = () => {
 
     tagAsesores.value.style.borderColor = "red";
     tagAsesores.value.style.borderWidth = "4px";
+    tagAsesores.value.style.borderColor = "red";
+    tagAsesores.value.style.borderWidth = "4px";
     return false;
   } else {
     console.log("ta bien");
     asesorValido.value = "form-control";
+    tagAsesores.value.style.borderWidth = "0px";
     tagAsesores.value.style.borderWidth = "0px";
     return true;
   }
@@ -393,6 +419,7 @@ const validarHoraI = () => {
     return false;
   } else {
     horaIValida.value = "";
+    console.log(horaIniValido.value);
     console.log(horaIniValido.value);
     return true;
   }
@@ -526,7 +553,10 @@ const validar = async () => {
   console.log(visita.value);
   try {
     if(visita.value){
+    if(visita.value){
       validarVisita() == true ? submt() : (alertaLlenado.value = true);
+    }
+    else{
     }
     else{
       validarGeneral() == true ? submt() : (alertaLlenado.value = true);
@@ -534,6 +564,7 @@ const validar = async () => {
   } catch (error) {
     console.log(error);
   }
+}
 }
 
 const submt = async () => {
@@ -561,11 +592,13 @@ const modalError = async () => {
         keyboard: false,
       });
     await modalE.show();
+    await modalE.show();
 };
 
 const crearCotizacionV = async () => {
   try {
     console.log("codigo ROJOV");
+    
     
     const cotizacion = {
       idCotizaciones: 0,
@@ -578,8 +611,10 @@ const crearCotizacionV = async () => {
       PagoInicial: tagPi.value.value,
       Capacidad: tagC.value.value,
       FechaVisita: fechaVisita.value,
+      FechaVisita: fechaVisita.value,
       HoraInicial: tagInicio.value.value,
       HoraFinal: tagFin.value.value,
+      FechaVenta: null,
       FechaVenta: null,
       Comentario: comentario.value,
     };
@@ -606,6 +641,10 @@ const crearCotizacion = async () => {
       FechaRegistro: fechaActual.value,
       PagoInicial: tagPi.value.value,
       Capacidad: tagC.value.value,
+      FechaVisita: null,
+      HoraInicial: null,
+      HoraFinal: null,
+      FechaVenta: null,
       FechaVisita: null,
       HoraInicial: null,
       HoraFinal: null,
@@ -668,6 +707,7 @@ const reset = async () => {
   capacidad.value = "";
   nBaz.value = "";
   comentario.value = "";
+  fechaVisita.value = "";
   fechaVisita.value = "";
 
   tagMoto1.value.value = -1;
@@ -788,6 +828,32 @@ const verCotizaiones = async () => {
   await modal.hide();
   router.push({ name: "cotizaciones" });
 };
+
+async function revFechas() {
+  console.log("llegue a rev fechas");
+  console.log(fechaVisita.value);
+  console.log(fechaActual.value);
+  if (fechaVisita.value == "") {
+    console.log("codigo rojo");
+    //alertIncDatos.value = true;
+    return false;
+  }
+
+  const hoy = new Date(fechaActual.value);
+  const visita = new Date(fechaVisita.value);
+  const resta = visita.getTime() - hoy.getTime();
+  console.log(resta);
+  if (resta >= 0) {
+    //alertFechaReporte.value = false;
+    console.log("SI valida fechas");
+    return true;
+  }else{
+    console.log("no valida fechas");
+    //alertFechaReporte.value = true;
+    return false;
+  }
+};
+
 
 async function revFechas() {
   console.log("llegue a rev fechas");
@@ -955,6 +1021,39 @@ async function revFechas() {
           />
         </div>
       </div>
+      <!-- Row6 -->
+      <div class="row d-flex align-items-center mb-3">
+        <div class="col-1"></div>
+        <div class="col-1 d-flex justify-content-end pt-2">
+          <h5 class="italika d-flex justify-content-end pe-2">Telefono:</h5>
+        </div>
+        <div class="col-3">
+          <input
+            type="text"
+            class="form-control input-f inptElement"
+            v-model.trim="telefono"
+            @input="validarTlfn()"
+            ref="tagTlfn"
+            id="tlfn"
+            :disabled="!nuevo"
+          />
+        </div>
+        <div class="col-1"></div>
+        <div class="col-1 d-flex justify-content-end pt-2">
+          <h5 class="italika d-flex justify-content-end pe-2">Correo:</h5>
+        </div>
+        <div class="col-3">
+          <input
+            type="text"
+            class="form-control input-f inptElement"
+            v-model.trim="correo"
+            @input="validarEmail()"
+            ref="tagCorreo"
+            id="emailInpt"
+            :disabled="!nuevo"
+          />
+        </div>
+      </div>
       <!-- Row4 -->
       <div class="row d-flex align-items-center mb-2">
         <div class="col-1"></div>
@@ -1059,6 +1158,7 @@ async function revFechas() {
         </div>
       </div>
       
+      
       <!-- Row7 -->
       <div class="row d-flex align-items-center mb-3">
         <div class="col-1"></div>
@@ -1136,6 +1236,14 @@ async function revFechas() {
             ref="tagFin"
             style="height: 40px; width: 100px"
           />
+        </div>
+      </div>
+
+      <!-- RowCalendario -->
+
+      <div class="row d-flex align-items-center mb3">
+        <div class="wrapper">
+          
         </div>
       </div>
 

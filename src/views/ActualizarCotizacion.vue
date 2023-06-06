@@ -39,12 +39,15 @@ const { agregarMotosACotizacion, traerCotizacionMotos } = cotizacionMotoStore();
 
 const idVendida = ref("");
 const arregloMotos = ref([]);
+const idVendida = ref("");
+const arregloMotos = ref([]);
 const motosCotizacion = ref([]);
 const motosAgregadas = [];
 const noNBAZ = ref(true);
 const exists = ref(false);
 const idVisita = ref("");
 const visita = ref(false);
+const vendida = ref(false);
 const vendida = ref(false);
 const divs = ref([]);
 const nombre = ref("");
@@ -84,6 +87,7 @@ const horaFinValido = ref("");
 const horaIValida = ref("from-control");
 const horaFValida = ref("from-control");
 const fechaVisita = ref("");
+const fechaVisita = ref("");
 
 var modal;
 var modalE;
@@ -93,6 +97,7 @@ const alertaLlenado = ref(false);
 const nuevo = ref(false);
 const canActualizar = ref(false);
 
+const fechaRegistro = ref(null);
 const fechaRegistro = ref(null);
 const fechaActual = ref(null);
 const tagMoto1 = ref(null);
@@ -122,11 +127,14 @@ onMounted(async () => {
   idUser.value = await obtenerIdPorUser({ Usuario: "Gerente" });
   idCotizacion.value = getIdCotizacion();
   motosCotizacion.value = await traerCotizacionMotos();
+  idCotizacion.value = getIdCotizacion();
+  motosCotizacion.value = await traerCotizacionMotos();
   if (idCotizacion.value == null) {
     
   } else {
     console.log(idCotizacion.value);
     bloqueado.value = true;
+  
   
     await cargarCotizacion();
     await cargarCliente();
@@ -135,6 +143,8 @@ onMounted(async () => {
   await obtenerCreditos();
   await obtenerMotos();
   await obtenerAsesores();
+  
+
   
 
   llenarCombos();
@@ -146,6 +156,7 @@ onMounted(async () => {
 const cargarCotizacion = async () => {
     console.log("llegue aqui");
     let i = 0;
+    let i = 0;
     let cotizacion = await obtenerCotizacion(idCotizacion.value);
     console.log(cotizacion);
     cotizacion = cotizacion.data.body[0];
@@ -153,6 +164,18 @@ const cargarCotizacion = async () => {
     idCliente.value = cotizacion.Clientes_idClientes;
     idCredito.value = cotizacion.Tipos_De_Creditos_idTipos_De_Creditos;
     console.log(cotizacion.Tipos_De_Creditos_idTipos_De_Creditos);
+    console.log(motosCotizacion.value);
+    for (const element of motosCotizacion.value) {
+      if(element.Cotizaciones_idCotizaciones == idCotizacion.value){
+        let modelo = await obtenerUnModelo(element.Moto_idMoto);
+        modelo = modelo.data.body[0];
+        console.log(element.Moto_idMoto);
+        console.log(modelo.Modelo);
+        arregloMotos.value.push({id: i, Modelo: modelo.Modelo});
+        i++;
+      } 
+    }
+    console.log(arregloMotos.value);
     console.log(motosCotizacion.value);
     for (const element of motosCotizacion.value) {
       if(element.Cotizaciones_idCotizaciones == idCotizacion.value){
@@ -178,8 +201,17 @@ const cargarCotizacion = async () => {
     console.log(fecahFormateada);
     fechaVisita.value = fecahFormateada;
     console.log(fechaVisita.value);
+    console.log(cotizacion.FechaVisita);
+    
+    const fechaE = new Date(cotizacion.FechaVisita);
+    const fecahFormateada = fechaE.getUTCFullYear() + "-" + (fechaE.getUTCMonth() + 1).toString().padStart(2, "0") + "-" + fechaE.getUTCDate().toString().padStart(2, "0");
+    console.log(fecahFormateada);
+    fechaVisita.value = fecahFormateada;
+    console.log(fechaVisita.value);
     idHoraI.value = cotizacion.HoraInicial;
     idHoraF.value = cotizacion.HoraFinal;
+    fechaRegistro.value = cotizacion.FechaRegistro;
+    console.log(fechaRegistro.value);
     fechaRegistro.value = cotizacion.FechaRegistro;
     console.log(fechaRegistro.value);
 };
@@ -226,6 +258,11 @@ const validarEVisita = () => {
     else if (option.Descripcion.toLowerCase() == "vendida"){
       idVendida.value = option.idEstatusCotizacion;
       console.log(idVendida.value);
+      
+    }
+    else if (option.Descripcion.toLowerCase() == "vendida"){
+      idVendida.value = option.idEstatusCotizacion;
+      console.log(idVendida.value);
     }
   });
 };
@@ -244,8 +281,12 @@ const validarHVisita = () => {
     validado.value = true;
     console.log("si valida ambas horas");
     return true;
+    console.log("si valida ambas horas");
+    return true;
   }else{
     validado.value = false;
+    console.log("trono en las horas");
+    return false;
     console.log("trono en las horas");
     return false;
   }
@@ -292,15 +333,21 @@ const validarPagos = (input) => {
 
 const validarCredito = () => {
     console.log(tagCreditos.value.value)
+    console.log(tagCreditos.value.value)
   if (tagCreditos.value.value == -1) {
     creditoValido.value = "comboCredito";
 
     tagCreditos.value.style.borderColor = "red";
     tagCreditos.value.style.borderWidth = "4px";
     console.log("trono en validarCredito");
+    tagCreditos.value.style.borderColor = "red";
+    tagCreditos.value.style.borderWidth = "4px";
+    console.log("trono en validarCredito");
     return false;
   } else {
     creditoValido.value = "";
+    console.log("si valida creditos");
+    tagCreditos.value.style.borderWidth = "0px";
     console.log("si valida creditos");
     tagCreditos.value.style.borderWidth = "0px";
     return true;
@@ -315,12 +362,24 @@ const validarEstatus = async () => {
     console.log("trono en estatus");
     tagEstatus.value.style.borderColor = "red";
     tagEstatus.value.style.borderWidth = "4px";
+    console.log("trono en estatus");
+    tagEstatus.value.style.borderColor = "red";
+    tagEstatus.value.style.borderWidth = "4px";
     return false;
   }
 
   if (tagEstatus.value.value == idVisita.value) {
     //Poner el id del estatus visita, el mio es el 12
     visita.value = true;
+    vendida.value = false;
+
+    console.log("si valida Estatus");
+    tagEstatus.value.style.borderWidth = "0px";
+    estatusValido.value = "";
+    return true;
+  } 
+  else if(tagEstatus.value.value == idVendida.value){
+    vendida.value = true;
     vendida.value = false;
 
     console.log("si valida Estatus");
@@ -347,6 +406,22 @@ const validarEstatus = async () => {
     estatusValido.value = "";
     return true;
   }
+    console.log(visita.value);
+
+    console.log("si valida Estatus");
+    tagEstatus.value.style.borderWidth = "0px";
+    estatusValido.value = "";
+    return true;
+  } 
+  else {
+    vendida.value = false;
+    visita.value = false;
+
+    console.log("si valida Estatus");
+    tagEstatus.value.style.borderWidth = "0px";
+    estatusValido.value = "";
+    return true;
+  }
 };
 
 const validarAsesor = () => {
@@ -354,10 +429,13 @@ const validarAsesor = () => {
     asesorValido.value = "comboEstatus";
     tagAsesores.value.style.borderColor = "red";
     tagAsesores.value.style.borderWidth = "4px";
+    tagAsesores.value.style.borderColor = "red";
+    tagAsesores.value.style.borderWidth = "4px";
     return false;
   } else {
     console.log("ta bien");
     asesorValido.value = "form-control";
+    tagAsesores.value.style.borderWidth = "0px";
     tagAsesores.value.style.borderWidth = "0px";
     return true;
   }
@@ -875,32 +953,7 @@ const mostar = (valor) =>{
       </div>
       <!-- Row5 -->
       <div class="row d-flex align-items-center mb-3">
-        <div class="col-1"></div>
-        <div class="col-1 d-flex justify-content-end pt-2">
-          <h5 class="italika d-flex justify-content-end pe-2">Motocicleta:</h5>
-        </div>
-        <div class="col-3" ref="tagBordeMoto">
-          <select
-            :class="motoValida1"
-            id="select3"
-            @change="validarMoto1()"
-            ref="tagMoto1"
-            style="height: 40px; width: 310px"
-            :disabled = true
-          >
-            <option value="-1">Seleccionar</option>
-          </select>
-        </div>
-        <!-- Boton agregar mas motos-->
-        <div class="col-1 d-flex justify-content-center">
-          <button
-            type="button"
-            class="btn btn-primary"
-            style="width: 100%"
-            :disabled=true
-          >
-            Agregar
-          </button>
+        <div class="col-1">
         </div>
         <div class="col-1 d-flex justify-content-end pt-2">
           <h5 class="italika d-flex justify-content-end ps-3" style="font-size: medium">
@@ -979,7 +1032,6 @@ const mostar = (valor) =>{
           />
         </div>
       </div>
-      <!-- Div Visita-->
       <div v-if="visita" class="row d-flex align-items-center mb-4">
         <div class="col-1"></div>
         <div class="col-2">

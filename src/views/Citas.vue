@@ -325,11 +325,13 @@ async function guardarCita() {
     const user = getUser();
     const emp = await obtenerIdPorUser({ Usuario: user });
     let citaRepetida=false;
+    if(citasHoy.value){
     citasHoy.value.forEach(element => {
     if(element.hora==inptHora.value){
       citaRepetida = true;
     }
-  });
+  
+  });}
   if (!citaRepetida) {
     alertarepetida.value=false;
     const cita = {
@@ -405,9 +407,16 @@ async function actualizarCitas() {
     let citaRepetida=false;
     citasHoy.value.forEach(element => {
       console.log(element.hora==inptHoraAct.value)
-    if(element.hora==inptHoraAct.value){
-      citaRepetida = true;
+      console.log(element.fecha)
+      console.log(element.idCitas)
+      console.log(citaActualizar.value.idCitas)
+      if (citaActualizar.value.idCitas!= element.idCitas) {
+        if(element.hora==inptHoraAct.value){
+
+        citaRepetida = true;
     }
+  
+  }
   });
   if (!citaRepetida) {
     alertarepetida.value=false;
@@ -618,13 +627,13 @@ async function eliminar() {
     <option value="9:00"></option>
     <option value="10:00"></option>
     <option value="11:00"></option>
-    <option value="12:30"></option>
+    <option value="12:00"></option>
     <option value="13:00"></option>
     <option value="14:00"></option>
-    <option value="15:30"></option>
+    <option value="15:00"></option>
     <option value="16:00"></option>
     <option value="17:00"></option>
-    <option value="18:30"></option>
+    <option value="18:00"></option>
     <option value="19:00"></option>
   </datalist>
 
