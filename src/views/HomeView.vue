@@ -489,19 +489,19 @@ function redirigir(interfaz) {
             </div>
             <div class="d-flex justify-content-center">
               <div style="width: 10px; background-color: red; margin-bottom: 25px"></div>
-              <p class="cita px-3 w-75">Viernes 5 de marzo - Fernando López</p>
+              <p class="cita px-3 w-75">Miercoles 7 de junio - Chuy Malboro Malboro</p>
             </div>
             <div class="d-flex justify-content-center">
               <div
                 style="width: 10px; background-color: #d4c324; margin-bottom: 25px"
               ></div>
-              <p class="cita px-3 w-75">Viernes 5 de marzo - Fernando López</p>
+              <p class="cita px-3 w-75">Jueves 8 de junio - Chuy Malboro Malboro</p>
             </div>
             <div class="d-flex justify-content-center">
               <div
                 style="width: 10px; background-color: green; margin-bottom: 25px"
               ></div>
-              <p class="cita px-3 w-75">Viernes 5 de marzo - Fernando López</p>
+              <p class="cita px-3 w-75">Viernes 11 de junio - Chuy Malboro Malboro</p>
             </div>
           </div>
         </div>
@@ -513,19 +513,19 @@ function redirigir(interfaz) {
             </div>
             <div class="d-flex justify-content-center">
               <div style="width: 10px; background-color: red; margin-bottom: 25px"></div>
-              <p class="cita px-3 w-75">Viernes 5 de marzo - Fernando Lopez</p>
+              <p class="cita px-3 w-75">Jueves 8 de junio - Omar Suarez Barajas</p>
             </div>
             <div class="d-flex justify-content-center">
               <div
                 style="width: 10px; background-color: #d4c324; margin-bottom: 25px"
               ></div>
-              <p class="cita px-3 w-75">Viernes 5 de marzo - Fernando Lopez</p>
+              <p class="cita px-3 w-75">Lunes 12 de junio - Dulce Alicia Tovar Mendoza</p>
             </div>
             <div class="d-flex justify-content-center">
               <div
                 style="width: 10px; background-color: green; margin-bottom: 25px"
               ></div>
-              <p class="cita px-3 w-75">Viernes 5 de marzo - Fernando Lopez</p>
+              <p class="cita px-3 w-75">Jueves 22 de junio - Omar Suarez Barajas</p>
             </div>
           </div>
         </div>
