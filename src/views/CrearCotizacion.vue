@@ -85,6 +85,7 @@ var modalE;
 var tried = false;
 const validado = ref(true);
 const alertaLlenado = ref(false);
+const usuarioRepetido = ref(false);
 const nuevo = ref(true);
 const canActualizar = ref(false);
 
@@ -449,14 +450,14 @@ const revisarCliente = async () => {
       Apellido_Paterno: aPaterno.value,
       Apellido_Materno: aMaterno.value,
     });
+    console.log(exists.value);
 
     if (exists.value) {
-      idCliente.value = exists.value.idClientes;
-      nuevo.value = false;
-      console.log(idCliente.value);
-      //Mostrar modal
+      
+      
+      return false;
     } else {
-      await crearCliente();
+      return true;
     }
   } catch (error) {
     console.log(error);
@@ -541,7 +542,8 @@ const submt = async () => {
   try {
       alertaLlenado.value = false;
       if (nuevo.value) {
-        await revisarCliente();
+        console.log(revisarCliente());
+        await revisarCliente() == true ? (usuarioRepetido.value = true) : await crearCliente();
       }
       else if(visita.value){
         await crearCotizacionV();
@@ -1172,6 +1174,14 @@ async function revFechas() {
             role="alert"
           >
             Por favor, llene correctamente todos los campos obligatorios
+          </div>
+          <div
+            v-if="usuarioRepetido"
+            class="alert alert-danger mt-2 d-flex align-items-center"
+            style="height: 38px"
+            role="alert"
+          >
+            Datos de usuario repetidos, si el usuario ya fue registrado, favor de seleccionarlo
           </div>
         </div>
         <div class="col-1"></div>
